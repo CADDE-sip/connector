@@ -1,0 +1,55 @@
+version: "3"
+services:
+  provider-catalog-search:
+    build: catalog-search
+    image: provider/catalog-search:1.1
+    hostname: provider_catalog_search
+    container_name: provider_catalog_search
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    ports:
+      - "28080:8080"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
+    environment:
+      - "LC_CTYPE=C.UTF-8"
+  provider-connector-main:
+    build: connector-main
+    image: provider/connector-main:1.1
+    hostname: provider_connector_main
+    container_name: provider_connector_main
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
+    environment:
+      - "LC_CTYPE=C.UTF-8"
+  provider-data-exchange:
+    build: data-exchange
+    image: provider/data-exchange:1.1
+    hostname: provider_data_exchange
+    container_name: provider_data_exchange
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    ports:
+      - "38080:8080"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
+    environment:
+      - "LC_CTYPE=C.UTF-8"
+

@@ -1,0 +1,7 @@
+{
+    "ngsi_auth" : {
+        "TEST_ID" : {
+            "auth" : "input API key."
+        }
+    }
+}

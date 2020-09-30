@@ -1,0 +1,14 @@
+{
+    "connector_location": {
+        "provider_id1": {
+            "provider_connector_data_exchange_url": "http://provider_data_exchange_url1.co.jp/cadde/api/v1/file",
+            "provider_connector_catalog_search_url": "http://provider_catalog_search_url1.co.jp/api/3/action/package_search",
+            "contract_management_service_url" : "http://contract_management_service_url1.co.jp"
+        },
+        "provider_id2": {
+            "provider_connector_data_exchange_url": "http://provider_data_exchange_url2.co.jp/cadde/api/v1/file",
+            "provider_connector_catalog_search_url": "http://provider_catalog_search_url2.co.jp/api/3/action/package_search",
+            "contract_management_service_url" : "http://contract_management_service_url2.co.jp"
+        }
+    }
+}

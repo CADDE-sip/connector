@@ -1,0 +1,61 @@
+version: "3"
+services:
+  consumer-catalog-search:
+    build: catalog-search
+    image: consumer/catalog-search:1.1
+    hostname: consumer_catalog_search
+    container_name: consumer_catalog_search
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-connector-main:
+    build: connector-main
+    image: consumer/connector-main:1.1
+    hostname: consumer_connector_main
+    container_name: consumer_connector_main
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    ports:
+      - "18080:8080"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-data-exchange:
+    build: data-exchange
+    image: consumer/data-exchange:1.1
+    hostname: consumer_data_exchange
+    container_name: consumer_data_exchange
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}

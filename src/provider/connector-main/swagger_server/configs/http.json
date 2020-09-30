@@ -1,0 +1,8 @@
+{
+    "basic_auth": {
+        "basic_domain": {
+            "basic_id" : "anonymous",
+            "basic_pass" : "anonymous"
+        }
+    }
+}

@@ -1,0 +1,481 @@
+openapi: 3.0.0
+info:
+  title: CADDE v1 Specification 利用者 コネクタメイン
+  version: "1.0"
+servers:
+- url: /
+paths:
+  /api/3/action/package_search:
+    get:
+      tags:
+      - Search
+      summary: API.01 カタログ検索
+      description: |-
+        提供者カタログサイトからCKANカタログ情報を取得する.
+        Response:
+        * 処理が成功した場合は200を返す
+        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクション参照。
+      operationId: search
+      parameters:
+      - name: q
+        in: query
+        description: CKAN検索条件クエリ CKAN APIに準拠
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: x-cadde-search
+        in: header
+        description: 横断検索、詳細検索を指定する(横断検索:meta, 詳細検索:detail)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider
+        in: header
+        description: 提供者ID 提供者コネクタを利用する場合に提供者IDを設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        description: 利用者トークン
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: CKANから取得したカタログ情報を返す.
+          content:
+            application/json:
+              example:
+                help: https:/xxx/api/3/action/help_show?name=package_search
+                success: true
+                result:
+                  count: 0
+                  sort: score desc, metadata_modified desc
+                  facets: {}
+                  results: {}
+                  search_facets: {}
+        "400":
+          description: パラメータ不正の場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: Missing header parameter (パラメータ名)
+                    status: 400
+                    title: Bad Request
+                    type: about:blank
+        "401":
+          description: |-
+            利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用)
+            契約有無確認処理での契約無しの場合のエラーメッセージ(2020月09版では未使用)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: 利用者確認処理でエラーが発生しました。
+                    status: 401
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 500
+                    title: ""
+                    type: ""
+      x-swagger-router-controller: swagger_server.controllers.search_controller
+      x-openapi-router-controller: swagger_server.controllers.search_controller
+  /cadde/api/v1/file:
+    get:
+      tags:
+      - Files
+      summary: API.02 データ取得(NGSI以外)
+      description: |-
+        CADDEインタフェースを用いて、HTTPサーバ、FTPサーバからファイルを取得する
+        Response:
+        * 処理が成功した場合は200を返す
+        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
+      operationId: files
+      parameters:
+      - name: x-cadde-resource-url
+        in: header
+        description: リソースURL
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-resource-api-type
+        in: header
+        description: リソース提供手段識別子 FTP、HTTPのいずれかを指定する(FTP:file/ftp, HTTP:file/http)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider
+        in: header
+        description: 提供者ID 提供者コネクタを利用する場合に提供者IDを設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-contract
+        in: header
+        description: 契約確認要否 required、notRequiredを指定する(要:required, 否:notRequired)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        description: 利用者トークン
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ダウンロードしたファイルと認証情報
+          headers:
+            identification:
+              description: 認証情報,
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                x-content-type: application/octet-stream
+              example: text or csv or pdf etc..
+        "400":
+          description: パラメータ不正の場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: Missing header parameter (パラメータ名)
+                    status: 400
+                    title: Bad Request
+                    type: about:blank
+        "401":
+          description: "利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用) \n契約有無確認処理での契約無しの\
+            場合のエラーメッセージ(2020月09版では未使用)"
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: 利用者確認処理でエラーが発生しました。
+                    status: 401
+                    title: ""
+                    type: ""
+        "403":
+          description: FTP接続で認証失敗の場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: FTP接続時に認証に失敗しました。サイト管理者に問い合わせてください。
+                    status: 403
+                    title: ""
+                    type: ""
+        "404":
+          description: |-
+            FTP接続で指定したディレクトリにファイルが存在しない場合のエラーメッセージ
+            HTTP接続で指定したURLにファイルが存在しない場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: ファイルが見つかりませんでした。サイト管理者に問い合わせてください。
+                    status: 404
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 500
+                    title: ""
+                    type: ""
+      x-swagger-router-controller: swagger_server.controllers.files_controller
+      x-openapi-router-controller: swagger_server.controllers.files_controller
+  /v2/entities:
+    get:
+      tags:
+      - Entities
+      summary: Retrieve Entity
+      description: |-
+        NGSIインタフェースを用いて、コンテキスト情報を取得する.
+
+        Response:
+        * 処理が成功した場合は200を返す
+        * 処理に失敗した場合は、2xxでないコードを返す。場合によりエラーを示すペイロードがつく場合もある。  Responsesセクションを参照すること
+      operationId: retrieve_entity
+      parameters:
+      - name: x-cadde-resource-url
+        in: header
+        description: "\n指定可能なリソースURLは以下とする\n\n・http://{ドメイン名}/v2/entities?type={entityType}\
+          \ \n  entityTypeで指定したtypeを持つエンティティの一覧を取得する。\n　entityTypeを指定しない場合はエラーを返す。\
+          \n\n・http://{ドメイン名}/v2/entities/{entityId}\n　entityIdで指定したエンティティの情報を取得する\
+          。"
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-resource-api-type
+        in: header
+        description: リソース提供手段識別子 NGSIを指定する(NGSI:api/ngsi)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider
+        in: header
+        description: 提供者ID 提供者コネクタを利用する場合に提供者IDを設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-contract
+        in: header
+        description: 契約確認要否 required、notRequiredを指定する(要:required, 否:notRequired)
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        description: 利用者トークン
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-options
+        in: header
+        description: |- 
+            APIごとに利用する固有のオプション。本APIを利用するにあたり、
+            リクエストヘッダが必要となる場合、ヘッダの内容を以下のように指定する。
+            ただし、ヘッダの値に ,(カンマ)を含むものは指定できない。
+            "x-cadde-options": "ヘッダ項目:ヘッダの値, ヘッダ項目:ヘッダの値, …"
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: |-
+            取得したコンテキスト情報をNGSI形式で返す。
+
+            ※コンテキスト情報の一覧を取得した場合は、Entityのarray型で返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+              examples:
+                response:
+                  value:
+                    type: Room
+                    id: DC_S1-D41
+                    temperature:
+                      value: 35.6
+                      type: Number
+                      metadata:
+                        accuracy:
+                          value: 2
+                          type: Number
+        "400":
+          description: パラメータ不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: パラメータが不正です。
+        "401":
+          description: データ管理サーバ（NGSI）のAPI実行時に使用するアクセストークンが不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: 認証情報が不正です。
+        "404":
+          description: リソースURLに指定したリソースが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: 指定したリソースが見つかりませんでした。
+        "409":
+          description: |-
+            リクエストが競合したことを示す。
+
+            {entityId}で指定したデータが複数存在する場合に発生する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: 指定したリソースに対応するデータが複数存在します。
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: エラーが発生しました。エラー:(エラー内容)
+      x-swagger-router-controller: swagger_server.controllers.entities_controller
+      x-openapi-router-controller: swagger_server.controllers.entities_controller
+components:
+  schemas:
+    ErrorResponse:
+      required:
+      - detail
+      - status
+      type: object
+      properties:
+        detail:
+          type: string
+          description: エラーメッセージ
+        status:
+          type: number
+          description: HTTPステータスコード
+        title:
+          type: string
+          description: タイトル
+        type:
+          type: string
+          description: タイプ
+    Metadata:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: object
+          properties: {}
+          example: {}
+      example:
+        type: type
+        value: {}
+    AttributeValue:
+      type: object
+    Attribute:
+      required:
+      - type
+      - value
+      type: object
+      properties:
+        value:
+          $ref: '#/components/schemas/AttributeValue'
+        type:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+      example:
+        metadata:
+          type: type
+          value: {}
+        type: type
+        value: {}
+    Entity:
+      required:
+      - id
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        AttributeName:
+          $ref: '#/components/schemas/Attribute'
+      example:
+        AttributeName:
+          metadata:
+            type: type
+            value: {}
+          type: type
+          value: {}
+        id: id
+        type: type
+

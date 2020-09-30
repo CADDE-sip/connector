@@ -1,0 +1,15 @@
+# docker-compose build && docker-compose up -d
+version: "3"
+
+services:
+  reverse-proxy:
+    container_name: reverse-proxy
+    image: nginx:1.19.2
+    volumes:
+      - ./volumes/nginx.conf:/etc/nginx/nginx.conf
+      - ./volumes/default.conf:/etc/nginx/conf.d/default.conf
+      - ./volumes/ssl:/etc/nginx/ssl
+    ports:
+      - 443:443
+      - 80:80
+    restart: always
