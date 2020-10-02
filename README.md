@@ -31,9 +31,6 @@
   - コンテキスト情報：１ MB 以下
   - ファイル：100MB 以下
 
-## コネクタ構成例
-- TLS相互認証は下図のプロキシ及びリバースプロキシにて実現します。
-![Alt text](doc/png/conf_example.png?raw=true "Title")
 
 <br><br>
 
