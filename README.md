@@ -187,6 +187,7 @@ sh setup.sh
   | ckan_url       | 詳細検索時の接続先を記載 |
   
 (2) データ管理サーバ(HTTPサーバ)を提供者コネクタ経由で公開する場合
+(2-1) 認証ありHTTPサーバに接続の場合
 - http.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>http 接続でファイル取得する際に basic 認証が必要なドメインの設定を記載<br>
 
@@ -196,6 +197,9 @@ sh setup.sh
   | ドメイン名     | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載 <br>以下の basic_id, basic_pass を保持 |
   | basic_id       | 対象ドメインへのファイル取得 http 接続時のベーシック認証 ID を設定                                                                  |
   | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定  
+
+(2-2) 認証なしHTTPサーバに接続の場合
+ http.jsonファイル不要。
   
 (3) データ管理サーバ(FTPサーバ)を提供者コネクタ経由で公開する場合
 - ftp.json
