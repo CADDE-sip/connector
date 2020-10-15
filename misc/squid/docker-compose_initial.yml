@@ -3,7 +3,7 @@ services:
   squid:
     container_name: forward-proxy
     build: .
-    image: squid
+    image: cadde-squid
     ports:
       - "3128:3128"
     volumes:
