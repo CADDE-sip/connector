@@ -1,3 +1,3 @@
 {
-    "ckan_url" : "http://CKAN_URL"
+    "ckan_url" : "http://CKAN_URL/api/3/action/package_search"
 }
