@@ -44,13 +44,14 @@
 
 ```
 git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
+cd connector
 git checkout develop-20210302
 ```
 
 2. 共通ファイルの展開 <br>
 setup.sh実行
 ```
-cd connector/src/consumer/
+cd src/consumer/
 sh setup.sh
 ```
 
@@ -184,12 +185,13 @@ docker-compose down
 1. 提供者コネクタの取得
 ```
 git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
+cd connector
 git checkout develop-20210302
 ```
 
 2. setup.sh実行
 ```
-cd connector/src/provider/
+cd src/provider/
 sh setup.sh
 ```
 
