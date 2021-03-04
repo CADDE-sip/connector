@@ -56,12 +56,8 @@ sh setup.sh
 
 3. コンフィグファイルの設定
 - location.json
-  <br>location.jsonファイルには、データ提供者接続先情報が記載されています。
-  <br>コネクタ運用後は、最新のlocation.jsonを以下のリンクより確認し、更新してください。<br>
-    [location.json](/src/consumer/connector-main/swagger_server/configs/location.json)
-  
-  <br>個別にデータ提供者接続先情報を追加する場合は、利用者コネクタ内のlocation.jsonを編集してください。<br>
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>提供者側に接続を行う際に指定する提供者側のアドレス設定を記載<br>
+  <br>個別にデータ提供者接続先情報を追加する場合は、利用者コネクタ内のlocation.jsonを編集してください。<br>
 
   | 設定パラメータ                        | 概要                                                                                                                                                               |
   | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -73,10 +69,6 @@ sh setup.sh
   | contract_management_service_url       | 認証サーバの URL を設定 (2021 年 3 月版では未使用)                                                                                                                 |
 
 - connector.json
-  <br>connector.jsonファイルには、認証情報が記載されます。
-  <br>コネクタ運用後は、最新のconnector.jsonを以下のリンクより確認し、更新してください。<br>
-    [location.json](/src/consumer/connector-main/swagger_server/configs/connector.json)
-  
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>認証認可サーバに登録した利用者コネクタのIDとシークレットを記載<br>
 
   | 設定パラメータ                        | 概要                                                                                                                                                               |
