@@ -1,8 +1,9 @@
 {
-    "basic_auth": {
-        "domain_name": {
+    "basic_auth": [
+        {
+            "domain" : "sample.co.jp:8080",
             "basic_id" : "anonymous",
             "basic_pass" : "anonymous"
         }
-    }
+    ]
 }

@@ -1,3 +1,5 @@
+
 {
-    "ckan_url" : "http://CKAN_URL/api/3/action/package_search"
+    "release_ckan_url" : "http://sample.co.jp:5010",
+    "detail_ckan_url" : "http://sample.co.jp:5011"
 }

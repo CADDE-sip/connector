@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
+
 import requests
 from logging import getLogger
 from io import BytesIO
@@ -13,6 +14,7 @@ logger = getLogger(__name__)
 __CONFIG_FILE_PATH = '/usr/src/app/swagger_server/configs/http.json'
 
 __CONFIG_KEY_BASIC_AUTH = 'basic_auth'
+__CONFIG_KEY_HTTP_DOMAIN = 'domain'
 __CONFIG_KEY_BASIC_ID = 'basic_id'
 __CONFIG_KEY_BASIC_PASS = 'basic_pass'
 
@@ -55,8 +57,8 @@ def provide_data_http(
 
     auth = None
     domain = None
-    http_config_domain = None
-    
+    http_config_domain = []
+
     try:
         domain = __get_domain(resource_url)
     except Exception:
@@ -64,27 +66,28 @@ def provide_data_http(
 
     try:
         http_config = config_get_interface.config_read(__CONFIG_FILE_PATH)
-        http_config_domain = http_config[__CONFIG_KEY_BASIC_AUTH][domain]
-
+        http_config_domain = [e for e in http_config[__CONFIG_KEY_BASIC_AUTH] if e[__CONFIG_KEY_HTTP_DOMAIN] == domain]
     except Exception:
         # コンフィグファイルから指定したドメインの情報が取得できない場合は何もしない
         pass
-    
-    if http_config_domain != None:
-        if __CONFIG_KEY_BASIC_ID not in http_config_domain:
+
+    if 0 < len(http_config_domain):
+        if __CONFIG_KEY_BASIC_ID not in http_config_domain[0]:
             raise CaddeException(
                 '00002E',
                 status_code=None,
                 replace_str_list=[__CONFIG_KEY_BASIC_ID])
 
-        if __CONFIG_KEY_BASIC_PASS not in http_config_domain:
+        if __CONFIG_KEY_BASIC_PASS not in http_config_domain[0]:
             raise CaddeException(
                 '00002E',
                 status_code=None,
                 replace_str_list=[__CONFIG_KEY_BASIC_PASS])
-                
-        auth = (http_config_domain[__CONFIG_KEY_BASIC_ID], http_config_domain[__CONFIG_KEY_BASIC_PASS])
-        
+
+        auth = (
+            http_config_domain[0][__CONFIG_KEY_BASIC_ID],
+            http_config_domain[0][__CONFIG_KEY_BASIC_PASS])
+
     response = file_get_interface.http_get(resource_url, headers_dict, auth)
 
     if response.status_code == requests.codes.ok:

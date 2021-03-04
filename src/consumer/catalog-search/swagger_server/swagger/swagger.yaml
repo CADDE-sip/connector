@@ -9,7 +9,7 @@ paths:
     get:
       tags:
       - Search
-      summary: API.04 カタログ検索
+      summary: API. カタログ検索
       description: |-
         横断検索、詳細検索を判定し、
         横断検索サイトまたは提供者カタログサイトからカタログ情報を取得する

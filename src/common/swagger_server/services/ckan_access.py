@@ -4,7 +4,6 @@ from logging import getLogger
 from swagger_server.utilities.message_map import get_message_and_status_code
 from swagger_server.utilities.cadde_exception import CaddeException
 from swagger_server.utilities.external_interface import ExternalInterface
-from swagger_server.utilities.internal_interface import InternalInterface
 
 __CONFIG_CKAN_URL_FILE_PATH = '/usr/src/app/swagger_server/configs/ckan.json'
 __CONFIG_CKAN_URL = 'ckan_url'
@@ -13,29 +12,20 @@ logger = getLogger(__name__)
 
 
 def search_catalog_ckan(
+        ckan_url: str,
         query_string: str,
-        ckan_url_get_interface: InternalInterface,
         ckan_data_get_interface: ExternalInterface) -> str:
     """
     CKANサーバからカタログ詳細検索結果を取得して返却する
 
     Args:
+        ckan_url: str 接続先のCKANURL
         query_string str : クエリストリング
-        ckan_url_get_interface InternalInterface : コンフィグファイルのckan.jsonからCKAN URLの取得を行うインターフェース
         ckan_get_interface ExternalInterface : ckanからデータの取得を行うインターフェース
 
     Returns:
         str :CKANから検索した結果の文字列
     """
-
-    try:
-        config = ckan_url_get_interface.config_read(
-            __CONFIG_CKAN_URL_FILE_PATH)
-        ckan_url = config[__CONFIG_CKAN_URL]
-    except Exception:
-        raise CaddeException(
-            message_id='00002E',
-            replace_str_list=[__CONFIG_CKAN_URL])
 
     logger.debug(
         get_message_and_status_code(

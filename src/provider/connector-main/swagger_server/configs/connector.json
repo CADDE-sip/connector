@@ -1,0 +1,7 @@
+{
+    "provider_id" : "test_provider_id",
+    "provider_connector_id" : "test_provider_connector_id",
+    "provider_connector_secret" : "test_provider_connector_secret",
+    "contract_management_service_url" : "test_contract_management_service_url",
+    "history_management_token" : "test_history_management_token"
+}

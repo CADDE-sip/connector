@@ -9,7 +9,7 @@ paths:
     get:
       tags:
       - Search
-      summary: API.06 カタログ検索(詳細検索)
+      summary: API. カタログ検索(詳細検索)
       description: |-
         提供者カタログサイトからCKANカタログ情報を取得する.
         Response:
@@ -94,7 +94,7 @@ paths:
     get:
       tags:
       - Files
-      summary: API.07 ファイル取得(cadde)
+      summary: API. ファイル取得(cadde)
       description: |-
         CADDEインタフェースを用いてファイルを取得する
         Response:

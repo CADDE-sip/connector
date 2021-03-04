@@ -14,8 +14,11 @@ logger = getLogger(__name__)
 __CONFIG_FILE_PATH = '/usr/src/app/swagger_server/configs/ftp.json'
 
 __CONFIG_KEY_FTP_AUTH = 'ftp_auth'
+__CONFIG_KEY_FTP_DOMAIN = 'domain'
 __CONFIG_KEY_FTP_ID = 'ftp_id'
 __CONFIG_KEY_FTP_PASS = 'ftp_pass'
+
+__FTP_DEFAULT_IDPASS = 'anonymous'
 
 __URL_SPLIT_CHR = '/'
 __ACCESS_POINT_SPLIT_CHR = ':'
@@ -45,6 +48,7 @@ def provide_data_ftp(
         Cadde_excption: FTP接続時の認証に失敗している場合 エラーコード: 02003E
         Cadde_excption: 参照先ディレクトリもしくは、ファイルが存在しない場合 エラーコード: 02004E
         Cadde_excption: タイムアウトが発生した場合 エラーコード: 02005E
+        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合 エラーコード: 02006E
 
     """
     if not resource_url:
@@ -55,36 +59,43 @@ def provide_data_ftp(
     ftp_auth = None
 
     try:
-        config = config_get_interface.config_read(__CONFIG_FILE_PATH)
-        ftp_auth = config[__CONFIG_KEY_FTP_AUTH]
+        domain = __get_domain(resource_url)
     except Exception:
-        raise CaddeException(
-            '00002E',
-            status_code=None,
-            replace_str_list=[__CONFIG_KEY_FTP_AUTH])
+        raise CaddeException('02006E')
 
-    if __CONFIG_KEY_FTP_ID not in ftp_auth:
-        raise CaddeException(
-            '00002E',
-            status_code=None,
-            replace_str_list=[__CONFIG_KEY_FTP_ID])
+    ftp_auth_domain = []
+    try:
+        config = config_get_interface.config_read(__CONFIG_FILE_PATH)
+        ftp_auth_domain = [e for e in config[__CONFIG_KEY_FTP_AUTH] if e[__CONFIG_KEY_FTP_DOMAIN] == domain]
+    except Exception:
+        pass
 
-    if __CONFIG_KEY_FTP_PASS not in ftp_auth:
-        raise CaddeException(
-            '00002E',
-            status_code=None,
-            replace_str_list=[__CONFIG_KEY_FTP_PASS])
+    if 0 < len(ftp_auth_domain):
+        if __CONFIG_KEY_FTP_ID not in ftp_auth_domain[0]:
+            raise CaddeException(
+                '00002E',
+                status_code=None,
+                replace_str_list=[__CONFIG_KEY_FTP_ID])
 
-    ftp_id = ftp_auth[__CONFIG_KEY_FTP_ID]
-    ftp_pass = ftp_auth[__CONFIG_KEY_FTP_PASS]
+        if __CONFIG_KEY_FTP_PASS not in ftp_auth_domain[0]:
+            raise CaddeException(
+                '00002E',
+                status_code=None,
+                replace_str_list=[__CONFIG_KEY_FTP_PASS])
 
+        ftp_id = ftp_auth_domain[0][__CONFIG_KEY_FTP_ID]
+        ftp_pass = ftp_auth_domain[0][__CONFIG_KEY_FTP_PASS]
+    else:
+        ftp_id = __FTP_DEFAULT_IDPASS
+        ftp_pass = __FTP_DEFAULT_IDPASS
+ 
     parsed_resource_url = __url_analysis(resource_url)
 
     response = None
     try:
         response = file_get_interface.ftp_get(
             parsed_resource_url, ftp_id, ftp_pass)
-    except TimeoutError :
+    except TimeoutError:
         raise CaddeException('02005E')
     except Exception as e:
         error_message = str(e)
@@ -145,3 +156,19 @@ def __url_analysis(url: str) -> dict:
         'port_no': port_no,
         'directory': directory,
         'file_name': file_name}
+
+
+def __get_domain(resource_url: str) -> str:
+    """
+    URLを解析し、ドメインを取得する。ポート番号が設定されている場合は、ポート番号も含む。
+    URLはhttp[s]://(ドメイン部)/・・・・ の前提とする。
+
+    Args:
+        resource_url 対象URL
+
+    Returns:
+        str : ドメイン
+
+    """
+
+    return resource_url.split(__URL_SPLIT_CHR)[2]

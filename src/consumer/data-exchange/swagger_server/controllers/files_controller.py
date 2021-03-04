@@ -14,7 +14,7 @@ external_interface = ExternalInterface()
 
 
 def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_provider_connector_url=None, Authorization=None, x_cadde_options=None):  # noqa: E501
-    """API.05 データ交換(cadde)
+    """API. データ交換(cadde)
 
     CADDEインタフェースを用いてファイルを取得する Response: * 処理が成功した場合は200を返す * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。 # noqa: E501
 
@@ -24,9 +24,9 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_pro
     :type x-cadde-resource-api-type: str
     :param x-cadde-provider-connector-url: 提供者コネクタURL
     :type x-cadde-provider-connector-url: str
-    :param Authorization: 契約トークン
+    :param Authorization: トークン情報(契約トークン/利用者トークン/None)
     :type Authorization: str
-    :param x-cadde-options: データ提供IFが使用するカスタムヘッダー("key1:value1,key2:value2・・・"形式)
+    :param x-cadde-options: NGSIオプション("key1:value1,key2:value2・・・"形式)
     :type x-cadde-options: str
 
     :rtype: None
@@ -64,12 +64,21 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_pro
     if resource_api_type == 'api/ngsi':
         ngsi_headers = dict(response.headers)
         return Response(
-            response=response.text,
+            response=response.content,
             status=200,
             headers=ngsi_headers,
             mimetype="application/json")
 
     else:
+
         fileName = get_response_file_name(response)
-        return send_file(BytesIO(response.content),
-                         as_attachment=True, attachment_filename=fileName), 200
+        return_response = send_file(
+            BytesIO(
+                response.content),
+            as_attachment=True,
+            attachment_filename=fileName)
+        if 'x-cadde-provenance' in response.headers:
+            return_response.headers['x-cadde-provenance'] = response.headers['x-cadde-provenance']
+        else:
+            return_response.headers['x-cadde-provenance'] = ''
+        return return_response, 200

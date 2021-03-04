@@ -1,4 +1,3 @@
-from flask import make_response
 import logging
 
 from flask import Response
@@ -17,7 +16,7 @@ external_interface = ExternalInterface()
 
 
 def search(q=None, x_cadde_search=None, x_cadde_provider_connector_url=None, Authorization=None):  # noqa: E501
-    """API.04 カタログ検索
+    """API. カタログ検索
 
     横断検索、詳細検索を判定し、 横断検索サイトまたは提供者カタログサイトからカタログ情報を取得する Response: * 処理が成功した場合は200を返す * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。 # noqa: E501
 

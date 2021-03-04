@@ -14,7 +14,8 @@ class ErrorResponse(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, detail: str=None, status: float=None, title: str=None, type: str=None):  # noqa: E501
+
+    def __init__(self, detail: str = None, status: float = None, title: str = None, type: str = None):  # noqa: E501
         """ErrorResponse - a model defined in Swagger
 
         :param detail: The detail of this ErrorResponse.  # noqa: E501

@@ -18,7 +18,7 @@ def main():
     app.add_api(
         'swagger.yaml', arguments={
             'title': 'CADDE v1 Specification 提供者 カタログ検索IF'})
-    app.run(port=8080)
+    app.run(port=8080, threaded=True)
 
 
 if __name__ == '__main__':

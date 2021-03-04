@@ -13,7 +13,7 @@ external_interface = ExternalInterface()
 
 
 def search(q=None, Authorization=None):  # noqa: E501
-    """API.08 カタログ検索(詳細検索)
+    """API. カタログ検索(詳細検索)
 
     提供者カタログサイトからCKANカタログ情報を取得する. Response: * 処理が成功した場合は200を返す * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。 # noqa: E501
 
@@ -39,8 +39,11 @@ def search(q=None, Authorization=None):  # noqa: E501
                 query_string, log_message_none_parameter_replace(authorization)]))
 
     data = search_catalog_ckan(query_string, authorization, external_interface)
-    return Response(
+    response = Response(
         response=data,
         status=200,
         mimetype="application/json")
-
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    return response

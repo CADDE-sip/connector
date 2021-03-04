@@ -14,7 +14,7 @@ external_interface = ExternalInterface()
 
 
 def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorization=None, x_cadde_options=None):  # noqa: E501
-    """API.09 ファイル取得(cadde)
+    """API. ファイル取得(cadde)
 
     CADDEインタフェースを用いてファイルを取得する Response: * 処理が成功した場合は200を返す * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。 # noqa: E501
 
@@ -22,7 +22,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
     :type x-cadde-resource-url: str
     :param x-cadde-resource-api-type: リソース提供手段識別子
     :type x-cadde-resource-api-type: str
-    :param Authorization: 契約トークン
+    :param Authorization: トークン情報(契約トークン/利用者トークン/None)
     :type Authorization: str
     :param x-cadde-options: データ提供IFが使用するカスタムヘッダー("key1:value1,key2:value2・・・"形式)
     :type x-cadde-options: str
@@ -58,14 +58,29 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
 
     if resource_api_type == 'api/ngsi':
         ngsi_headers = dict(response.headers)
-        return Response(
-            response=response.text,
+        return_response = Response(
+            response=response.content,
             status=200,
             headers=ngsi_headers,
             mimetype="application/json")
 
+        return_response.headers['X-Content-Type-Options'] = 'nosniff'
+        return_response.headers['X-XSS-Protection'] = '1; mode=block'
+        return_response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+        return return_response
     else:
         fileName = get_response_file_name(response)
-        return send_file(BytesIO(response.content),
-                         as_attachment=True, attachment_filename=fileName), 200
+        return_response = send_file(
+            BytesIO(
+                response.content),
+            as_attachment=True,
+            attachment_filename=fileName)
+        if 'x-cadde-provenance' in response.headers:
+            return_response.headers['x-cadde-provenance'] = response.headers['x-cadde-provenance']
+        else:
+            return_response.headers['x-cadde-provenance'] = ''
 
+        return_response.headers['X-Content-Type-Options'] = 'nosniff'
+        return_response.headers['X-XSS-Protection'] = '1; mode=block'
+        return_response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+        return return_response, 200

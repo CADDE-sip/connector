@@ -52,4 +52,35 @@ services:
       - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
     environment:
       - "LC_CTYPE=C.UTF-8"
-
+  provider-certification-authorization:
+    build: certification-authorization
+    image: provider/certification-authorization:1.1
+    hostname: provider_certification_authorization
+    container_name: provider_certification_authorization
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./certification-authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
+    environment:
+      - "LC_CTYPE=C.UTF-8"
+  provider-provenance-management-call:
+    build: provenance-management-call
+    image: provider/provenance-management-call:1.1
+    hostname: provider_provenance_management_call
+    container_name: provider_provenance_management_call
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./provenance-management-call/swagger_server/:/usr/src/app/swagger_server/:ro"
+    environment:
+      - "LC_CTYPE=C.UTF-8"
