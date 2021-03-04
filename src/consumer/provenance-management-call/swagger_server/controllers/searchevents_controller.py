@@ -31,6 +31,8 @@ def searchevents(body=None):  # noqa: E501
 
     search_result = history_id_search_call(body, internal_interface, external_interface)
     response_headers = dict(search_result.headers)
+    if 'Transfer-Encoding' in response_headers:
+        del response_headers['Transfer-Encoding']
     response = Response(
         response=search_result.text,
         headers=response_headers,

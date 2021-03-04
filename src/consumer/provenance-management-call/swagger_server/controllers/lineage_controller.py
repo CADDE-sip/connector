@@ -52,6 +52,8 @@ def lineage(caddec_resource_id_for_provenance, direction=None, depth=None):  # n
         internal_interface,
         external_interface)
     response_headers = dict(search_result.headers)
+    if 'Transfer-Encoding' in response_headers:
+        del response_headers['Transfer-Encoding']
     response = Response(
         response=search_result.text,
         headers=response_headers,
