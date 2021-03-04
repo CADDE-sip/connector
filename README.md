@@ -1,8 +1,8 @@
 # 本ドキュメントについて
 本ドキュメントについて：<br>
-　本ドキュメントは、コネクタの実装方法/利用方法についてのガイドラインです。<br>
-　したがって、分野間データ連携基盤(仮称：CADDE)やコネクタの基本事項についての説明は割愛しています。<br>
-　コネクタについてのご質問、ご不明点、ご指摘事項、利用時の不具合、などがありましたら、以下にご連絡ください。<br>
+  本ドキュメントは、コネクタの実装方法/利用方法についてのガイドラインです。<br>
+  したがって、分野間データ連携基盤(仮称：CADDE)やコネクタの基本事項についての説明は割愛しています。<br>
+  コネクタについてのご質問、ご不明点、ご指摘事項、利用時の不具合、などがありましたら、以下にご連絡ください。<br>
 <br>
 [問い合わせ先](#問い合わせ先)
 
@@ -24,10 +24,10 @@
 
   - Docker、Docker Compose が事前インストールされていることを前提とします。
   - 対応する Docker Version は以下の通り。
-    - Docker 19.03
+    - Docker 20.10.1
   - 対応する OS は、Linux の上記 Docker がサポートする OS 。
 
-- 提供データサイズ (2020 年 9 月末版)にてサポートするデータサイズは以下とします。
+- 提供データサイズ (2021 年 3 月末版)にてサポートするデータサイズは以下とします。
   - コンテキスト情報：１ MB 以下
   - ファイル：100MB 以下
 
@@ -44,6 +44,7 @@
 
 ```
 git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
+git checkout develop-20210302
 ```
 
 2. 共通ファイルの展開 <br>
@@ -55,20 +56,51 @@ sh setup.sh
 
 3. コンフィグファイルの設定
 - location.json
-　<br>location.jsonファイルには、データ提供者接続先情報が記載されています。
-　<br>コネクタ運用後は、最新のlocation.jsonを以下のリンクより確認し、更新してください。<br>
-　　[location.json](/src/consumer/connector-main/swagger_server/configs/location.json)
-　
-　<br>個別にデータ提供者接続先情報を追加する場合は、利用者コネクタ内のlocation.jsonを編集してください。<br>
+  <br>location.jsonファイルには、データ提供者接続先情報が記載されています。
+  <br>コネクタ運用後は、最新のlocation.jsonを以下のリンクより確認し、更新してください。<br>
+    [location.json](/src/consumer/connector-main/swagger_server/configs/location.json)
+  
+  <br>個別にデータ提供者接続先情報を追加する場合は、利用者コネクタ内のlocation.jsonを編集してください。<br>
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>提供者側に接続を行う際に指定する提供者側のアドレス設定を記載<br>
 
   | 設定パラメータ                        | 概要                                                                                                                                                               |
   | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
   | connector_location                    | 以下の提供者 ID を保持                                                                                                                                             |
   | 提供者 ID                             | 提供者 ID を記載する 以下の 3 パラメータを保持<br>provider_connector_data_exchange_url<br>provider_connector_catalog_search_url<br>contract_management_service_url |
-  | provider_connector_data_exchange_url  | 提供者データ提供 IF の URL を設定                                                                                                                                  |
-  | provider_connector_catalog_search_url | 提供者カタログ検索 IF の URL を設定                                                                                                                                |
-  | contract_management_service_url       | 認証サーバの URL を設定 (2020 年 9 月版では未使用)                                                                                                                 |
+  | provider_connector_data_exchange_url  | 提供者データ提供 IF の URL                                                                                                                                         |
+  | provider_connector_catalog_search_url | 提供者カタログ検索 IF の URL                                                                                                                                       |
+  | provider_connector_id                 | 来歴管理登録するときに提供者を特定するためのID                                                                                                                     |
+  | contract_management_service_url       | 認証サーバの URL を設定 (2021 年 3 月版では未使用)                                                                                                                 |
+
+- connector.json
+  <br>connector.jsonファイルには、認証情報が記載されます。
+  <br>コネクタ運用後は、最新のconnector.jsonを以下のリンクより確認し、更新してください。<br>
+    [location.json](/src/consumer/connector-main/swagger_server/configs/connector.json)
+  
+  <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>認証認可サーバに登録した利用者コネクタのIDとシークレットを記載<br>
+
+  | 設定パラメータ                        | 概要                                                                                                                                                               |
+  | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | consumer_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                                                                                                                         |
+  | consumer_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                                                                                                               |
+  | history_management_token              | 来歴管理が使用するトークン (2021 年 3 月版では未使用)                                                                                                              |
+
+- ngsi.json
+  <br>利用者コネクタから提供者コネクタを介さずNGSIサーバに直接アクセスする場合の利用者ID、アクセストークンを設定
+  <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
+
+  | 設定パラメータ | 概要                                                 |
+  | :------------- | :--------------------------------------------------- |
+  | ngsi_auth      | 以下の利用者 ID を保持                               |
+  | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
+  | auth           | NGSI へ API アクセスするためのアクセストークン       |
+
+- authentication.json
+  <br>connector/src/consumer/certification-authorization/swagger_server/configs/に配置<br>認証認可時の接続先を記載
+ 
+  | 設定パラメータ                        | 概要                                                                                                                                                               |
+  | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | authentication_server_url             | 認証認可サーバのURL                                                                                                                                                |
 
 - ckan.json
   <br>connector/src/consumer/catalog-search/swagger_server/configs/に配置<br>CKAN の横断検索時の接続先の設定を記載
@@ -76,26 +108,13 @@ sh setup.sh
   | 設定パラメータ | 概要                     |
   | :------------- | :----------------------- |
   | ckan_url       | 横断検索時の横断検索サーバのURLを記載 | 
- 
-- ftp.json
-  <br>利用者コネクタから提供者コネクタを介さずデータ管理FTPサーバに直接アクセスする場合の設定
-  <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>ftp 接続時の設定を記載<br>
 
-  | 設定パラメータ | 概要                                    |
-  | :------------- | :-------------------------------------- |
-  | ftp_auth       | 以下の ftp_id, ftp_pass を保持          |
-  | ftp_id         | ftp 接続時の ID を設定(anonymous)      |
-  | ftp_pass       | ftp 接続時のパスワードを設定(anonymous) |
-
-- ngsi.json
-　<br>利用者コネクタから提供者コネクタを介さずNGSIサーバに直接アクセスする場合の利用者ID、アクセストークンを設定
-  <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
-
-  | 設定パラメータ | 概要                                                 |
-  | :------------- | :--------------------------------------------------- |
-  | ngsi_auth      | 以下の利用者 ID を保持                               |
-  | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
-  | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
+- provenance.json
+  <br>connector/src/consumer/provenance-management-call/swagger_server/configs/に配置<br>来歴管理呼び出しI/FのURLの設定を記載
+  
+  | 設定パラメータ | 概要                     |
+  | :------------- | :----------------------- |
+  | provenance_management_api_url     | 来歴管理呼び出しI/FのURL | 
 
 4. 利用者環境情報の設定
 
@@ -106,8 +125,8 @@ connector/src/consumer/.envファイルを下記の通り修正する。<br>
  <br>XXX部分を利用者サーバのIPアドレス:プロキシ(Squid)構築手順で設定したポート番号に修正<br>
 
 (2) 利用者プロキシの証明書情報の設定<br>
-　REQUESTS_CA_BUNDLE=/etc/docker/certs.d/{自己署名SSL証明書ファイル名}
-　{証明書ファイル名}は、XXX部分を分野間データ連携基盤: TLS相互認証設定例、プロキシ(Squid)構築手順、SSL Bump設定用自己署名SSL証明書を作成 の手順で出力したファイルを指定
+  REQUESTS_CA_BUNDLE=/etc/docker/certs.d/{自己署名SSL証明書ファイル名}
+  {証明書ファイル名}は、XXX部分を分野間データ連携基盤: TLS相互認証設定例、プロキシ(Squid)構築手順、SSL Bump設定用自己署名SSL証明書を作成 の手順で出力したファイルを指定
 
 
 5. 証明書ファイル配置<br>
@@ -131,9 +150,12 @@ StateがすべてUpとなっていることを確認
 docker-compose ps
          Name                      Command            State            Ports
 -------------------------------------------------------------------------------------
-consumer_catalog_search   python3 -m swagger_server   Up      8080/tcp
-consumer_connector_main   python3 -m swagger_server   Up      0.0.0.0:18080->8080/tcp
-consumer_data_exchange    python3 -m swagger_server   Up      8080/tcp
+consumer_catalog_search              python3 -m swagger_server   Up    8080/tcp
+consumer_connector_main              python3 -m swagger_server   Up    0.0.0.0:18080->8080/tcp
+consumer_data_exchange               python3 -m swagger_server   Up    8080/tcp
+consumer/provenance-management-call  python3 -m swagger_server   Up    8080/tcp
+consumer/certification-authorization python3 -m swagger_server   Up    8080/tcp
+
 ```
 ## 利用者コネクタ停止手順
 ```
@@ -150,6 +172,8 @@ docker-compose down
 - 利用者_カタログ検索IF.html
 - 利用者_コネクタメイン.html
 - 利用者_データ交換IF(CADDE).html
+- 利用者_認証認可IF.html
+- 利用者_来歴管理呼び出しIF.html
 
 ### コネクタを利用した NGSIデータの取得方法
 [CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照
@@ -168,6 +192,7 @@ docker-compose down
 1. 提供者コネクタの取得
 ```
 git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
+git checkout develop-20210302
 ```
 
 2. setup.sh実行
@@ -178,13 +203,14 @@ sh setup.sh
 
 3. コンフィグファイルの設定<br>
 
-(1) CKANサーバを提供者コネクタ経由で詳細検索する場合
+(1) CKANサーバを提供者コネクタ経由で詳細検索および公開する場合
 - ckan.json
-  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>CKAN の詳細検索時の接続先の設定を記載
+  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>CKANの接続先の設定を記載
   
   | 設定パラメータ | 概要                     |
   | :------------- | :----------------------- |
-  | ckan_url       | 詳細検索時の接続先を記載 |
+  | release_ckan_url      | 横断検索用CKANのURLを記載 |
+  | detail_ckan_url       | 詳細検索用CKANのURLを記載 |
   
 (2) データ管理サーバ(HTTPサーバ)を提供者コネクタ経由で公開する場合<br>
 (2-1) 認証ありHTTPサーバに接続の場合
@@ -193,24 +219,29 @@ sh setup.sh
 
   | 設定パラメータ | 概要                                                                                                                                |
   | :------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
-  | basic_auth      | 以下のドメイン名を保持                                                                                                              |
-  | ドメイン名     | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載 <br>以下の basic_id, basic_pass を保持 |
+  | basic_auth     | 以下のドメインを配列で保持                                                                                                          |
+  | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                            |
   | basic_id       | 対象ドメインへのファイル取得 http 接続時のベーシック認証 ID を設定                                                                  |
-  | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定  
+  | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                                                            |
 
 (2-2) 認証なしHTTPサーバに接続の場合<br>
- http.jsonファイル不要。
+ http.jsonファイルの編集不要。
   
 (3) データ管理サーバ(FTPサーバ)を提供者コネクタ経由で公開する場合
+(3-1) anonymous/anonymous以外をID/パスワードとするFTPサーバに接続の場合
 - ftp.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>ftp 接続時の設定を記載<br>
 
   | 設定パラメータ | 概要                           |
-  | :------------- | :----------------------------- |
-  | ftp_auth       | 以下の ftp_id, ftp_pass を保持 |
-  | ftp_id         | ftp 接続時の ID を設定         |
-  | ftp_pass       | ftp 接続時のパスワードを設定   |
-  
+  | :------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+  | ftp_auth       | 以下のドメインを配列で保持                                                                                                          |
+  | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                            |
+  | ftp_id         | ftp 接続時の ID を設定                                                                                                              |
+  | ftp_pass       | ftp 接続時のパスワードを設定                                                                                                        |
+
+(3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
+ ftp.jsonファイルの編集不要。
+
 (4) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
 - ngsi.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
@@ -220,6 +251,36 @@ sh setup.sh
   | ngsi_auth      | 以下の利用者 ID を保持                               |
   | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
   | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
+
+(5) 認証認可をおこなう場合
+- authentication.json
+  <br>connector/src/provider/certification-authorization/swagger_server/configs/に配置<br>認証認可時の接続先を記載
+ 
+  | 設定パラメータ                        | 概要                                                                                                                                                               |
+  | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | authentication_server_url             | 認証認可サーバのURL                                                                                                                                                |
+
+- connector.json
+  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>認証認可サーバに登録した提供者コネクタのIDとシークレットを記載<br>
+
+  | 設定パラメータ                        | 概要                                                                                                                                                               |
+  | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | provider_id                           | 来歴管理登録するときに提供者を特定するためのID                                                                                                                     |
+  | provider_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                                                                                                                         |
+  | provider_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                                                                                                               |
+  | contract_management_service_url       | 認証サーバの URL を設定 (2021 年 3 月版では未使用)                                                                                                                 |
+  | history_management_token              | 来歴管理が使用するトークン (2021 年 3 月版では未使用)                                                                                                              |
+
+(6) 来歴管理をおこなう場合
+- provenance.json
+  <br>connector/src/provider/provenance-management-call/swagger_server/configs/に配置
+  <br>来歴管理呼び出しI/FのURLの設定を記載
+  <br>※来歴管理を行う場合は認証認可が必須のため(5)の設定も必要となる
+  
+  | 設定パラメータ | 概要                     |
+  | :------------- | :----------------------- |
+  | provenance_management_api_url     | 来歴管理呼び出しI/FのURL | 
+
 
 ### 提供者コネクタ起動手順 
 ```
@@ -233,14 +294,16 @@ StateがすべてUpとなっていることを確認
 docker-compose ps
          Name                      Command            State            Ports
 -------------------------------------------------------------------------------------
-provider_catalog_search   python3 -m swagger_server   Up      0.0.0.0:28080->8080/tcp
-provider_connector_main   python3 -m swagger_server   Up      8080/tcp
-provider_data_exchange    python3 -m swagger_server   Up      0.0.0.0:38080->8080/tcp
+provider_catalog_search              python3 -m swagger_server   Up      0.0.0.0:28080->8080/tcp
+provider_connector_main              python3 -m swagger_server   Up      8080/tcp
+provider_data_exchange               python3 -m swagger_server   Up      0.0.0.0:38080->8080/tcp
+provider_certification_authorization python3 -m swagger_server   Up      8080/tcp
+provider_provenance_management_call  python3 -m swagger_server   Up      8080/tcp
 ```
 
 ### 提供者コネクタ動作確認
 提供者コネクタの外部API経由で、データ管理サーバ(HTTP or FTP or NGSI)からデータを取得できることを確認。<br>
-{リソースURL}には、提供者コネクタからアクセス可能なデータ管理サーバのデータアクセス先を指定
+{リソースURL}には、詳細検索用CKAN登録済みで提供者コネクタからアクセス可能なデータ管理サーバのデータアクセス先を指定
 - 例1: `ftp://192.168.0.1/xxx.pdf`
 - 例2: `http://192.168.0.1/auth/xxx.csv`
 
@@ -268,6 +331,8 @@ docker-compose down
 - 提供者_カタログ検索IF.html
 - 提供者_コネクタメイン.html
 - 提供者_データ交換IF(CADDE).html
+- 提供者_認証認可IF.html
+- 提供者_来歴管理呼び出しIF.html
 
 ## LICENSE
 [MIT](./LICENSE.md)
