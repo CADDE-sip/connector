@@ -429,7 +429,12 @@ def __ckan_search_execute(release_ckan_url,
         if one_data[__RESOURCE_ID_FOR_PROVENANCE] != '' and resource_id_for_provenance != one_data[__RESOURCE_ID_FOR_PROVENANCE]:
             raise CaddeException(message_id='04013E')
 
-    return contract_required, resource_id_for_provenance, detail_search_results_list[-1]
+    dashboard_log_info = None
+    if 0 < len(detail_search_results_list):
+        dashboard_log_info = detail_search_results_list[-1]
+    else:
+        dashboard_log_info = release_search_results_list[-1]
+    return contract_required, resource_id_for_provenance, dashboard_log_info
 
 
 def __ckan_result_chack(
