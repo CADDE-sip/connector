@@ -104,6 +104,7 @@ sh setup.sh
 
 - provenance.json
   <br>connector/src/consumer/provenance-management-call/swagger_server/configs/に配置<br>来歴管理呼び出しI/FのURLの設定を記載
+  <br>来歴管理呼び出しI/FがおなじDockerネットワークで起動している場合は変更不要
   
   | 設定パラメータ | 概要                     |
   | :------------- | :----------------------- |
@@ -269,6 +270,7 @@ sh setup.sh
 - provenance.json
   <br>connector/src/provider/provenance-management-call/swagger_server/configs/に配置
   <br>来歴管理呼び出しI/FのURLの設定を記載
+  <br>来歴管理呼び出しI/FがおなじDockerネットワークで起動している場合は変更不要  
   <br>※来歴管理を行う場合は認証認可が必須のため(5)の設定も必要となる
   
   | 設定パラメータ | 概要                     |
