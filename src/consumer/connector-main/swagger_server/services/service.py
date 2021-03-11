@@ -69,8 +69,12 @@ def catalog_search(
         Cadde_excption: 検索種別がdetailかつ、コンフィグファイルからコネクタロケーションが取得できなかった場合 エラーコード: 00002E
         Cadde_excption: カタログ検索I/Fのカタログ検索要求処理の呼び出し時に、エラーが発生した場合 エラーコード: 12002E
         Cadde_excption: 検索種別がdetailかつ、コネクタロケーションから、提供者コネクタURLと契約管理サービスURLが取得できなかった場合 エラーコード: 14003E
+        Cadde_excption: 検索種別がmetaもしくはdetailではない場合: 12004E
 
     """
+
+    if search != 'meta' and search != 'detail':
+        raise CaddeException('12004E')
 
     consumer_connector_id, consumer_connector_secret, history_management_token = __get_connector_config()
 
