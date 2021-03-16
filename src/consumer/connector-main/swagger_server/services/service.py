@@ -161,6 +161,7 @@ def catalog_search(
                 log_message['search_type'] = search
                 log_message['package_id'] = data['id'] if 'id' in data else ''
                 log_message['dataset_title'] = data['title'] if 'title' in data else ''
+                log_message['resource_name'] = resource['name']
                 log_message['resource_type'] = resource['caddec_resource_type'] if 'caddec_resource_type' in resource else ''
                 log_message['fee'] = fee
                 log_message['price_range'] = price_range
