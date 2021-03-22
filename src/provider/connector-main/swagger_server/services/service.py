@@ -139,7 +139,6 @@ def fetch_data(
         True, internal_interface)
     provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url = __get_connector_config(
         internal_interface)
-
     consumer_id = None
     # 認証認可処理実施
     if authorization is not None:
@@ -161,14 +160,6 @@ def fetch_data(
 
         consumer_id = token_introspect_response.headers['consumer-id']
 
-    # リソースURLから、CKANを逆引き検索して、契約確認要否と交換実績記録用リソースIDを取得
-    contract_required, resource_id_for_provenance, dashboard_log_info = __ckan_search_execute(
-        release_ckan_url, detail_ckan_url, resource_url, external_interface)
-
-    # 契約確認要 かつ 利用者IDがNoneならエラー
-    if contract_required == __CADDEC_CONTRACT_REQUIRED and consumer_id is None:
-        raise CaddeException('04014E')
-
     response_bytes = None
     response_headers = {}
     options_dict = None
@@ -177,11 +168,23 @@ def fetch_data(
     except Exception:
         raise CaddeException('04009E')
 
+    # NGSIの場合はCKANチェックを行わずに処理する
     if(resource_api_type == 'api/ngsi'):
         response_bytes, response_headers = provide_data_ngsi(
             resource_url, consumer_id, options_dict)
+        response_headers['x-cadde-provenance'] = ''
+        return response_bytes, response_headers
 
-    elif(resource_api_type == 'file/ftp'):
+
+    # リソースURLから、CKANを逆引き検索して、契約確認要否と交換実績記録用リソースIDを取得
+    contract_required, resource_id_for_provenance, dashboard_log_info = __ckan_search_execute(
+        release_ckan_url, detail_ckan_url, resource_url, external_interface)
+
+    # 契約確認要 かつ 利用者IDがNoneならエラー
+    if contract_required == __CADDEC_CONTRACT_REQUIRED and consumer_id is None:
+        raise CaddeException('04014E')
+
+    if(resource_api_type == 'file/ftp'):
         response_bytes = provide_data_ftp(
             resource_url, external_interface, internal_interface)
 
