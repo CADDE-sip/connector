@@ -1,7 +1,7 @@
 {
     "ftp_auth": [
         {
-            "domain" : "sample.co.jp:443",
+            "domain" : "FTP_SERVER_URL:443",
             "ftp_id" : "anonymous",
             "ftp_pass" : "anonymous"
         }
