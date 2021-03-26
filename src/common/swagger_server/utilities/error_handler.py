@@ -22,7 +22,6 @@ def handle_api_exception(exception: Exception) -> Response:
         Response: レスポンス
 
     """
-
     error_contents = ''
     http_status_code = __DEFAULT_ERROR_HTTP_STATUS_CODE
     is_transparent = False
@@ -53,7 +52,7 @@ def handle_api_exception(exception: Exception) -> Response:
                                     'status': http_status_code,
                                     'title': '',
                                     'type': ''},
-                                    ensure_ascii=False)
+                                   ensure_ascii=False)
 
     response_info = Response(
         response=response_json,

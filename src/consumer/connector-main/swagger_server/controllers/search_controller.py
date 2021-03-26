@@ -1,6 +1,6 @@
 import connexion
-
 import logging
+import urllib.parse
 
 from flask import Response
 from swagger_server.utilities.message_map import get_message
@@ -13,7 +13,7 @@ external_interface = ExternalInterface()
 
 
 def search(q=None, x_cadde_search=None, x_cadde_provider=None, Authorization=None):  # noqa: E501
-    """API.01 カタログ検索
+    """API. カタログ検索
 
     提供者カタログサイトからCKANカタログ情報を取得する. Response: * 処理が成功した場合は200を返す * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクション参照。 # noqa: E501
 
@@ -34,7 +34,7 @@ def search(q=None, x_cadde_search=None, x_cadde_provider=None, Authorization=Non
 
     query_string = '?'
     for key in connexion.request.args.keys():
-        query_string += key + "=" + connexion.request.args[key] + "&"
+        query_string += key + "=" + urllib.parse.quote(connexion.request.args[key]) + "&"
     query_string = query_string[:-1]
 
     search = connexion.request.headers['x-cadde-search']
@@ -57,7 +57,10 @@ def search(q=None, x_cadde_search=None, x_cadde_provider=None, Authorization=Non
         authorization,
         external_interface)
 
-    response = Response(response=data.text, status=200, mimetype="application/json")
+    response = Response(
+        response=data.text,
+        status=200,
+        mimetype="application/json")
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"

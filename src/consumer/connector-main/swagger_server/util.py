@@ -23,7 +23,7 @@ def _deserialize(data, klass):
         return deserialize_date(data)
     elif klass == datetime.datetime:
         return deserialize_datetime(data)
-    elif type(klass) == typing.GenericMeta:
+    elif isinstance(klass, typing.GenericMeta):
         if klass.__extra__ == list:
             return _deserialize_list(data, klass.__args__[0])
         if klass.__extra__ == dict:

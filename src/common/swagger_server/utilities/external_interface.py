@@ -8,10 +8,12 @@ from timeout_decorator import timeout
 
 from .cadde_exception import CaddeException
 
+
 class FTP_IgnoreHost(ftplib.FTP):
     def makepasv(self):
         _, port = super().makepasv()
         return self.host, port
+
 
 class ExternalInterface:
 
@@ -42,10 +44,10 @@ class ExternalInterface:
         """
 
         if not headers:
-            headers={}
+            headers = {}
 
-        headers['Cache-Control']='no-cache'
-        
+        headers['Cache-Control'] = 'no-cache'
+
         try:
             response = requests.get(
                 target_url,
@@ -65,7 +67,70 @@ class ExternalInterface:
                 replace_str_list=[e])
 
         return response
-    
+
+    def http_post(
+            self,
+            target_url: str,
+            headers: dict = None,
+            post_body: dict = None):
+        """
+        対象URLに対してhttp(post)通信を行ってレスポンスを取得する。
+
+        Args:
+            target_url str : 接続するURL
+            headers : 設定するheader {ヘッダー名:パラメータ}
+            post_body : 設定するbody部
+
+
+        Returns:
+            response : gpost通信のレスポンス
+
+        Raises:
+            CaddeException: 本処理中にExceptionが発生した場合 エラーコード: 01002E
+            CaddeException: タイムアウトが発生した場合 エラーコード: 01006E
+
+        """
+
+        if not headers:
+            headers = {}
+
+        if not post_body:
+            post_body = {}
+
+        headers['Cache-Control'] = 'no-cache'
+
+        try:
+            if 'Content-Type' in headers and headers['Content-Type'] == 'application/x-www-form-urlencoded':
+                response = requests.post(
+                    target_url,
+                    headers=headers,
+
+                    timeout=(
+                        self.__HTTP_CONNECT_TIMEOUT,
+                        self.__HTTP_READ_TIMEOUT),
+                    data=post_body
+                )
+            else:
+                response = requests.post(
+                    target_url,
+                    headers=headers,
+
+                    timeout=(
+                        self.__HTTP_CONNECT_TIMEOUT,
+                        self.__HTTP_READ_TIMEOUT),
+                    json=post_body
+                )
+        except Timeout:
+            raise CaddeException('01006E')
+
+        except Exception as e:
+            raise CaddeException(
+                '01002E',
+                status_code=None,
+                replace_str_list=[e])
+
+        return response
+
     @timeout(60, use_signals=False)
     def ftp_get(
             self,

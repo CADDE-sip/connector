@@ -1,6 +1,0 @@
-{
-    "ftp_auth": {
-        "ftp_id" : "anonymous",
-        "ftp_pass" : "anonymous"
-    }
-}

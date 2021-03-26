@@ -7,7 +7,7 @@ from swagger_server import encoder
 from swagger_server.utilities.error_handler import handle_api_exception
 
 __LOG_FORMAT = '%(asctime)s %(levelname)s %(name)s :%(message)s'
-logging.basicConfig(format=__LOG_FORMAT)
+logging.basicConfig(format=__LOG_FORMAT, level=logging.INFO)
 
 
 def main():

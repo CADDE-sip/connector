@@ -9,7 +9,7 @@ paths:
     get:
       tags:
       - Search
-      summary: API.08 カタログ検索(詳細検索)
+      summary: API. カタログ検索(詳細検索)
       description: |-
         提供者カタログサイトからCKANカタログ情報を取得する.
         Response:
@@ -59,8 +59,7 @@ paths:
                     error-message: パラメータが不正です。
         "401":
           description: |-
-            利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用)
-            契約有無確認処理での契約無しの場合のエラーメッセージ(2020月09版では未使用)
+            契約状態確認処理での契約無しの場合のエラーメッセージ(2021年3月版では未使用)
           content:
             application/json:
               schema:

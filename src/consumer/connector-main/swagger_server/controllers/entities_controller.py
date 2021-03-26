@@ -97,11 +97,14 @@ def retrieve_entity():
     # → { "key": "val", "key2": "val2", ... }
     options_dict = {}
     if options:
-        options = options.split(",")
-        for key in options:
-            key = key.strip()
-            tmp = key.split(":")
-            options_dict[tmp[0]] = tmp[1]
+        try:
+            options = options.split(",")
+            for key in options:
+                key = key.strip()
+                tmp = key.split(":")
+                options_dict[tmp[0]] = tmp[1]
+        except Exception:
+            raise CaddeException('14005E')
 
     # API定義されていないリクエストヘッダをオプションに追加
     for key, value in connexion.request.headers.items():

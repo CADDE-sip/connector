@@ -13,7 +13,7 @@ external_interface = ExternalInterface()
 
 
 def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_contract=None, x_cadde_provider=None, Authorization=None):  # noqa: E501
-    """API.02 データ取得(NGSI以外)
+    """API. データ取得(NGSI以外)
 
     CADDEインタフェースを用いて、HTTPサーバ、FTPサーバからファイルを取得する Response: * 処理が成功した場合は200を返す * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。 # noqa: E501
 
@@ -56,10 +56,13 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_con
         resource_url, resource_api_type, provider, contract, authorization, None, external_interface)
 
     fileName = get_url_file_name(resource_url)
-    
-    response = send_file(response_bytes, as_attachment=True,attachment_filename=fileName)
+
+    response = send_file(
+        response_bytes,
+        as_attachment=True,
+        attachment_filename=fileName)
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
     return response, 200
-

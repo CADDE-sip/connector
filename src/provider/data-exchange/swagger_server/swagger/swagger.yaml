@@ -9,7 +9,7 @@ paths:
     get:
       tags:
       - Files
-      summary: API.09 ファイル取得(cadde)
+      summary: API. ファイル取得(cadde)
       description: |-
         CADDEインタフェースを用いてファイルを取得する
         Response:
@@ -35,7 +35,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 契約トークン
+        description: トークン情報(利用者トークン/契約トークン)
         required: false
         style: simple
         explode: false
@@ -43,7 +43,7 @@ paths:
           type: string
       - name: x-cadde-options
         in: header
-        description: データ提供IFが使用するカスタムヘッダー("key1:value1,key2:value2・・・"形式)
+        description: NGSIオプション("key1:value1,key2:value2・・・"形式)
         required: false
         style: simple
         explode: false
@@ -53,6 +53,22 @@ paths:
         "200":
           description: 呼び出し時のリソース提供手段識別子が"file/ftp","file/http"の場合はダウンロードしたファイル "api/ngsi"の場合はJSON形式、また、ヘッダx-cadde-optionsにレスポンスヘッダ情報を設定する。
             ヘッダ情報に識別情報を設定する
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                x-content-type: application/octet-stream
+              example: text or csv or pdf etc..
+          headers:
+            x-cadde-provenance:
+              description: 来歴管理I/Fから受領した識別情報 識別情報を受領しなかった場合は''(空文字)を設定する
+              schema:
+                type: string
+            others:
+              description: NGSIサーバにて設定されたヘッダー情報
+              schema:
+                type: string
         "400":
           description: パラメータ不正の場合のエラーメッセージ
           content:
@@ -70,8 +86,9 @@ paths:
                     title: Bad Request
                     type: about:blank
         "401":
-          description: "利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用) \n契約有無確認処理での契約無しの\
-            場合のエラーメッセージ(2020月09版では未使用)"
+          description: "認証認可処理での認証失敗の場合のエラーメッセージ 
+            \n契約状態確認処理での契約無しの\
+            場合のエラーメッセージ(2021月3月版では未使用)"
           content:
             application/octet-stream:
               schema:
@@ -118,6 +135,23 @@ paths:
                   value:
                     detail: ファイルが見つかりませんでした。サイト管理者に問い合わせてください。
                     status: 404
+                    title: ""
+                    type: ""
+        "408":
+          description: |-
+            タイムアウトが発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 408
                     title: ""
                     type: ""
         "500":

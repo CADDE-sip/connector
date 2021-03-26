@@ -15,7 +15,7 @@ class Metadata(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, type: str=None, value: object=None):  # noqa: E501
+    def __init__(self, type: str = None, value: object = None):  # noqa: E501
         """Metadata - a model defined in Swagger
 
         :param type: The type of this Metadata.  # noqa: E501
@@ -32,7 +32,6 @@ class Metadata(Model):
             'type': 'type',
             'value': 'value'
         }
-
         self._type = type
         self._value = value
 

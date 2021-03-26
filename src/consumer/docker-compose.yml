@@ -59,3 +59,41 @@ services:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  certification-authorization:
+    build: certification-authorization
+    image: consumer/certification-authorization:1.1
+    hostname: consumer_certification_authorization
+    container_name: consumer_certification_authorization
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./certification-authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  provenance-management-call:
+    build: provenance-management-call
+    image: consumer/provenance-management-call:1.1
+    hostname: consumer_provenance_management_call
+    container_name: consumer_provenance_management_call
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./provenance-management-call/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}

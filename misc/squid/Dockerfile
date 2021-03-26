@@ -1,6 +1,6 @@
 FROM alpine:3.9
 
-RUN apk add --no-cache squid=4.10-r0 && \
+RUN apk add --no-cache squid && \
   mkdir -p /etc/squid/conf.d && \
   mkdir -p /var/lib/squid && \
   cp /etc/squid/squid.conf /etc/squid/conf.d/default.conf && \

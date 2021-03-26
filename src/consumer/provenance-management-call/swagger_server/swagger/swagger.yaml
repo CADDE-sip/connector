@@ -1,0 +1,405 @@
+openapi: 3.0.0
+info:
+  title: CADDE v1 Specification 利用者 来歴管理呼び出しI/F
+  version: "1.0"
+servers:
+- url: /
+paths:
+  /eventwithhash/received:
+    post:
+      tags:
+      - Received
+      summary: API. 受信履歴登録要求
+      description: |-
+        来歴管理I/Fに対して、受信履歴登録要求を行い、識別情報を取得する。
+        Response:
+        * 処理が成功した場合は200を返す
+        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
+      operationId: received
+      parameters:
+      - name: provider-id
+        in: header
+        description: 提供者ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: consumer-id
+        in: header
+        description: 利用者ID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: caddec-resource-id-for-provenance
+        in: header
+        description: 交換実績記録用リソースID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: token
+        in: header
+        description: 来歴管理者用トークン
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ヘッダ情報に識別情報を設定する
+          headers:
+            x-cadde-provenance:
+              description: 来歴管理I/Fから受領した識別情報 
+              style: simple
+              explode: false
+              schema:
+                type: string
+        "400":
+          description: パラメータ不正の場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: Missing header parameter (パラメータ名)
+                    status: 400
+                    title: Bad Request
+                    type: about:blank
+        "408":
+          description: タイムアウトが発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 408
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 500
+                    title: ""
+                    type: ""
+      x-swagger-router-controller: swagger_server.controllers.received_controller
+      x-openapi-router-controller: swagger_server.controllers.received_controller
+  /cadde/api/v1/history/lineage/{caddec-resource-id-for-provenance}:
+    get:
+      tags:
+      - Lineage
+      summary: API. 来歴確認呼び出し
+      description: |
+        指定された交換実績記録用リソースIDから始まる来歴情報を取得する。
+      operationId: lineage
+      parameters:
+      - name: caddec-resource-id-for-provenance
+        in: path
+        description: 交換実績記録用リソースID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: direction
+        in: header
+        description: 履歴取得方向 [BACKWARD(=default),FORWARD, BOTH]
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+          default: BACKWARD
+      - name: depth
+        in: header
+        description: 交換実績記録用リソースIDで指定されたイベントからの深さ. 0は、交換実績記録用リソースIDで指定されたイベントを要求します.
+          正の整数は、指定されたレコードから指定された深さ以下のである全てのイベントを要求します. -1は、指定されたイベントから到達可能な全てのイベントを要求します.
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int32
+          default: -1
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CDLEventList'
+        "400":
+          description: パラメータ不正の場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: Missing header parameter (パラメータ名)
+                    status: 400
+                    title: Bad Request
+                    type: about:blank
+        "408":
+          description: タイムアウトが発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 408
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 500
+                    title: ""
+                    type: ""
+      x-openapi-router-controller: swagger_server.controllers.lineage_controller
+  /cadde/api/v1/history/searchevents:
+    post:
+      tags:
+      - Searchevents
+      summary: API. 履歴ID検索呼び出し
+      description: |
+        ボディ部に設定した検索条件を基に履歴情報を取得する。
+        ヘッダに`content-type: application/json` を追加してください.
+      operationId: searchevents
+      requestBody:
+        description: |
+          CouchDBの構文です. 右記を参照してください。 https://docs.couchdb.org/en/stable/api/database/find.html#find-selectors
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+            example:
+              selector:
+                cdltimestamp:
+                  $gte: 2020-07-19T00:00:00+09:00
+                  $lt: 2020-08-19T00:00:00+09:00
+                cdldatatags:
+                  $elemMatch:
+                    cdlsize:
+                      $gte: 1048576
+      responses:
+        "200":
+          description: |
+            一致するイベントのリストを返します.リスト内の順序は不定な順序です.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CDLEventList'
+        "400":
+          description: パラメータ不正の場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: Missing header parameter (パラメータ名)
+                    status: 400
+                    title: Bad Request
+                    type: about:blank
+        "408":
+          description: タイムアウトが発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 408
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラー発生しました。エラー:(エラー内容)
+                    status: 500
+                    title: ""
+                    type: ""
+      x-openapi-router-controller: swagger_server.controllers.searchevents_controller
+components:
+  schemas:
+    ErrorResponse:
+      title: HTTPステータスコードが4xx、500の場合のレスポンス
+      required:
+      - detail
+      - status
+      type: object
+      properties:
+        detail:
+          type: string
+          description: エラーメッセージ
+        status:
+          type: number
+          description: HTTPステータスコード
+        title:
+          type: string
+          description: タイトル
+        type:
+          type: string
+          description: タイプ
+    CDLDataTag:
+      type: object
+      properties:
+        cdluri:
+          type: string
+          description: |
+            uri of the file.
+          example: http://example.com/pa/th/ecaefa29-39af-459b-ab84-b3fa674584f6
+        cdlsha256hash:
+          type: string
+          example: b589b63bc6217ed0be9ed63b6a88984fc61e0732bbb5a7fb05a19c7b764b9c5b
+        cdlwebdavtimestamp:
+          type: string
+          format: date-time
+          example: 2020-08-05T10:57:22+09:00
+        cdlsize:
+          type: integer
+          format: int64
+          example: 3
+      additionalProperties: true
+      example:
+        cdluri: http://example.com/pa/th/ecaefa29-39af-459b-ab84-b3fa674584f6
+        cdlwebdavtimestamp: 2020-08-05T10:57:22+09:00
+        cdlsize: 3
+        cdlsha256hash: b589b63bc6217ed0be9ed63b6a88984fc61e0732bbb5a7fb05a19c7b764b9c5b
+    CDLEvent:
+      required:
+      - cdldatamodelversion
+      - cdleventtype
+      type: object
+      properties:
+        cdldatamodelversion:
+          type: string
+          description: version of this object. must be "2.0".
+        cdleventid:
+          type: string
+          description: eventid of each event is optional when user registeres an event.
+            if an event object does not have an eventid, cdl creates a unique id for
+            the event. if user supplies with an eventid, it has to be unique within
+            the cdl network. cdl will check if it is indeed unique. event object returned
+            from cdl api will always have an eventid.
+          example: 194430e2-0f28-4bd4-8674-6ef6ec0198b0
+        cdlorganization:
+          type: string
+          description: name of the organization who created this event. this is assigned
+            by the cdl. if you set this value in your `POST /event` request, it will
+            be overwritten by the cdl.
+        cdleventtype:
+          type: string
+          description: the nature of the event. it is recommended to define a set
+            of eventtypes that are known to all organizations.
+        cdltimestamp:
+          type: string
+        cdlpreviousevents:
+          type: array
+          description: list of eventids
+          items:
+            type: string
+        cdldatatags:
+          type: array
+          items:
+            $ref: '#/components/schemas/CDLDataTag'
+      additionalProperties: true
+      example:
+        cdlorganization: cdlorganization
+        cdltimestamp: cdltimestamp
+        cdldatamodelversion: cdldatamodelversion
+        cdleventtype: cdleventtype
+        cdlpreviousevents:
+        - cdlpreviousevents
+        - cdlpreviousevents
+        cdleventid: 194430e2-0f28-4bd4-8674-6ef6ec0198b0
+        cdldatatags:
+        - cdluri: http://example.com/pa/th/ecaefa29-39af-459b-ab84-b3fa674584f6
+          cdlwebdavtimestamp: 2020-08-05T10:57:22+09:00
+          cdlsize: 3
+          cdlsha256hash: b589b63bc6217ed0be9ed63b6a88984fc61e0732bbb5a7fb05a19c7b764b9c5b
+        - cdluri: http://example.com/pa/th/ecaefa29-39af-459b-ab84-b3fa674584f6
+          cdlwebdavtimestamp: 2020-08-05T10:57:22+09:00
+          cdlsize: 3
+          cdlsha256hash: b589b63bc6217ed0be9ed63b6a88984fc61e0732bbb5a7fb05a19c7b764b9c5b
+    CDLEventList:
+      type: array
+      items:
+        $ref: '#/components/schemas/CDLEvent'
+    CDLEventResponse:
+      type: object
+      properties:
+        cdleventid:
+          type: string
+    body:
+      required:
+      - selector
+      type: object
+      properties:
+        selector:
+          type: object
+
