@@ -1,5 +1,5 @@
 
 {
-    "release_ckan_url" : "http://sample.co.jp:5010",
-    "detail_ckan_url" : "http://sample.co.jp:5011"
+    "release_ckan_url" : "http://RELEASE_CKAN_URL:5010",
+    "detail_ckan_url" : "http://DETAIL_CKAN_URL:5011"
 }
