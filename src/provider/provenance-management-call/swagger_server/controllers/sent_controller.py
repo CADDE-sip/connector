@@ -4,12 +4,10 @@ import connexion
 
 from swagger_server.utilities.message_map import get_message
 from swagger_server.services.service import sent_history_registration
-from swagger_server.utilities.external_interface import ExternalInterface
 from swagger_server.utilities.internal_interface import InternalInterface
 
 logger = logging.getLogger(__name__)
 internal_interface = InternalInterface()
-external_interface = ExternalInterface()
 
 
 def sent(provider_id=None, consumer_id=None, caddec_resource_id_for_provenance=None, token=None):  # noqa: E501
@@ -49,8 +47,7 @@ def sent(provider_id=None, consumer_id=None, caddec_resource_id_for_provenance=N
         consumer_id,
         caddec_resource_id_for_provenance,
         token,
-        internal_interface,
-        external_interface)
+        internal_interface)
 
     response = Response(response='', status=200)
     response.headers['x-cadde-provenance'] = identification_information

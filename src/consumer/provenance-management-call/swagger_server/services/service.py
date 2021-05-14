@@ -33,8 +33,7 @@ def received_history_registration(
         consumer_id: str,
         caddec_resource_id_for_provenance: str,
         token: str,
-        internal_interface: InternalInterface,
-        external_interface: ExternalInterface) -> str:
+        internal_interface: InternalInterface) -> str:
     """
     来歴管理I/Fに受信履歴登録を依頼する
 
@@ -44,7 +43,6 @@ def received_history_registration(
         caddec_resource_id_for_provenance str:  交換実績記録用リソースID
         token: str:  来歴管理者トークン(2021年3月版は未使用)
         internal_interface InternalInterface : コンフィグ情報取得処理を行うインタフェース
-        external_interface ExternalInterface : 外部にリクエストを行うインタフェース
 
     Returns:
         str : 識別情報
@@ -73,8 +71,8 @@ def received_history_registration(
             cdldatamodelversion='2.0',
             cdleventtype=__CDL_EVENT_TYPE_RECEIVED,
             cdlpreviousevents=cdlpreviousevents,
-            datauser=provider_id,
-            dataprovider=consumer_id)
+            datauser=consumer_id,
+            dataprovider=provider_id)
         try:
             response = api_instance.eventwithhash(request=request)
             identification_information = response['cdleventid']
