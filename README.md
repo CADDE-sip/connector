@@ -186,7 +186,6 @@ docker-compose down
 ```
 git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
 cd connector
-git checkout develop-20210302
 ```
 
 2. setup.sh実行
