@@ -19,7 +19,7 @@
 - Linux 上での動作を前提とする。
   - Docker、Docker Compose が事前インストールされていることを前提とする。
   - 対応する Docker Version は以下の通りとする。
-    - Docker 19.03
+    - Docker 20.10.1
   - 対応する OS は、Linux の上記 Docker がサポートする OS とする。
 
 - 本ページではTLS相互認証に必要な設定値のみの記載となる。
