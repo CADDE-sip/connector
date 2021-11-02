@@ -115,7 +115,8 @@ connector/src/consumer/.envファイルを下記の通り修正する。<br>
 
 (1) 利用者プロキシ情報の設定<br>
  HTTPS_PROXY_CADDE=XXX
- <br>XXX部分を利用者サーバのIPアドレス:プロキシ(Squid)構築手順で設定したポート番号に修正<br>
+ <br>XXX部分を利用者プロキシサーバのIPアドレス:プロキシ(Squid)構築手順で設定したポート番号に修正<br>
+ ※利用者プロキシサーバIPアドレスは、利用者コネクタと利用者プロキシサーバが同一マシンの場合も、localhostではなく、IPアドレス指定とすること。<br>
 
 (2) 利用者プロキシの証明書情報の設定<br>
   REQUESTS_CA_BUNDLE=/etc/docker/certs.d/{自己署名SSL証明書ファイル名}
