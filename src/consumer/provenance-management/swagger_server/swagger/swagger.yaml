@@ -304,7 +304,7 @@ paths:
                     type: ""
       x-openapi-router-controller: swagger_server.controllers.searchevents_controller
   /voucher/received:
-    get:
+    post:
       tags:
       - VoucherReceived
       summary: API. データ証憑通知（受信）要求

@@ -115,7 +115,7 @@ def voucher_sent_call(
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            message_id='09004E',
+            message_id='09005E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])

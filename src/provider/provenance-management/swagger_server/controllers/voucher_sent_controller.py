@@ -48,7 +48,7 @@ def voucher_sent(provider_id=None, consumer_id=None, contract_id=None, hash_get_
 
     logger.debug(
         get_message(
-            '09003N', [
+            '09004N', [
                 provider_id, consumer_id, contract_id, hash_get_data, contract_management_service_url]))
 
     voucher_result = voucher_sent_call(

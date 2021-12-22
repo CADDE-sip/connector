@@ -83,7 +83,7 @@ def detail_search(
 
     Args:
         query_string str : クエリストリング
-        authorization str : 契約トークン
+        authorization str : 認証トークン
         external_interface : 外部リクエストを行うインタフェース
         internal_interface : 内部リクエストを行うインタフェース
 
@@ -167,7 +167,7 @@ def fetch_data(
     Args:
         resource_url str : リソースURL
         resource_api_type str : リソース提供手段識別子
-        authorization str : 契約トークン
+        authorization str : 認証トークン
         options str : データ提供IFが使用するカスタムヘッダー
         external_interface : 外部リクエストを行うインタフェース
         internal_interface : 内部リクエストを行うインタフェース

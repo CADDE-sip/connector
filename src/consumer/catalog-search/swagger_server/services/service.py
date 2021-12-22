@@ -58,7 +58,7 @@ def search_catalog_detail(
     Args:
         q str : 検索条件のクエリストリング:
         provider_connector_url str : 提供者コネクタのURL
-        authorization str HTTPリクエストヘッダで使用する契約トークン
+        authorization str HTTPリクエストヘッダで使用する認証トークン
         external_interface ExternalInterface : GETリクエストを行うインタフェース
 
     Returns:

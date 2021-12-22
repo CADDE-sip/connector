@@ -20,7 +20,7 @@ def token_contract(authorization=None, resource_id=None, provider_connector_id=N
 
     認証認可サーバに対して、契約確認をリクエストする。
 
-    :param authorization: 契約トークン/利用者トークン
+    :param authorization: 認可トークン
     :type authorization: str
     :param resource_id: リソースID
     :type resource_id: str

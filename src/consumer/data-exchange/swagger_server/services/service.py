@@ -22,7 +22,7 @@ def data_exchange(
         resource_url str : リソースURL
         resource_providing_identifier str : リソース提供手段識別子
         provider_connector_url str : 提供者コネクタURL
-        authorization str : 契約トークン
+        authorization str : 認証トークン
         options str : データ提供IFが使用するカスタムヘッダー
         external_interface ExternalInterface : GETリクエストを行うインタフェース
 

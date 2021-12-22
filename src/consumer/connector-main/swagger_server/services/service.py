@@ -231,6 +231,8 @@ def fetch_data(resource_url: str,
         Cadde_excption: リソース提供手段識別子が'api/ngsi', 'file/ftp', 'file/http'以外の場合 エラーコード: 14003E
         Cadde_excption: 提供者IDがNoneでないかつ、コネクタロケーションから、提供者コネクタURLと契約管理サービスURLが取得できなかった場合 エラーコード: 14004E
         Cadde_excption: データ提供IFが使用するカスタムヘッダーの変換に失敗した場合 エラーコード: 14005E
+        Cadde_excption: 契約確認要否が'required', 'notRequired'以外の場合 エラーコード: 14006E TODO 契約確認要否はIFから削除予定
+        Cadde_excption: 契約確認要否が要に設定されているが、有効な利用者トークンが設定されていない場合 エラーコード: 14007E
         Cadde_excption: 受信履歴登録要求時に利用者IDが空の場合(運用上発生しない想定) エラーコード: 14008E
     """
 

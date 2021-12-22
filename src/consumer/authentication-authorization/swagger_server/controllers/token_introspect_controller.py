@@ -23,7 +23,7 @@ def token_introspect(authorization=None, consumer_connector_id=None, consumer_co
       ・処理が成功した場合は200を返す。
       ・処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
 
-    :param authorization: 認証トークン
+    :param authorization: 利用者トークン
     :type authorization: str
     :param consumer_connector_id: 利用者コネクタID
     :type consumer_connector_id: str

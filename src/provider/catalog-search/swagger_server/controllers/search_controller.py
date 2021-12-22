@@ -19,7 +19,7 @@ def search(q=None, Authorization=None):  # noqa: E501
 
     :param q: CKAN検索条件クエリ CKAN APIに準拠
     :type q: str
-    :param Authorization: 契約トークン
+    :param Authorization: 認証トークン
     :type Authorization: str
 
     :rtype: None
