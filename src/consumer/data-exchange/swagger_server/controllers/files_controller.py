@@ -6,6 +6,7 @@ from flask import send_file, Response
 
 from swagger_server.utilities.message_map import get_message
 from swagger_server.services.service import data_exchange
+from swagger_server.utilities.cadde_exception import CaddeException
 from swagger_server.utilities.external_interface import ExternalInterface
 from swagger_server.utilities.utilities import log_message_none_parameter_replace, get_response_file_name
 
@@ -24,7 +25,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_pro
     :type x-cadde-resource-api-type: str
     :param x-cadde-provider-connector-url: 提供者コネクタURL
     :type x-cadde-provider-connector-url: str
-    :param Authorization: トークン情報(契約トークン/利用者トークン/None)
+    :param Authorization: 認可トークン
     :type Authorization: str
     :param x-cadde-options: NGSIオプション("key1:value1,key2:value2・・・"形式)
     :type x-cadde-options: str
@@ -43,6 +44,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_pro
 
     if 'Authorization' in connexion.request.headers:
         authorization = connexion.request.headers['Authorization']
+
     if 'x-cadde-options' in connexion.request.headers:
         options = connexion.request.headers['x-cadde-options']
 
@@ -67,7 +69,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_pro
             response=response.content,
             status=200,
             headers=ngsi_headers,
-            mimetype="application/json")
+            mimetype='application/json')
 
     else:
 
@@ -77,8 +79,15 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, x_cadde_pro
                 response.content),
             as_attachment=True,
             attachment_filename=fileName)
+
         if 'x-cadde-provenance' in response.headers:
             return_response.headers['x-cadde-provenance'] = response.headers['x-cadde-provenance']
         else:
             return_response.headers['x-cadde-provenance'] = ''
+
+        if 'x-cadde-contract-id' in response.headers:
+            return_response.headers['x-cadde-contract-id'] = response.headers['x-cadde-contract-id']
+        else:
+            return_response.headers['x-cadde-contract-id'] = ''
+
         return return_response, 200

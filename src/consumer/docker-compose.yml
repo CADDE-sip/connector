@@ -31,7 +31,7 @@ services:
         max-size: "10m"
         max-file: "10"
     ports:
-      - "18080:8080"
+      - "80:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
@@ -59,11 +59,11 @@ services:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  certification-authorization:
-    build: certification-authorization
-    image: consumer/certification-authorization:1.1
-    hostname: consumer_certification_authorization
-    container_name: consumer_certification_authorization
+  authentication-authorization:
+    build: authentication-authorization
+    image: consumer/authentication-authorization:1.1
+    hostname: consumer_authentication_authorization
+    container_name: consumer_authentication_authorization
     restart: always
     logging:
       driver: "json-file" # defaults if not specified
@@ -72,17 +72,17 @@ services:
         max-file: "10"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "./certification-authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./authentication-authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
       - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  provenance-management-call:
-    build: provenance-management-call
-    image: consumer/provenance-management-call:1.1
-    hostname: consumer_provenance_management_call
-    container_name: consumer_provenance_management_call
+  provenance-management:
+    build: provenance-management
+    image: consumer/provenance-management:1.1
+    hostname: consumer_provenance_management
+    container_name: consumer_provenance_management
     restart: always
     logging:
       driver: "json-file" # defaults if not specified
@@ -91,7 +91,7 @@ services:
         max-file: "10"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "./provenance-management-call/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./provenance-management/swagger_server/:/usr/src/app/swagger_server/:ro"
       - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}

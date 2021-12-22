@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: CADDE v1 Specification 利用者 コネクタメイン
-  version: "1.0"
+  title: CADDE v3 Specification 利用者 コネクタメイン
+  version: "3.0"
 servers:
 - url: /
 paths:
@@ -11,15 +11,18 @@ paths:
       - Search
       summary: API. カタログ検索
       description: |-
-        提供者カタログサイトからCKANカタログ情報を取得する.
+        提供者カタログサイトからCKANカタログ情報を取得する。
+
         Response:
-        * 処理が成功した場合は200を返す
+        * 処理が成功した場合は200を返す。
         * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクション参照。
       operationId: search
       parameters:
       - name: q
         in: query
-        description: CKAN検索条件クエリ CKAN APIに準拠
+        description: |-
+         CKAN検索条件クエリ
+         CKAN APIに準拠
         required: false
         style: form
         explode: true
@@ -27,7 +30,9 @@ paths:
           type: string
       - name: x-cadde-search
         in: header
-        description: 横断検索、詳細検索を指定する(横断検索:meta, 詳細検索:detail)
+        description: |-
+         検索種別
+         横断検索、詳細検索を指定する(横断検索:meta, 詳細検索:detail)
         required: true
         style: simple
         explode: false
@@ -35,7 +40,19 @@ paths:
           type: string
       - name: x-cadde-provider
         in: header
-        description: 提供者ID 提供者コネクタを利用する場合に提供者IDを設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        description: |-
+         CADDEユーザID（提供者）
+         提供者コネクタを利用する場合にCADDEユーザID（提供者）を設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-idp-url
+        in: header
+        description: |-
+         IdPのURL
+         ユーザ認証を行うIdPのURLを設定する。
         required: false
         style: simple
         explode: false
@@ -51,7 +68,7 @@ paths:
           type: string
       responses:
         "200":
-          description: CKANから取得したカタログ情報を返す.
+          description: CKANから取得したカタログ情報を返す
           content:
             application/json:
               example:
@@ -78,8 +95,7 @@ paths:
                     type: about:blank
         "401":
           description: |-
-            利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用)
-            契約有無確認処理での契約無しの場合のエラーメッセージ(2020月09版では未使用)
+            認証失敗の場合のエラーメッセージ
           content:
             application/json:
               schema:
@@ -103,7 +119,7 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 408
                     title: ""
                     type: ""
@@ -116,21 +132,21 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
-      x-swagger-router-controller: swagger_server.controllers.search_controller
       x-openapi-router-controller: swagger_server.controllers.search_controller
   /cadde/api/v1/file:
     get:
       tags:
       - Files
-      summary: API. データ取得(NGSI以外)
+      summary: API. データ取得I/F（CADDE）
       description: |-
-        CADDEインタフェースを用いて、HTTPサーバ、FTPサーバからファイルを取得する
+        CADDEインタフェースを用いて、HTTPサーバ、FTPサーバからファイルを取得する。
+
         Response:
-        * 処理が成功した場合は200を返す
+        * 処理が成功した場合は200を返す。
         * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
       operationId: files
       parameters:
@@ -144,7 +160,9 @@ paths:
           type: string
       - name: x-cadde-resource-api-type
         in: header
-        description: リソース提供手段識別子 FTP、HTTPのいずれかを指定する(FTP:file/ftp, HTTP:file/http)
+        description: |-
+         リソース提供手段識別子
+         FTP、HTTPのいずれかを指定する(FTP:file/ftp, HTTP:file/http)
         required: true
         style: simple
         explode: false
@@ -152,16 +170,20 @@ paths:
           type: string
       - name: x-cadde-provider
         in: header
-        description: 提供者ID 提供者コネクタを利用する場合に提供者IDを設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        description: |-
+         CADDEユーザID（提供者）
+         提供者コネクタを利用する場合にCADDEユーザID（提供者）を設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
         required: false
         style: simple
         explode: false
         schema:
           type: string
-      - name: x-cadde-contract
+      - name: x-idp-url
         in: header
-        description: 契約確認要否 required、notRequiredを指定する(要:required, 否:notRequired)
-        required: true
+        description: |-
+         IdPのURL
+         ユーザ認証を行うIdPのURLを設定する。
+        required: false
         style: simple
         explode: false
         schema:
@@ -208,8 +230,9 @@ paths:
                     title: Bad Request
                     type: about:blank
         "401":
-          description: "利用者確認処理での認証失敗の場合のエラーメッセージ \n契約状態確認処理での契約無しの場合のエラーメッセージ(2021年\
-            3月版では未使用)"
+          description: |-
+           * 認証失敗の場合のエラーメッセージ
+           * 契約状態確認処理での契約無しの場合のエラーメッセージ(2022年3月版では未使用)
           content:
             application/octet-stream:
               schema:
@@ -225,7 +248,7 @@ paths:
                     title: ""
                     type: ""
         "403":
-          description: FTP接続で認証失敗の場合のエラーメッセージ
+          description: ベーシック認証に失敗した場合のエラーメッセージ
           content:
             application/octet-stream:
               schema:
@@ -236,14 +259,14 @@ paths:
               examples:
                 response:
                   value:
-                    detail: FTP接続時に認証に失敗しました。サイト管理者に問い合わせてください。
+                    detail: 接続時に認証に失敗しました。サイト管理者に問い合わせてください。
                     status: 403
                     title: ""
                     type: ""
         "404":
           description: |-
-            FTP接続で指定したディレクトリにファイルが存在しない場合のエラーメッセージ
-            HTTP接続で指定したURLにファイルが存在しない場合のエラーメッセージ
+            * FTP接続で指定したディレクトリにファイルが存在しない場合のエラーメッセージ
+            * HTTPS接続で指定したURLにファイルが存在しない場合のエラーメッセージ
           content:
             application/octet-stream:
               schema:
@@ -270,7 +293,7 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 408
                     title: ""
                     type: ""
@@ -286,11 +309,10 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
-      x-swagger-router-controller: swagger_server.controllers.files_controller
       x-openapi-router-controller: swagger_server.controllers.files_controller
   /v2/entities:
     get:
@@ -298,19 +320,22 @@ paths:
       - Entities
       summary: API. データ取得(NGSI)
       description: |-
-        NGSIインタフェースを用いて、コンテキスト情報を取得する.
+        NGSIインタフェースを用いて、コンテキスト情報を取得する。
 
         Response:
-        * 処理が成功した場合は200を返す
-        * 処理に失敗した場合は、2xxでないコードを返す。場合によりエラーを示すペイロードがつく場合もある。  Responsesセクションを参照すること
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xxでないコードを返す。場合によりエラーを示すペイロードがつく場合もある。  Responsesセクションを参照すること。
       operationId: retrieve_entity
       parameters:
       - name: x-cadde-resource-url
         in: header
-        description: "\n指定可能なリソースURLは以下とする\n\n・http://{ドメイン名}/v2/entities?type={entityType}\
-          \ \n  entityTypeで指定したtypeを持つエンティティの一覧を取得する。\n　entityTypeを指定しない場合はエラーを返す。\
-          \n\n・http://{ドメイン名}/v2/entities/{entityId}\n　entityIdで指定したエンティティの情報を取得する\
-          。"
+        description: |-
+         リソースURL
+         指定可能なリソースURLは以下とする
+         * http://{ドメイン名}/v2/entities?type={entityType}
+           entityTypeで指定したtypeを持つエンティティの一覧を取得する。entityTypeを指定しない場合はエラーを返す。
+         * http://{ドメイン名}/v2/entities/{entityId}
+           entityIdで指定したエンティティの情報を取得する。
         required: true
         style: simple
         explode: false
@@ -318,7 +343,9 @@ paths:
           type: string
       - name: x-cadde-resource-api-type
         in: header
-        description: リソース提供手段識別子 NGSIを指定する(NGSI:api/ngsi)
+        description: |-
+         リソース提供手段識別子
+         NGSIを指定する(NGSI:api/ngsi)
         required: true
         style: simple
         explode: false
@@ -326,16 +353,20 @@ paths:
           type: string
       - name: x-cadde-provider
         in: header
-        description: 提供者ID 提供者コネクタを利用する場合に提供者IDを設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
+        description: |-
+         CADDEユーザID（提供者）
+         提供者コネクタを利用する場合にCADDEユーザID（提供者）を設定する。提供者コネクタを利用しない場合はx-cadde-providerのヘッダ自体を設定しない。
         required: false
         style: simple
         explode: false
         schema:
           type: string
-      - name: x-cadde-contract
+      - name: x-idp-url
         in: header
-        description: 契約確認要否 required、notRequiredを指定する(要:required, 否:notRequired)
-        required: true
+        description: |-
+         IdPのURL
+         ユーザ認証を行うIdPのURLを設定する。
+        required: false
         style: simple
         explode: false
         schema:
@@ -351,9 +382,8 @@ paths:
       - name: x-cadde-options
         in: header
         description: |-
-          APIごとに利用する固有のオプション。本APIを利用するにあたり、
-          リクエストヘッダが必要となる場合、ヘッダの内容を以下のように指定する。
-          ただし、ヘッダの値に ,(カンマ)を含むものは指定できない。
+         APIごとに利用する固有のオプション
+         本APIを利用するにあたり、リクエストヘッダが必要となる場合、ヘッダの内容を以下のように指定する。ただし、ヘッダの値に ,(カンマ)を含むものは指定できない。
           "x-cadde-options": "ヘッダ項目:ヘッダの値, ヘッダ項目:ヘッダの値, …"
         required: false
         style: simple
@@ -363,9 +393,7 @@ paths:
       responses:
         "200":
           description: |-
-            取得したコンテキスト情報をNGSI形式で返す。
-
-            ※コンテキスト情報の一覧を取得した場合は、Entityのarray型で返却する。
+           取得したコンテキスト情報をNGSI形式で返す（※コンテキスト情報の一覧を取得した場合は、Entityのarray型で返却する）
           headers:
             x-cadde-provenance:
               description: 来歴管理I/Fから受領した識別情報
@@ -421,8 +449,7 @@ paths:
                     error-message: 指定したリソースが見つかりませんでした。
         "409":
           description: |-
-            リクエストが競合したことを示す。
-
+           リクエストが競合したことを示す。
             {entityId}で指定したデータが複数存在する場合に発生する。
           content:
             application/json:
@@ -442,38 +469,45 @@ paths:
                 response:
                   value:
                     error-message: エラーが発生しました。エラー:(エラー内容)
-      x-swagger-router-controller: swagger_server.controllers.entities_controller
       x-openapi-router-controller: swagger_server.controllers.entities_controller
-  /cadde/api/v1/history/lineage/{caddec-resource-id-for-provenance}:
+  /cadde/api/v1/history/lineage:
     get:
       tags:
       - Lineage
       summary: API. 来歴確認呼び出し
-      description: |
-        指定された交換実績記録用リソースIDから始まる来歴情報を取得する。
+      description: |-
+       指定された交換実績記録用リソースIDから始まる来歴情報を取得する。
+
+        Response:
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
       operationId: lineage
       parameters:
-      - name: caddec-resource-id-for-provenance
-        in: path
+      - name: x-caddec-resource-id-for-provenance
+        in: header
         description: 交換実績記録用リソースID
         required: true
         style: simple
         explode: false
         schema:
           type: string
-      - name: direction
+      - name: x-direction
         in: header
-        description: 履歴取得方向 [BACKWARD(=default),FORWARD, BOTH]
+        description: |-
+         履歴取得方向
+         [BACKWARD(=default),FORWARD, BOTH]
         required: false
         style: simple
         explode: false
         schema:
           type: string
           default: BACKWARD
-      - name: depth
+      - name: x-depth
         in: header
-        description: 交換実績記録用リソースIDで指定されたイベントからの深さ. 0は、交換実績記録用リソースIDで指定されたイベントを要求します.
-          正の整数は、指定されたレコードから指定された深さ以下のである全てのイベントを要求します. -1は、指定されたイベントから到達可能な全てのイベントを要求します.
+        description: |-
+         検索深度
+         交換実績記録用リソースIDで指定されたイベントからの深さ。 0は、交換実績記録用リソースIDで指定されたイベントを要求します。
+         正の整数は、指定されたレコードから指定された深さ以下のである全てのイベントを要求します。 -1は、指定されたイベントから到達可能な全てのイベントを要求します。
         required: false
         style: simple
         explode: false
@@ -483,7 +517,7 @@ paths:
           default: -1
       responses:
         "200":
-          description: successful operation
+          description: 一致するイベント
           content:
             application/json:
               schema:
@@ -516,7 +550,7 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 408
                     title: ""
                     type: ""
@@ -532,7 +566,7 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
@@ -542,13 +576,17 @@ paths:
       tags:
       - Searchevents
       summary: API. 履歴ID検索呼び出し
-      description: |
-        ボディ部に設定した検索条件を基に履歴情報を取得する。
-        ヘッダに`content-type: application/json` を追加してください.
+      description: |-
+       ボディ部に設定した検索条件を基に履歴情報を取得する。
+       ヘッダに`content-type: application/json` を追加してください。
+
+        Response:
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
       operationId: searchevents
       requestBody:
-        description: |
-          CouchDBの構文です. 右記を参照してください。 https://docs.couchdb.org/en/stable/api/database/find.html#find-selectors
+        description: |-
+          CouchDBの構文です。 右記を参照してください。 https://docs.couchdb.org/en/stable/api/database/find.html#find-selectors
         content:
           application/json:
             schema:
@@ -562,10 +600,11 @@ paths:
                   $elemMatch:
                     cdlsize:
                       $gte: 1048576
+        required: true
       responses:
         "200":
-          description: |
-            一致するイベントのリストを返します.リスト内の順序は不定な順序です.
+          description: |-
+           一致するイベントのリスト（※リスト内の順序は不定な順序）
           content:
             application/json:
               schema:
@@ -598,7 +637,7 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 408
                     title: ""
                     type: ""
@@ -614,7 +653,7 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
@@ -697,7 +736,7 @@ components:
       properties:
         cdluri:
           type: string
-          description: |
+          description: |-
             uri of the file.
           example: http://example.com/pa/th/ecaefa29-39af-459b-ab84-b3fa674584f6
         cdlsha256hash:

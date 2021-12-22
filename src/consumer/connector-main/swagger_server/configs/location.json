@@ -1,10 +1,9 @@
 {
     "connector_location": {
         "provider_test_id1": {
-            "provider_connector_data_exchange_url": "https://example.com/cadde/api/v1/file",
-            "provider_connector_catalog_search_url": "https://example.com/api/3/action/package_search",
-            "provider_connector_id": "test_provider_connector_id",
-            "contract_management_service_url" : "https://example.com"
+            "provider_connector_data_exchange_url": "http://example.com/cadde/api/v1/file",
+            "provider_connector_catalog_search_url": "http://example.com/api/3/action/package_search",
+            "contract_management_service_url" : "http://example.com"
         }
     }
 }

@@ -40,7 +40,7 @@ def retrieve_entity():
                                        entityIdで指定したエンティティの情報を取得する。
     x-cadde-resource-api-type  str  : リソース提供手段識別子
     x-cadde-provider           str  : 提供者ID
-    x-cadde-contract           str  : 契約確認要否
+    x-idp-url                  str  : IdP URL
     Authorization              str  : 利用者トークン
     x-cadde-options            str  : APIごとに利用する固有のオプション
                                       例： "key:val, key2:val2, ..."
@@ -48,13 +48,15 @@ def retrieve_entity():
     """
     resource_url = connexion.request.headers["x-cadde-resource-url"]
     resource_api_type = connexion.request.headers["x-cadde-resource-api-type"]
-    contract = connexion.request.headers["x-cadde-contract"]
 
     provider = None
+    idp_url = None
     authorization = None
 
     if "x-cadde-provider" in connexion.request.headers:
         provider = connexion.request.headers["x-cadde-provider"]
+    if "x-idp-url" in connexion.request.headers:
+        idp_url = connexion.request.headers["x-idp-url"]
     if "Authorization" in connexion.request.headers:
         authorization = connexion.request.headers["Authorization"]
 
@@ -118,7 +120,7 @@ def retrieve_entity():
             [resource_url,
              resource_api_type,
              log_message_none_parameter_replace(provider),
-             contract,
+             idp_url,
              log_message_none_parameter_replace(authorization)]))
 
     try:
@@ -127,6 +129,7 @@ def retrieve_entity():
                                    resource_api_type,
                                    provider,
                                    contract,
+                                   idp_url,
                                    authorization,
                                    options_dict)
     except BaseException:
@@ -139,4 +142,5 @@ def retrieve_entity():
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response.headers['Referrer-Policy'] = "no-referrer always"
     return response

@@ -22,7 +22,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
     :type x-cadde-resource-url: str
     :param x-cadde-resource-api-type: リソース提供手段識別子
     :type x-cadde-resource-api-type: str
-    :param Authorization: トークン情報(契約トークン/利用者トークン/None)
+    :param Authorization: 認可トークン
     :type Authorization: str
     :param x-cadde-options: データ提供IFが使用するカスタムヘッダー("key1:value1,key2:value2・・・"形式)
     :type x-cadde-options: str
@@ -67,6 +67,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
         return_response.headers['X-Content-Type-Options'] = 'nosniff'
         return_response.headers['X-XSS-Protection'] = '1; mode=block'
         return_response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+        return_response.headers['Referrer-Policy'] = "no-referrer always"
         return return_response
     else:
         fileName = get_response_file_name(response)
@@ -80,7 +81,13 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
         else:
             return_response.headers['x-cadde-provenance'] = ''
 
+        if 'x-cadde-contract-id' in response.headers:
+            return_response.headers['x-cadde-contract-id'] = response.headers['x-cadde-contract-id']
+        else:
+            return_response.headers['x-cadde-contract-id'] = ''
+
         return_response.headers['X-Content-Type-Options'] = 'nosniff'
         return_response.headers['X-XSS-Protection'] = '1; mode=block'
         return_response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+        return_response.headers['Referrer-Policy'] = "no-referrer always"
         return return_response, 200

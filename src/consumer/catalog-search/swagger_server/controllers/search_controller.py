@@ -26,7 +26,7 @@ def search(q=None, x_cadde_search=None, x_cadde_provider_connector_url=None, Aut
     :type x-cadde-search: str
     :param x-cadde-provider-connector-url: 提供者コネクタURL
     :type x-cadde-provider-connector-url: str
-    :param Authorization: 契約トークン
+    :param Authorization: 認証トークン
     :type Authorization: str
 
     :rtype: None

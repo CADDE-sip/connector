@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import urllib.parse
+import hashlib
 
 from io import BytesIO
 from flask import Response
@@ -19,6 +20,7 @@ internal_interface = InternalInterface()
 
 __CONFIG_LOCATION_FILE_PATH = '/usr/src/app/swagger_server/configs/location.json'
 __CONFIG_CONNECTOR_FILE_PATH = '/usr/src/app/swagger_server/configs/connector.json'
+__CONFIG_IDP_MAPPING_FILE_PATH = '/usr/src/app/swagger_server/configs/idp.json'
 __CONFIG_CONNECTOR_LOCATION = 'connector_location'
 __CONFIG_PROVIDER_DATA_EXCHANGE_URL = 'provider_connector_data_exchange_url'
 __CONFIG_PROVIDER_CATALOG_SEARCH_URL = 'provider_connector_catalog_search_url'
@@ -28,15 +30,18 @@ __CONFIG_CONSUMER_CONNECTOR_ID = 'consumer_connector_id'
 __CONFIG_CONSUMER_CONNECTOR_SECRET = 'consumer_connector_secret'
 __CONFIG_HISTORY_MANAGEMENT_TOKEN = 'history_management_token'
 
+
 __CADDEC_CONTRACT_REQUIRED = 'required'
 __CADDEC_CONTRACT_NOT_REQUIRED = 'notRequired'
 
 __ACCESS_POINT_URL_SEARCH = 'http://consumer_catalog_search:8080/api/3/action/package_search'
 __ACCESS_POINT_URL_FILE = 'http://consumer_data_exchange:8080/cadde/api/v1/file'
-__ACCESS_POINT_URL_CERTIFICATION_AUTHORIZATION = 'http://consumer_certification_authorization:8080/token_introspect'
-__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_RECEIVED = 'http://consumer_provenance_management_call:8080/eventwithhash/received'
-__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_LINEAGE = 'http://consumer_provenance_management_call:8080/cadde/api/v1/history/lineage/'
-__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_SEARCHEVENTS = 'http://consumer_provenance_management_call:8080/cadde/api/v1/history/searchevents'
+__ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION = 'http://consumer_authentication_authorization:8080/token_federation'
+__ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_INTROSPECT = 'http://consumer_authentication_authorization:8080/token_introspect'
+__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_RECEIVED = 'http://consumer_provenance_management:8080/eventwithhash/received'
+__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_LINEAGE = 'http://consumer_provenance_management:8080/cadde/api/v1/history/lineage/'
+__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_SEARCHEVENTS = 'http://consumer_provenance_management:8080/cadde/api/v1/history/searchevents'
+__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_VOUCHER = 'http://consumer_provenance_management:8080/voucher/received'
 
 
 # 履歴取得方向の正常値リスト
@@ -50,6 +55,7 @@ def catalog_search(
         query_string: str,
         search: str,
         provider: str,
+        idp_url: str,
         authorization: str,
         external_interface: ExternalInterface = ExternalInterface()) -> Response:
     """
@@ -59,6 +65,7 @@ def catalog_search(
         query_string str : クエリストリング
         search str : 検索種別
         provider str: 提供者ID
+        idp_url str : IdP URL
         authorization str: 利用者トークン
         external_interface ExternalInterface : GETリクエストを行うインタフェース
 
@@ -68,7 +75,7 @@ def catalog_search(
     Raises:
         Cadde_excption: 検索種別がdetailかつ、コンフィグファイルからコネクタロケーションが取得できなかった場合 エラーコード: 00002E
         Cadde_excption: カタログ検索I/Fのカタログ検索要求処理の呼び出し時に、エラーが発生した場合 エラーコード: 12002E
-        Cadde_excption: 検索種別がdetailかつ、コネクタロケーションから、提供者コネクタURLと契約管理サービスURLが取得できなかった場合 エラーコード: 14003E
+        Cadde_excption: 検索種別がdetailかつ、コネクタロケーションから、提供者コネクタURLと契約管理サービスURLが取得できなかった場合 エラーコード: 12003E
         Cadde_excption: 検索種別がmetaもしくはdetailではない場合: 12004E
 
     """
@@ -88,18 +95,43 @@ def catalog_search(
     if search == 'meta':
         catalog_search_url = None
 
-    if authorization is not None:
-        token_introspect_headers = {
+    auth_token = None
+    consumer_id = None
+    if (authorization is not None) and (idp_url is not None):
+        # アイデンティティプロバイダー取得
+        idp = __get_idp_config(idp_url)
+
+        # トークン交換(認証トークン取得)
+        token_federation_headers = {
             'Authorization': authorization,
-            'consumer-connector-id': consumer_connector_id,
-            'consumer-connector-secret': consumer_connector_secret
+            'x-consumer-connector-id': consumer_connector_id,
+            'x-consumer-connector-secret': consumer_connector_secret,
+            'x-idp': idp
+        }
+        token_federation_response = external_interface.http_get(
+            __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION, token_federation_headers)
+
+        if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
+            raise CaddeException(
+                message_id='1A002E',
+                status_code=token_federation_response.status_code,
+                replace_str_list=[
+                    token_federation_response.text])
+
+        auth_token = token_federation_response.headers['auth-token']
+
+        # 認証トークン検証
+        token_introspect_headers = {
+            'Authorization': auth_token,
+            'x-consumer-connector-id': consumer_connector_id,
+            'x-consumer-connector-secret': consumer_connector_secret
         }
         token_introspect_response = external_interface.http_get(
-            __ACCESS_POINT_URL_CERTIFICATION_AUTHORIZATION, token_introspect_headers)
+            __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_INTROSPECT, token_introspect_headers)
 
         if token_introspect_response.status_code < 200 or 300 <= token_introspect_response.status_code:
             raise CaddeException(
-                message_id='19002E',
+                message_id='1A002E',
                 status_code=token_introspect_response.status_code,
                 replace_str_list=[
                     token_introspect_response.text])
@@ -112,7 +144,7 @@ def catalog_search(
     headers_dict = {
         'x-cadde-search': search,
         'x-cadde-provider-connector-url': catalog_search_url,
-        'Authorization': authorization,
+        'Authorization': auth_token,
     }
 
     target_url = __ACCESS_POINT_URL_SEARCH + query_string
@@ -169,11 +201,10 @@ def catalog_search(
 
     return response
 
-
 def fetch_data(resource_url: str,
                resource_api_type: str,
                provider: str,
-               contract: bool,
+               idp_url: str,
                authorization: str,
                options: dict,
                external_interface: ExternalInterface = ExternalInterface()) -> (BytesIO,
@@ -182,11 +213,11 @@ def fetch_data(resource_url: str,
     データ交換I/Fからデータを取得する、もしくはデータ管理から直接データを取得する。
 
     Args:
-        resource_url string : リソースURL
-        resource_api_type string : リソース提供手段識別子
-        provider string : 提供者ID
-        contract string : 契約確認要否
-        authorization string : 利用者トークン
+        resource_url str : リソースURL
+        resource_api_type str : リソース提供手段識別子
+        provider str : 提供者ID
+        idp_url str : IdP URL
+        authorization str : 利用者トークン
         options : dict リクエストヘッダ情報 key:ヘッダ名 value:パラメータ
         external_interface ExternalInterface : GETリクエストを行うインタフェース
 
@@ -200,29 +231,47 @@ def fetch_data(resource_url: str,
         Cadde_excption: リソース提供手段識別子が'api/ngsi', 'file/ftp', 'file/http'以外の場合 エラーコード: 14003E
         Cadde_excption: 提供者IDがNoneでないかつ、コネクタロケーションから、提供者コネクタURLと契約管理サービスURLが取得できなかった場合 エラーコード: 14004E
         Cadde_excption: データ提供IFが使用するカスタムヘッダーの変換に失敗した場合 エラーコード: 14005E
-        Cadde_excption: 契約確認要否が'required', 'notRequired'以外の場合 エラーコード: 14006E
-        Cadde_excption: 契約確認要否が要に設定されているが、有効な利用者トークンが設定されていない場合 エラーコード: 14007E
         Cadde_excption: 受信履歴登録要求時に利用者IDが空の場合(運用上発生しない想定) エラーコード: 14008E
     """
 
     if resource_api_type != 'api/ngsi' and resource_api_type != 'file/ftp' and resource_api_type != 'file/http':
         raise CaddeException('14003E')
 
-    if contract != __CADDEC_CONTRACT_REQUIRED and contract != __CADDEC_CONTRACT_NOT_REQUIRED:
-        raise CaddeException('14006E')
-
     consumer_connector_id, consumer_connector_secret, history_management_token = __get_connector_config()
 
+    auth_token = None
     consumer_id = None
+    if (authorization is not None) and (idp_url is not None):
+        # アイデンティティプロバイダー取得
+        idp = __get_idp_config(idp_url)
 
-    if authorization is not None:
-        token_introspect_headers = {
+        # トークン連携(認証トークン取得)
+        token_federation_headers = {
             'Authorization': authorization,
-            'consumer-connector-id': consumer_connector_id,
-            'consumer-connector-secret': consumer_connector_secret
+            'x-consumer-connector-id': consumer_connector_id,
+            'x-consumer-connector-secret': consumer_connector_secret,
+            'x-idp': idp
+        }
+        token_federation_response = external_interface.http_get(
+            __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION, token_federation_headers)
+
+        if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
+            raise CaddeException(
+                message_id='19002E',
+                status_code=token_federation_response.status_code,
+                replace_str_list=[
+                    token_federation_response.text])
+
+        auth_token = token_federation_response.headers['auth-token']
+
+        # 認証トークン検証
+        token_introspect_headers = {
+            'Authorization': auth_token,
+            'x-consumer-connector-id': consumer_connector_id,
+            'x-consumer-connector-secret': consumer_connector_secret
         }
         token_introspect_response = external_interface.http_get(
-            __ACCESS_POINT_URL_CERTIFICATION_AUTHORIZATION, token_introspect_headers)
+            __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_INTROSPECT, token_introspect_headers)
 
         if token_introspect_response.status_code < 200 or 300 <= token_introspect_response.status_code:
             raise CaddeException(
@@ -234,7 +283,7 @@ def fetch_data(resource_url: str,
         consumer_id = token_introspect_response.headers['consumer-id']
 
     response_bytes = None
-    response_headers = {'x-cadde-provenance': ''}
+    response_headers = {'x-cadde-provenance': '', 'x-cadde-contract-id': ''}
 
     if provider is None:
         if resource_api_type == 'api/ngsi':
@@ -264,16 +313,13 @@ def fetch_data(resource_url: str,
             except Exception:
                 raise CaddeException('14005E')
 
-        if contract == __CADDEC_CONTRACT_REQUIRED and authorization is None:
-            raise CaddeException('14007E')
-
-        # 契約I/Fの契約状態確認処理 2021年03月版では呼び出しを行わない。
+        # 契約I/Fの契約状態確認処理 2022年03月版では呼び出しを行わない。
 
         headers_dict = {
             'x-cadde-resource-url': resource_url,
             'x-cadde-resource-api-type': resource_api_type,
             'x-cadde-provider-connector-url': data_exchange_url,
-            'Authorization': authorization,
+            'Authorization': auth_token,
             'x-cadde-options': options_str
         }
         response = external_interface.http_get(
@@ -287,6 +333,34 @@ def fetch_data(resource_url: str,
 
         response_bytes = BytesIO(response.content)
         response_headers = dict(response.headers)
+        response_data = response_bytes.read()
+        response_bytes.seek(0)
+
+        # 契約している場合（戻り値に取引IDが設定されている場合）、データ証憑通知(受信)
+        contract_id = response.headers['x-cadde-contract-id']
+        if contract_id and consumer_id and provider:
+            # ハッシュ値算出
+            hash_value = hashlib.sha512(response_data).hexdigest()
+
+            sent_headers = {
+                'x-cadde-provider': provider,
+                'x-cadde-consumer': consumer_id,
+                'x-cadde-contract-id': contract_id,
+                'x-cadde-hash-get-data': hash_value,
+                'x-cadde-contact-management-url': contract_management_service_url
+            }
+            sent_response = external_interface.http_post(
+                __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_VOUCHER, sent_headers)
+
+            if sent_response.status_code < 200 or 300 <= sent_response.status_code:
+                raise CaddeException(
+                    message_id='19002E',
+                    status_code=sent_response.status_code,
+                    replace_str_list=[
+                        sent_response.text])
+
+            response_headers['x-cadde-contract-id'] = contract_id
+
 
         # 来歴管理者用トークンは2021年3月版では利用しないため、ダミー値を設定
         if response.headers['x-cadde-provenance'] != '':
@@ -295,10 +369,10 @@ def fetch_data(resource_url: str,
                 raise CaddeException('14008E')
 
             received_headers = {
-                'provider-id': provider_connector_id,
-                'consumer-id': consumer_id,
-                'caddec-resource-id-for-provenance': response.headers['x-cadde-provenance'],
-                'token': 'dummy_token'}
+                'x-cadde-provider': provider,
+                'x-cadde-consumer': consumer_id,
+                'x-caddec-resource-id-for-provenance': response.headers['x-cadde-provenance'],
+                'x-token': 'dummy_token'}
             received_response = external_interface.http_post(
                 __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_RECEIVED, received_headers)
 
@@ -518,3 +592,30 @@ def __get_connector_config() -> (str, str, str):
             replace_str_list=[__CONFIG_HISTORY_MANAGEMENT_TOKEN])
 
     return consumer_connector_id, consumer_connector_secret, history_management_token
+
+def __get_idp_config(idp_url) -> (str):
+    """
+    idp.jsonからコンフィグ情報を取得し、IdP URLに該当するアイデンティティプロバイダーを返す。
+
+    Returns:
+        str: アイデンティティプロバイダー
+
+    Raises:
+        Cadde_excption: コンフィグファイルからアイデンティティプロバイダーが取得できなかった場合 エラーコード: 00002E
+
+    """
+    consumer_connector_id = None
+    consumer_connector_secret = None
+    history_management_token = None
+
+    try:
+        idp_mapping = internal_interface.config_read(
+            __CONFIG_IDP_MAPPING_FILE_PATH)
+        idp = idp_mapping[idp_url]
+    except Exception:
+        raise CaddeException(
+            message_id='00002E',
+            status_code=500,
+            replace_str_list=[idp_url])
+
+    return idp

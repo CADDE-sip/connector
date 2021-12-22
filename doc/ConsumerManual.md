@@ -20,7 +20,8 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/api/3/
 APIの実行例を下記に示します。<br>
 - x-cadde-searchヘッダには、'detail'を指定。
 - x-cadde-providerヘッダには、横断カタログ検索結果(extras:caddec_provider_id)から取得した提供者IDを指定。
-- Authorizationヘッダには認証認可要求の応答に含まれるアクセストークン(access_token)の値を指定(認証認可を行う場合)。
+- x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
+- Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 - 検索クエリ内の{データセットID} には、横断カタログ検索結果(extras:caddec_dataset_id_for_detail)の値を設定
 ```
 $ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/api/3/action/package_search?fq=id:"{データセットID}"' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}"
@@ -37,8 +38,8 @@ APIの実行例を下記に示します。<br>
 - x-cadde-providerヘッダには、詳細カタログ検索結果(extras:caddec_provider_id)から取得した提供者IDを指定。
 - x-cadde-resource-urlヘッダには、詳細カタログ検索結果(resources:download_url)から取得したファイルのダウンロードURLを指定。
 - x-cadde-resource-api-typeヘッダには、詳細カタログ検索結果(resources:caddec_resource_type)から取得したリソース提供手段の識別子(file/http or file/ftp)を指定。
-- x-cadde-contractヘッダには、認証認可を行う場合はrequiredを、そうでない場合はnotRequiredを指定。
-- Authorizationヘッダには、認証認可を行う場合は認証認可要求の応答に含まれるアクセストークン(access_token)の値を指定。
+- x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
+- Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 
 ```
 $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}"  -H "x-cadde-contract: required" -H "x_cadde_provider: {提供者ID}" -H "Authorization: {トークン}"  -o {出力ファイル名}
@@ -71,7 +72,8 @@ APIの実行例を下記に示します。<br>
 - x-cadde-resource-urlヘッダには、横断カタログ検索結果(resources:download_url)から取得したファイルのダウンロードURLを指定。
 - x-cadde-resource-api-typeヘッダには、横断カタログ検索結果(resources:caddec_resource_type)から取得したリソース提供手段の識別子(file/http or file/ftp)を指定。
 - x-cadde-contractヘッダには、認証認可を行う場合はrequiredを、そうでない場合はnotRequiredを指定。
-- Authorizationヘッダには、認証認可を行う場合は認証認可要求の応答に含まれるアクセストークン(access_token)の値を指定。
+- x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
+- Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 
 ```
 $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}"  -H "x-cadde-contract: required" -H "Authorization: {トークン}" -o {出力ファイル名}
@@ -87,7 +89,7 @@ NGSI情報取得については、[別紙参照](./README_NGSI.md)
 来歴管理モジュールに対して来歴確認を実行します。<br>
 APIの実行例を下記に示します。<br>
 - directionヘッダには、履歴取得方向(BACKWARD(=default)、FORWARD、 BOTH)を指定。<br>
-- depthヘッダには交換実績記録用リソースIDで指定されたイベントからの深さを指定(-1を指定するとすべて取得)。<br>
+- depthヘッダには換実績記録用リソースIDで指定されたイベントからの深さを指定(-1を指定するとすべて取得)。<br>
 - URLパスの{caddec-resource-id-for-provenance}には対象の交換実績記録用リソースIDを指定。<br>
 
 ```
@@ -100,7 +102,7 @@ APIの実行例を下記に示します。<br>
 - ボディにはJSON形式で{"selector":{ 検索条件 }}を指定します。
 
 ```
-$ curl -v -X POST "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/searchevents" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{"selector": { "cdleventid":"<識別情報>" }}'
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/searchevents" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{"selector": { "cdleventid":"<識別情報>" }}'
 ```
 
 # (参考1) データ取得I/Fのパラメータとデータカタログの紐づけ
@@ -143,35 +145,26 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 <br>
 本ヘッダに対応するデータカタログの項目は以下の通りです。
 
-  | APIリクエストヘッダ | カタログ項目 | カタログパラメータ        |
-  | :------------------ | :----------- | :------------------------ |
-  | x-cadde-provider    | 提供者ID     | extras:caddec_provider_id |
+  | APIリクエストヘッダ | カタログ項目 | カタログパラメータ         |
+  | :------------------ | :----------- | :------------------------- |
+  | x-cadde-provider    | 提供者ID     | extras:caddec_provider_id  |
 <br>
 
-### 4. x-cadde-contract
+### 4. x-idp-url
 
-CADDEコネクタがデータセットまたはリソースを利用するために契約の確認を要するか否かを表す識別子です。
+トークンを発行したIdPのURLを指定します。CADDEコネクタが連携するIdPを特定するために用います。
 
-  | x-cadde-contract            | 概要                                               |
-  | :-------------------------- | :------------------------------------------------- |
-  | required または notRequired | 認証認可の要否を設定します。 |
-
-<br>
-本ヘッダに対応するデータカタログの項目は以下の通りです。
-
-  | APIリクエストヘッダ | カタログ項目   | カタログパラメータ                |
-  | :------------------ | :------------- | :-------------------------------- |
-  | x-cadde-contract    | 契約確認の要否 | resources:caddec_contract_required |
-
-<br>
+  | x-idp-url   | 概要                                       |
+  | :---------- | :----------------------------------------- |
+  | IdPのURL    | トークンを発行したIdPのURLを設定します。   |
 
 ### 5. Authorization
 
 利用者トークンを示すヘッダです。
 
-  | Authorization | 概要                              |
-  | :------------ | :-------------------------------- |
-  | トークンの値  | 認証認可サーバが返すaccess_tokenを設定します。 |
+  | Authorization | 概要                                |
+  | :------------ | :---------------------------------- |
+  | トークンの値  | IdPが発行するトークンを設定します。 |
 <br>
 
 # (参考2) SIPデータカタログ項目仕様

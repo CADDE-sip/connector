@@ -25,7 +25,8 @@ class ExternalInterface:
             self,
             target_url: str,
             headers: dict = None,
-            auth: tuple = None):
+            auth: tuple = None,
+            post_body: dict = None):
         """
         対象URLに対してhttp(get)通信を行ってレスポンスを取得する。
 
@@ -33,6 +34,7 @@ class ExternalInterface:
             target_url str : 接続するURL
             headers : 設定するheader {ヘッダー名:パラメータ}
             auth : ベーシック認証時のidとpass
+            post_body : 設定するbody部
 
         Returns:
             response : get通信のレスポンス
@@ -55,7 +57,8 @@ class ExternalInterface:
                 timeout=(
                     self.__HTTP_CONNECT_TIMEOUT,
                     self.__HTTP_READ_TIMEOUT),
-                auth=auth)
+                auth=auth,
+                data=post_body)
 
         except Timeout:
             raise CaddeException('01006E')
