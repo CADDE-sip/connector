@@ -1,0 +1,24 @@
+{
+    "authentication_server_url" : "http://sample.co.jp/auth/realms/cadde_realm",
+    "introspect" : {
+        "endpoint" : "protocol/openid-connect/token/introspect"
+    },
+    "federation" : {
+        "endpoint" : "protocol/openid-connect/token",
+        "grant_type" : "urn:ietf:params:oauth:grant-type:token-exchange",
+        "subject_token_type" : "urn:ietf:params:oauth:token-type:access_token",
+        "requested_token_type" : "urn:ietf:params:oauth:token-type:access_token",
+        "subject_issuer" : "keycloak-oidc-authentication"
+    },
+    "pat_req" : {
+        "endpoint" : "protocol/openid-connect/token",
+        "grant_type" : "client_credentials"
+    },
+    "resource" : {
+        "endpoint" : "authz/protection/resource_set"
+    },
+    "contract" : {
+        "endpoint" : "protocol/openid-connect/token",
+        "grant_type" : "urn:ietf:params:oauth:grant-type:uma-ticket"
+    }
+}

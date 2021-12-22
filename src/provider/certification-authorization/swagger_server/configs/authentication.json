@@ -1,3 +1,0 @@
-{
-    "authentication_server_url" : "http://AUTHENTICATION_SERVER_URL/auth/realms/cadde_realm/protocol/openid-connect/token/introspect"
-}
