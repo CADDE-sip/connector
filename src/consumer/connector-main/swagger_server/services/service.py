@@ -24,7 +24,6 @@ __CONFIG_IDP_MAPPING_FILE_PATH = '/usr/src/app/swagger_server/configs/idp.json'
 __CONFIG_CONNECTOR_LOCATION = 'connector_location'
 __CONFIG_PROVIDER_DATA_EXCHANGE_URL = 'provider_connector_data_exchange_url'
 __CONFIG_PROVIDER_CATALOG_SEARCH_URL = 'provider_connector_catalog_search_url'
-__CONFIG_PROVIDER_CONNECTOR_ID = 'provider_connector_id'
 __CONFIG_CONTRACT_MANAGEMENT_SERVICE_URL = 'contract_management_service_url'
 __CONFIG_CONSUMER_CONNECTOR_ID = 'consumer_connector_id'
 __CONFIG_CONSUMER_CONNECTOR_SECRET = 'consumer_connector_secret'
@@ -87,7 +86,7 @@ def catalog_search(
 
     if search == 'detail':
 
-        data_exchange_url, catalog_search_url, provider_connector_id, contract_management_service_url = __get_location_config(
+        data_exchange_url, catalog_search_url, contract_management_service_url = __get_location_config(
             provider)
 
         # 契約I/Fのトークンエクスチェンジ 2021年3月版では呼び出しを行わない。
@@ -305,7 +304,7 @@ def fetch_data(resource_url: str,
 
     else:
 
-        data_exchange_url, catalog_search_url, provider_connector_id, contract_management_service_url = __get_location_config(
+        data_exchange_url, catalog_search_url, contract_management_service_url = __get_location_config(
             provider)
 
         options_str = ''
@@ -540,12 +539,11 @@ def __get_location_config(provider) -> (str, str, str, str):
         provider_info = connector_location[provider]
         provider_data_exchange_url = provider_info[__CONFIG_PROVIDER_DATA_EXCHANGE_URL]
         provider_catalog_search_url = provider_info[__CONFIG_PROVIDER_CATALOG_SEARCH_URL]
-        provider_connector_id = provider_info[__CONFIG_PROVIDER_CONNECTOR_ID]
         contract_management_service_url = provider_info[__CONFIG_CONTRACT_MANAGEMENT_SERVICE_URL]
     except Exception:
         raise CaddeException('14004E')
 
-    return provider_data_exchange_url, provider_catalog_search_url, provider_connector_id, contract_management_service_url
+    return provider_data_exchange_url, provider_catalog_search_url, contract_management_service_url
 
 
 def __get_connector_config() -> (str, str, str):
