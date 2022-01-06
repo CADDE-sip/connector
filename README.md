@@ -45,7 +45,7 @@
 ```
 git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
 cd connector
-git checkout develop-20210302
+git checkout develop-20211222
 ```
 
 2. 共通ファイルの展開 <br>
@@ -98,7 +98,7 @@ sh setup.sh
   | 設定パラメータ               | 概要                           |
   | :--------------------------- | :----------------------------- |
   | CADDEが提供するIdP           | "cadde"固定                    |
-  | CADDEが連携する外部IdPのURL  | アイデンティティプロバイダー名 |  
+  | CADDEが連携する外部IdPのURL  | アイデンティティプロバイダー名 |
 
 - authentication.json
   <br>connector/src/consumer/authentication-authorization/swagger_server/configs/に配置<br>認証認可時の接続先を記載
@@ -122,12 +122,12 @@ sh setup.sh
   | ckan_url       | 横断検索時の横断検索サーバのURLを記載 | 
 
 - provenance.json
-  <br>connector/src/consumer/provenance-management/swagger_server/configs/に配置<br>来歴管理I/FのURLの設定を記載
+  <br>connector/src/consumer/provenance-management/swagger_server/configs/に配置<br>来歴管理サーバのURLの設定を記載
   <br>来歴管理I/FがおなじDockerネットワークで起動している場合は変更不要
   
-  | 設定パラメータ | 概要                     |
-  | :------------- | :----------------------- |
-  | provenance_management_api_url     | 来歴管理I/FのURL | 
+  | 設定パラメータ                 | 概要                     |
+  | :----------------------------- | :----------------------- |
+  | provenance_management_api_url  | 来歴管理サーバのURL      | 
 
 4. 利用者環境情報の設定
 
@@ -154,7 +154,7 @@ cp -p (自己署名SSL証明書ファイル名) /etc/docker/certs.d/(自己署�
 
 ```
 cd connector/src/consumer
-docker-compose up -p consumer -d
+docker-compose -p consumer up -d
 ```
 
 2. 利用者コネクタ起動確認
@@ -296,19 +296,19 @@ sh setup.sh
   | provider_id                           | 来歴管理登録するときに提供者を特定するためのID                        |
   | provider_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                            |
   | provider_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                  |
-  | contract_management_service_url       | 認証サーバの URL を設定 (2021 年 3 月版では未使用)                    |
-  | history_management_token              | 来歴管理が使用するトークン (2021 年 3 月版では未使用)                 |
+  | contract_management_service_url       | 認証サーバの URL を設定                                               |
+  | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                 |
 
 (6) 来歴管理をおこなう場合
 - provenance.json
   <br>connector/src/provider/provenance-management/swagger_server/configs/に配置
-  <br>来歴管理I/FのURLの設定を記載
+  <br>来歴管理サーバのURLの設定を記載
   <br>来歴管理I/FがおなじDockerネットワークで起動している場合は変更不要  
   <br>※来歴管理を行う場合は認証認可が必須のため(5)の設定も必要となる
   
   | 設定パラメータ                 | 概要                     |
   | :----------------------------- | :----------------------- |
-  | provenance_management_api_url  | 来歴管理I/FのURL         | 
+  | provenance_management_api_url  | 来歴管理サーバのURL      | 
 
 
 ### 提供者コネクタ起動手順 
@@ -381,4 +381,5 @@ docker-compose -p provider down
 ⑨関連する過去の問い合わせ番号 <br>
 **********<br><br>
 ⑤～⑨について、構築中の不具合や動作不良に関する問い合わせの場合、可能な範囲でご記載ください。<br>
+
 

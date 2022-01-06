@@ -1,5 +1,5 @@
 {
-    "consumer_connector_id" : "CNCT-User",
-    "consumer_connector_secret" : "d206c92f-269e-478f-8a2c-d5457ee3046a",
+    "consumer_connector_id" : "test_consumer_connector_id",
+    "consumer_connector_secret" : "test_consumer_connector_secret",
     "history_management_token" : "test_history_management_token"
 }

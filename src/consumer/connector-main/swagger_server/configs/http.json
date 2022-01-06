@@ -1,8 +1,10 @@
 {
-    "basic_auth": {
-        "domain_name": {
+    "basic_auth": [
+        {
+            "domain" : "HTTP_SERVER_URL:8080",
             "basic_id" : "anonymous",
-            "basic_pass" : "anonymous"
+            "basic_pass" : "anonymous",
+            "authorization" : "enable"
         }
-    }
+    ]
 }
