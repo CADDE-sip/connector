@@ -187,7 +187,7 @@ def fetch_data(
 
     consumer_id = None
     contract_id = ''
-    contract_check_enable = False
+    contract_check_enable = __get_contract_check_enable(resource_url, resource_api_type, internal_interface)
     # 認証認可処理実施
     if authorization is not None:
         # トークン連携(認可トークン取得)
@@ -228,8 +228,6 @@ def fetch_data(
         consumer_id = token_introspect_response.headers['consumer-id']
 
         # リソースURLのドメインが認可確認有ならば、認可確認を行う
-        contract_check_enable = __get_contract_check_enable(resource_url, resource_api_type, internal_interface)
-
         if contract_check_enable:
 
             # APIトークン取得
@@ -342,19 +340,19 @@ def fetch_data(
                 status_code=token_resource_response_info.status_code,
                 replace_str_list=['attributes'])
 
-        attributes = json.loads(token_resource_response_info.headers['attributes'])
+        attributes = eval(token_resource_response_info.headers['attributes'])
 
         # attributeに取引IDが設定されている場合、契約有のデータとしてデータ証憑通知を行う
         if 'contract_id' in attributes:
-            contract_id = attributes['contract_id']
+            contract_id = attributes['contract_id'][0]
 
             # データ証憑通知（送信）
             sent_headers = {
                 'x-cadde-provider': provider_id,
                 'x-cadde-consumer': consumer_id,
                 'x-cadde-contract-id': contract_id,
-                'x-cadde-hash-get-data': hash_value,
-                'x-cadde-contact-management-url': contract_management_service_url
+                'x-hash-get-data': hash_value,
+                'x-cadde-contract-management-url': contract_management_service_url
             }
             sent_response = external_interface.http_post(
                 __ACCESS_POINT_VOUCHER_URL, sent_headers)
@@ -643,7 +641,7 @@ def __ckan_search_execute(release_ckan_url,
         detail_search_results_list = json.loads(
             detail_ckan_text)['result']['results']
 
-    ckan_chack_result_list = __ckan_result_chack(
+    ckan_check_result_list = __ckan_result_check(
         release_search_results_list,
         detail_search_results_list,
         resource_url)
@@ -651,7 +649,7 @@ def __ckan_search_execute(release_ckan_url,
     contract_required = None
     resource_id_for_provenance = None
 
-    for one_data in ckan_chack_result_list:
+    for one_data in ckan_check_result_list:
         if contract_required is None:
             contract_required = one_data[__CADDEC_CONTRACT]
 
@@ -672,7 +670,7 @@ def __ckan_search_execute(release_ckan_url,
     return contract_required, resource_id_for_provenance, dashboard_log_info
 
 
-def __ckan_result_chack(
+def __ckan_result_check(
         release_search_results_list,
         detail_search_results_list,
         resource_url) -> list:

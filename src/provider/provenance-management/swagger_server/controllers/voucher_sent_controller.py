@@ -33,7 +33,7 @@ def voucher_sent(provider_id=None, consumer_id=None, contract_id=None, hash_get_
     :rtype: None
     """
 
-    # 引数のx-cadde-provider、x-cadde-consumer、x-cadde-contract-id、x-hash-get-data、x-cadde-contact-management-urlは
+    # 引数のx-cadde-provider、x-cadde-consumer、x-cadde-contract-id、x-hash-get-data、x-cadde-contract-management-urlは
     # connexionの仕様上取得できないため、ヘッダから各パラメータを取得し、利用する。
     # 引数の値は利用しない。
 
@@ -44,7 +44,7 @@ def voucher_sent(provider_id=None, consumer_id=None, contract_id=None, hash_get_
     # consumer_connector_id = connexion.request.headers['x-cadde-consumer-connector-id'],
     contract_id = connexion.request.headers['x-cadde-contract-id']
     hash_get_data = connexion.request.headers['x-hash-get-data']
-    contract_management_service_url = connexion.request.headers['x-cadde-contact-management-url']
+    contract_management_service_url = connexion.request.headers['x-cadde-contract-management-url']
 
     logger.debug(
         get_message(

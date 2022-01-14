@@ -6,7 +6,7 @@ servers:
 - url: /
 paths:
   /eventwithhash/received:
-    get:
+    post:
       tags:
       - Received
       summary: API. 受信履歴登録要求
@@ -350,7 +350,7 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-cadde-contact-management-url
+      - name: x-cadde-contract-management-url
         in: header
         description: 契約管理サービスURL
         required: true

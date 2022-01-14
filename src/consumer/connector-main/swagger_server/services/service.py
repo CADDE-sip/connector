@@ -347,8 +347,8 @@ def fetch_data(resource_url: str,
                 'x-cadde-provider': provider,
                 'x-cadde-consumer': consumer_id,
                 'x-cadde-contract-id': contract_id,
-                'x-cadde-hash-get-data': hash_value,
-                'x-cadde-contact-management-url': contract_management_service_url
+                'x-hash-get-data': hash_value,
+                'x-cadde-contract-management-url': contract_management_service_url
             }
             sent_response = external_interface.http_post(
                 __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_VOUCHER, sent_headers)
