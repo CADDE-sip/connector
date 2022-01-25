@@ -58,7 +58,7 @@ class ExternalInterface:
                     self.__HTTP_CONNECT_TIMEOUT,
                     self.__HTTP_READ_TIMEOUT),
                 auth=auth,
-                data=post_body)
+                params=post_body)
 
         except Timeout:
             raise CaddeException('01006E')

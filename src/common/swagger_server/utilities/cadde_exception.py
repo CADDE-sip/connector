@@ -35,10 +35,10 @@ class CaddeException(Exception):
             else:
                 result = get_message_and_status_code(
                     message_id, replace_str_list)
-                self.error_message = result['message']
+                self.error_message = result['message'] + '(' + message_id + ')'
         except Exception:
             result = get_message_and_status_code(message_id, replace_str_list)
-            self.error_message = result['message']
+            self.error_message = result['message'] + '(' + message_id + ')'
 
         if not status_code:
             self.http_status_code = result['http_status_code']

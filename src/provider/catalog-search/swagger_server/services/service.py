@@ -21,7 +21,6 @@ def search_catalog_ckan(
         str : 取得したデータ文字列
 
     Raises:
-        Cadde_excption : クエリストリングがNoneの場合、エラーコード : 00001E
         Cadde_excption : ステータスコード200OKでない場合 エラーコード : 05002E
     """
 
