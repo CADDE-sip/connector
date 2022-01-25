@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import hashlib
+import urllib
 
 from io import BytesIO
 
@@ -46,14 +47,6 @@ __ACCESS_POINT_TOKEN_RESOURCE_INFO_URL = 'http://provider_authentication_authori
 __ACCESS_POINT_SENT_URL = 'http://provider_provenance_management:8080/eventwithhash/sent'
 __ACCESS_POINT_VOUCHER_URL = 'http://provider_provenance_management:8080/voucher/sent'
 
-# 契約確認要否
-__CADDEC_CONTRACT = 'caddec_contract_required'
-__CADDEC_CONTRACT_REQUIRED = 'required'
-__CADDEC_CONTRACT_NOT_REQUIRED = 'notRequired'
-__CADDEC_CONTRACT_REQUIRED_NORMAL = [
-    __CADDEC_CONTRACT_REQUIRED,
-    __CADDEC_CONTRACT_NOT_REQUIRED]
-
 # 交換実績記録用ID
 __RESOURCE_ID_FOR_PROVENANCE = 'caddec_resource_id_for_provenance'
 
@@ -67,7 +60,10 @@ __FTP_KEY_FTP_AUTH = 'ftp_auth'
 __FTP_KEY_FTP_DOMAIN = 'domain'
 __FTP_KEY_FTP_AUTH_ENABLE = 'authorization'
 
-# TODO NGSIコンフィグ
+# NGSIコンフィグ
+__NGSI_KEY_NGSI_AUTH = 'ngsi_auth'
+__NGSI_KEY_NGSI_DOMAIN = 'domain'
+__NGSI_KEY_NGSI_AUTH_ENABLE = 'authorization'
 
 __URL_SPLIT_CHAR = '/'
 
@@ -292,12 +288,12 @@ def fetch_data(
         raise CaddeException('04009E')
 
     # リソースURLから、CKANを逆引き検索して、契約確認要否と交換実績記録用リソースIDを取得
-    contract_required, resource_id_for_provenance, dashboard_log_info = __ckan_search_execute(
-        release_ckan_url, detail_ckan_url, resource_url, external_interface)
+    resource_id_for_provenance, dashboard_log_info = __ckan_search_execute(
+        release_ckan_url, detail_ckan_url, resource_url, resource_api_type, options_dict, external_interface)
 
     if(resource_api_type == 'api/ngsi'):
         response_bytes, response_headers = provide_data_ngsi(
-            resource_url, consumer_id, options_dict)
+            resource_url, options_dict)
 
     elif(resource_api_type == 'file/ftp'):
         response_bytes = provide_data_ftp(
@@ -552,9 +548,22 @@ def __get_contract_check_enable(resource_url,
     domain = resource_url.split(__URL_SPLIT_CHAR)[2]
     enable = False
     if(resource_api_type == 'api/ngsi'):
-        ngsi_config = internal_interface.config_read(__CONFIG_NGSI_FILE_PATH)
-        # TODO 暫定 NGSIはTrue固定とする
-        enable = True
+        ngsi_auth_domain = []
+        try:
+            ngsi_config = config
+            ngsi_auth_domain = [e for e in ngsi_config[__NGSI_KEY_NGSI_AUTH] if e[__NGSI_KEY_NGSI_DOMAIN] == domain]
+        except Exception:
+            # コンフィグファイルから指定したドメインの情報が取得できない場合は何もしない
+            pass
+        if ngsi_auth_domain:
+            if __NGSI_KEY_NGSI_AUTH_ENABLE not in ngsi_auth_domain[0]:
+                raise CaddeException(
+                    '00002E',
+                    status_code=None,
+                    replace_str_list=[__NGSI_KEY_NGSI_AUTH_ENABLE])
+
+            if ngsi_auth_domain[0][__NGSI_KEY_NGSI_AUTH_ENABLE] == 'enable':
+                enable = True
     elif(resource_api_type == 'file/ftp'):
         try:
             ftp_config = internal_interface.config_read(__CONFIG_FTP_FILE_PATH)
@@ -599,6 +608,8 @@ def __get_contract_check_enable(resource_url,
 def __ckan_search_execute(release_ckan_url,
                           detail_ckan_url,
                           resource_url,
+                          resource_api_type,
+                          options_dict, 
                           external_interface) -> (str,
                                                   str):
     """
@@ -609,7 +620,6 @@ def __ckan_search_execute(release_ckan_url,
         resource_url: リソースURL
 
     Returns:
-        contract_required: 契約確認要否('required' or 'notRequired')
         resource_id_for_provenance: 交換実績記録用ID(str or None)
         dashboard_log_info: ダッシュボード用ログを出力するための情報
     """
@@ -626,7 +636,13 @@ def __ckan_search_execute(release_ckan_url,
 
         detail_ckan_url = detail_ckan_url + __CKAN_RESOURCE_SEARCH_PATH
 
-    query_string = __CKAN_RESOURCE_SEARCH_PROPATY + resource_url
+    if resource_api_type == 'api/ngsi':
+        # /entitiesまでをクエリとすることで、候補となるURL（/entities?type=hogeや /entities/entity1など）を
+        # すべて対象とする。
+        query_url = resource_url.split('entities')[0]+'entities'
+        query_string = __CKAN_RESOURCE_SEARCH_PROPATY + query_url
+    else:
+        query_string = __CKAN_RESOURCE_SEARCH_PROPATY + resource_url
 
     release_ckan_text = search_catalog_ckan(
         release_ckan_url, query_string, external_interface)
@@ -644,20 +660,15 @@ def __ckan_search_execute(release_ckan_url,
     ckan_check_result_list = __ckan_result_check(
         release_search_results_list,
         detail_search_results_list,
-        resource_url)
+        resource_url,
+        resource_api_type,
+        options_dict)
 
-    contract_required = None
     resource_id_for_provenance = None
 
     for one_data in ckan_check_result_list:
-        if contract_required is None:
-            contract_required = one_data[__CADDEC_CONTRACT]
-
         if resource_id_for_provenance is None and one_data[__RESOURCE_ID_FOR_PROVENANCE] != '':
             resource_id_for_provenance = one_data[__RESOURCE_ID_FOR_PROVENANCE]
-
-        if contract_required != one_data[__CADDEC_CONTRACT]:
-            raise CaddeException(message_id='04011E')
 
         if one_data[__RESOURCE_ID_FOR_PROVENANCE] != '' and resource_id_for_provenance != one_data[__RESOURCE_ID_FOR_PROVENANCE]:
             raise CaddeException(message_id='04013E')
@@ -667,13 +678,15 @@ def __ckan_search_execute(release_ckan_url,
         dashboard_log_info = detail_search_results_list[-1]
     else:
         dashboard_log_info = release_search_results_list[-1]
-    return contract_required, resource_id_for_provenance, dashboard_log_info
+    return resource_id_for_provenance, dashboard_log_info
 
 
 def __ckan_result_check(
         release_search_results_list,
         detail_search_results_list,
-        resource_url) -> list:
+        resource_url, 
+        resource_api_type,
+        options_dict) -> list:
     """
     公開CKANと詳細CKANの検索結果を確認する。
     Args:
@@ -682,19 +695,19 @@ def __ckan_result_check(
         resource_url: リソースURL
 
     Returns:
-        検索結果のリスト [{'caddec_contract_required': 契約確認要否, 'resource_id_for_provenance': 交換実績記録用ID}.... ]
+        検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
     """
 
     # 横断CKAN の整形結果取得
     return_list = __single_ckan_result_molding(
-        release_search_results_list, resource_url)
+        release_search_results_list, resource_url, resource_api_type, options_dict)
 
     # 詳細CKAN の整形結果取得
     if detail_search_results_list is not None:
         return_list.extend(
             __single_ckan_result_molding(
                 detail_search_results_list,
-                resource_url))
+                resource_url, resource_api_type, options_dict))
 
     # 検索結果が1件もない場合はエラー
     if len(return_list) == 0:
@@ -703,7 +716,7 @@ def __ckan_result_check(
     return return_list
 
 
-def __single_ckan_result_molding(ckan_results_list, resource_url) -> dict:
+def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_type, options_dict) -> dict:
     """
     CKANの検索結果を成型する。
     Args:
@@ -711,7 +724,7 @@ def __single_ckan_result_molding(ckan_results_list, resource_url) -> dict:
         resource_url: リソースURL
 
     Returns:
-        検索結果のリスト [{'caddec_contract_required': 契約確認要否, 'resource_id_for_provenance': 交換実績記録用ID}.... ]
+        検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
     """
 
     return_list = []
@@ -719,17 +732,45 @@ def __single_ckan_result_molding(ckan_results_list, resource_url) -> dict:
     for one_data in ckan_results_list:
         add_dict = {}
 
-        if one_data['url'] != resource_url:
-            continue
+        if resource_api_type == 'api/ngsi':
+            access_url = resource_url.split('entities')[0]+'entities'
+            
+            parse_url = urllib.parse.urlparse(resource_url)
+            query = urllib.parse.parse_qs(parse_url.query)
+            
+            # typeクエリは必ず指定される。
+            ngsi_type = query['type'][0]
+            ngsi_tenant = ""
+            ngsi_service_path = ""
+            
+            for key in options_dict:
+                if 'fiware-service' == key.lower(): 
+                    ngsi_tenant = options_dict[key].strip()
+                if 'fiware-servicepath' == key.lower(): 
+                    ngsi_service_path = options_dict[key].strip()
+            
+            # NGSIテナント、サービスパスの確認。指定しないケースを考慮する。
+            ckan_ngsi_tenant = ""
+            ckan_ngsi_service_path = ""
+            if 'ngsi_tenant' in one_data.keys(): 
+                ckan_ngsi_tenant = one_data['ngsi_tenant'] 
+            if 'ngsi_service_path' in one_data.keys(): 
+                ckan_ngsi_service_path = one_data['ngsi_service_path'] 
+            
+            if ckan_ngsi_tenant != ngsi_tenant or ckan_ngsi_service_path != ngsi_service_path:
+                continue
+            
+            # NGSIデータ種別の確認。
+            if 'ngsi_entity_type' not in one_data.keys() or one_data['ngsi_entity_type'] != ngsi_type:
+                continue
+            
+            # URL確認
+            if one_data['url'] not in access_url:
+                continue
 
-        # 契約確認要否の設定
-        if __CADDEC_CONTRACT in one_data:
-
-            if one_data[__CADDEC_CONTRACT] not in __CADDEC_CONTRACT_REQUIRED_NORMAL:
-                raise CaddeException(message_id='04012E')
-            add_dict[__CADDEC_CONTRACT] = one_data[__CADDEC_CONTRACT]
         else:
-            add_dict[__CADDEC_CONTRACT] = __CADDEC_CONTRACT_NOT_REQUIRED
+            if one_data['url'] != resource_url:
+                continue
 
         # 交換実績記録用IDの設定
         if __RESOURCE_ID_FOR_PROVENANCE in one_data and one_data[__RESOURCE_ID_FOR_PROVENANCE] != '':

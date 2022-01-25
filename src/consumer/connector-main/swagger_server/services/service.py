@@ -289,7 +289,7 @@ def fetch_data(resource_url: str,
     if provider is None:
         if resource_api_type == 'api/ngsi':
             response_bytes, response_headers = provide_data_ngsi(
-                resource_url, consumer_id, options)
+                resource_url, options)
             response_headers['x-cadde-provenance'] = ''
 
         elif resource_api_type == 'file/ftp':
