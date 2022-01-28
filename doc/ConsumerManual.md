@@ -24,7 +24,7 @@ APIの実行例を下記に示します。<br>
 - Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 - 検索クエリ内の{データセットID} には、横断カタログ検索結果(extras:caddec_dataset_id_for_detail)の値を設定
 ```
-$ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/api/3/action/package_search?fq=id:"{データセットID}"' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}"
+$ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/api/3/action/package_search?fq=caddec_dataset_id_for_detail:"{データセットID}"' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}"
 ```
 
 ### (1-3) ファイル取得
@@ -42,7 +42,7 @@ APIの実行例を下記に示します。<br>
 - Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}"  -H "x-cadde-contract: required" -H "x_cadde_provider: {提供者ID}" -H "Authorization: {トークン}"  -o {出力ファイル名}
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}" -o {出力ファイル名}
 ```
 
 ### (1-3-2) ファイル取得(NGSI)
@@ -71,12 +71,11 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/api/3/
 APIの実行例を下記に示します。<br>
 - x-cadde-resource-urlヘッダには、横断カタログ検索結果(resources:download_url)から取得したファイルのダウンロードURLを指定。
 - x-cadde-resource-api-typeヘッダには、横断カタログ検索結果(resources:caddec_resource_type)から取得したリソース提供手段の識別子(file/http or file/ftp)を指定。
-- x-cadde-contractヘッダには、認証認可を行う場合はrequiredを、そうでない場合はnotRequiredを指定。
 - x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
 - Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}"  -H "x-cadde-contract: required" -H "Authorization: {トークン}" -o {出力ファイル名}
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}" -o {出力ファイル名}
 ```
 
 ### (2-2-2) ファイル取得(NGSI)

@@ -338,12 +338,12 @@ provider_provenance_management         python3 -m swagger_server   Up      8080/
 
 (1) データ管理サーバ(HTTPサーバ)を提供者コネクタAPI経由で取得する場合
 ```
-curl {提供者コネクタIPアドレス}:38080/cadde/api/v1/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/http" -O
+curl {提供者コネクタIPアドレス}:38080/cadde/api/v1/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/http" -H "Authorization:<認証トークン>" -O
 ```
 
 (2) データ管理サーバ(FTPサーバ)を提供者コネクタAPI経由で取得する場合
 ```
-curl {提供者コネクタIPアドレス}:38080/cadde/api/v1/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/ftp" -O
+curl {提供者コネクタIPアドレス}:38080/cadde/api/v1/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/ftp" -H "Authorization:<認証トークン>" -O
 ```
 
 (3) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
