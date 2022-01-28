@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import datetime
 import json
 import logging
@@ -550,7 +550,7 @@ def __get_contract_check_enable(resource_url,
     if(resource_api_type == 'api/ngsi'):
         ngsi_auth_domain = []
         try:
-            ngsi_config = config
+            ngsi_config = internal_interface.config_read(__CONFIG_NGSI_FILE_PATH)
             ngsi_auth_domain = [e for e in ngsi_config[__NGSI_KEY_NGSI_AUTH] if e[__NGSI_KEY_NGSI_DOMAIN] == domain]
         except Exception:
             # コンフィグファイルから指定したドメインの情報が取得できない場合は何もしない
