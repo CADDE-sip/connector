@@ -73,8 +73,8 @@ def received_history_registration(
             cdldatamodelversion='2.0',
             cdleventtype=__CDL_EVENT_TYPE_RECEIVED,
             cdlpreviousevents=cdlpreviousevents,
-            datauser=provider_id,
-            dataprovider=consumer_id)
+            datauser=consumer_id,
+            dataprovider=provider_id)
         try:
             response = api_instance.eventwithhash(request=request)
             identification_information = response['cdleventid']

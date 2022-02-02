@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import datetime
 import json
 import logging
@@ -110,7 +110,7 @@ def detail_search(
 
         if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
             raise CaddeException(
-                message_id='1A004N',
+                message_id='03003E',
                 status_code=token_federation_response.status_code,
                 replace_str_list=[
                     token_federation_response.text])
