@@ -31,6 +31,7 @@ __CONFIG_PROVIDER_ID = 'provider_id'
 __CONFIG_PROVIDER_CONNECTOR_ID = 'provider_connector_id'
 __CONFIG_PROVIDER_CONNECTOR_SECRET = 'provider_connector_secret'
 __CONFIG_CONTRACT_MANAGEMENT_SERVICE_URL = 'contract_management_service_url'
+__CONFIG_CONTRACT_MANAGEMENT_SERVICE_KEY = 'contract_management_service_key'
 
 # CKAN検索用情報
 __CKAN_API_PATH = '/api/3/action/package_search'
@@ -93,7 +94,7 @@ def detail_search(
 
     release_ckan_url, detail_ckan_url = __get_ckan_config(
         False, internal_interface)
-    provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url = __get_connector_config(
+    provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url, contract_management_service_key = __get_connector_config(
         internal_interface)
 
     # 認証認可処理実施
@@ -178,7 +179,7 @@ def fetch_data(
 
     release_ckan_url, detail_ckan_url = __get_ckan_config(
         True, internal_interface)
-    provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url = __get_connector_config(
+    provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url, contract_management_service_key = __get_connector_config(
         internal_interface)
 
     consumer_id = None
@@ -348,7 +349,8 @@ def fetch_data(
                 'x-cadde-consumer': consumer_id,
                 'x-cadde-contract-id': contract_id,
                 'x-hash-get-data': hash_value,
-                'x-cadde-contract-management-url': contract_management_service_url
+                'x-cadde-contract-management-url': contract_management_service_url,
+                'x-cadde-contract-management-key': contract_management_service_key
             }
             sent_response = external_interface.http_post(
                 __ACCESS_POINT_VOUCHER_URL, sent_headers)
@@ -485,7 +487,7 @@ def __get_ckan_config(is_fetch_data, internal_interface) -> (str, str):
     return release_ckan_url, detail_ckan_url
 
 
-def __get_connector_config(internal_interface) -> (str, str, str, str):
+def __get_connector_config(internal_interface) -> (str, str, str, str, str):
     """
     connector.configから情報を取得して返却する
 
@@ -497,6 +499,7 @@ def __get_connector_config(internal_interface) -> (str, str, str, str):
         str: 提供者コネクタID
         str: 提供者側コネクタのシークレット
         str: 契約管理サービスURL
+        str: 契約管理サービスキー
 
     Raises:
         Cadde_excption: コンフィグから情報が取得できない場合 エラーコード: 00002E
@@ -529,7 +532,13 @@ def __get_connector_config(internal_interface) -> (str, str, str, str):
         raise CaddeException(message_id='00002E', replace_str_list=[
                              __CONFIG_CONTRACT_MANAGEMENT_SERVICE_URL])
 
-    return provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url
+    try:
+        contract_management_service_key = connector_config[__CONFIG_CONTRACT_MANAGEMENT_SERVICE_KEY]
+    except Exception:
+        raise CaddeException(message_id='00002E', replace_str_list=[
+                             __CONFIG_CONTRACT_MANAGEMENT_SERVICE_KEY])
+
+    return provider_id, provider_connector_id, provider_connector_secret, contract_management_service_url, contract_management_service_key
 
 def __get_contract_check_enable(resource_url,
                                 resource_api_type,
@@ -546,7 +555,7 @@ def __get_contract_check_enable(resource_url,
     """
 
     domain = resource_url.split(__URL_SPLIT_CHAR)[2]
-    enable = False
+    enable = True
     if(resource_api_type == 'api/ngsi'):
         ngsi_auth_domain = []
         try:
@@ -562,8 +571,8 @@ def __get_contract_check_enable(resource_url,
                     status_code=None,
                     replace_str_list=[__NGSI_KEY_NGSI_AUTH_ENABLE])
 
-            if ngsi_auth_domain[0][__NGSI_KEY_NGSI_AUTH_ENABLE] == 'enable':
-                enable = True
+            if not ngsi_auth_domain[0][__NGSI_KEY_NGSI_AUTH_ENABLE] == 'enable':
+                enable = False
     elif(resource_api_type == 'file/ftp'):
         try:
             ftp_config = internal_interface.config_read(__CONFIG_FTP_FILE_PATH)
@@ -579,8 +588,8 @@ def __get_contract_check_enable(resource_url,
                     status_code=None,
                     replace_str_list=[__FTP_KEY_FTP_AUTH_ENABLE])
 
-            if ftp_auth_domain[0][__FTP_KEY_FTP_AUTH_ENABLE] == 'enable':
-                enable = True
+            if not ftp_auth_domain[0][__FTP_KEY_FTP_AUTH_ENABLE] == 'enable':
+                enable = False
 
     elif(resource_api_type == 'file/http'):
         try:
@@ -598,8 +607,8 @@ def __get_contract_check_enable(resource_url,
                     status_code=None,
                     replace_str_list=[__HTTP_BASIC_AUTH_ENABLE])
 
-            if http_config_domain[0][__HTTP_BASIC_AUTH_ENABLE] == 'enable':
-                enable = True
+            if not http_config_domain[0][__HTTP_BASIC_AUTH_ENABLE] == 'enable':
+                enable = False
     else:
         raise CaddeException('04002E')
 

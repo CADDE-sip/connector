@@ -25,6 +25,7 @@ __CONFIG_CONNECTOR_LOCATION = 'connector_location'
 __CONFIG_PROVIDER_DATA_EXCHANGE_URL = 'provider_connector_data_exchange_url'
 __CONFIG_PROVIDER_CATALOG_SEARCH_URL = 'provider_connector_catalog_search_url'
 __CONFIG_CONTRACT_MANAGEMENT_SERVICE_URL = 'contract_management_service_url'
+__CONFIG_CONTRACT_MANAGEMENT_SERVICE_KEY = 'contract_management_service_key'
 __CONFIG_CONSUMER_CONNECTOR_ID = 'consumer_connector_id'
 __CONFIG_CONSUMER_CONNECTOR_SECRET = 'consumer_connector_secret'
 __CONFIG_HISTORY_MANAGEMENT_TOKEN = 'history_management_token'
@@ -86,7 +87,7 @@ def catalog_search(
 
     if search == 'detail':
 
-        data_exchange_url, catalog_search_url, contract_management_service_url = __get_location_config(
+        data_exchange_url, catalog_search_url, contract_management_service_url, contract_management_service_token = __get_location_config(
             provider)
 
         # 契約I/Fのトークンエクスチェンジ 2021年3月版では呼び出しを行わない。
@@ -302,7 +303,7 @@ def fetch_data(resource_url: str,
 
     else:
 
-        data_exchange_url, catalog_search_url, contract_management_service_url = __get_location_config(
+        data_exchange_url, catalog_search_url, contract_management_service_url, contract_management_service_key = __get_location_config(
             provider)
 
         options_str = ''
@@ -346,7 +347,8 @@ def fetch_data(resource_url: str,
                 'x-cadde-consumer': consumer_id,
                 'x-cadde-contract-id': contract_id,
                 'x-hash-get-data': hash_value,
-                'x-cadde-contract-management-url': contract_management_service_url
+                'x-cadde-contract-management-url': contract_management_service_url,
+                'x-cadde-contract-management-key': contract_management_service_key
             }
             sent_response = external_interface.http_post(
                 __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_VOUCHER, sent_headers)
@@ -504,10 +506,10 @@ def __exchange_options_str(options_dict: dict) -> str:
     return return_str
 
 
-def __get_location_config(provider) -> (str, str, str, str):
+def __get_location_config(provider) -> (str, str, str, str, str):
     """
     location.jsonからコンフィグ情報を取得し、
-    提供者コネクタデータ交換URL、提供者コネクタカタログ検索URL、提供者側コネクタID、契約管理サービスURLを返す。
+    提供者コネクタデータ交換URL、提供者コネクタカタログ検索URL、提供者側コネクタID、契約管理サービスURL、契約管理サービスキーを返す。
 
     Args:
         provider string : 提供者ID
@@ -517,6 +519,7 @@ def __get_location_config(provider) -> (str, str, str, str):
         str: 提供者コネクタカタログ検索URL
         str: 提供者側コネクタID
         str: 契約管理サービスURL
+        str: 契約管理サービスキー
 
     Raises:
         Cadde_excption: コンフィグファイルからコネクタロケーションが取得できなかった場合 エラーコード: 00002E
@@ -538,10 +541,11 @@ def __get_location_config(provider) -> (str, str, str, str):
         provider_data_exchange_url = provider_info[__CONFIG_PROVIDER_DATA_EXCHANGE_URL]
         provider_catalog_search_url = provider_info[__CONFIG_PROVIDER_CATALOG_SEARCH_URL]
         contract_management_service_url = provider_info[__CONFIG_CONTRACT_MANAGEMENT_SERVICE_URL]
+        contract_management_service_key = provider_info[__CONFIG_CONTRACT_MANAGEMENT_SERVICE_KEY]
     except Exception:
         raise CaddeException('14004E')
 
-    return provider_data_exchange_url, provider_catalog_search_url, contract_management_service_url
+    return provider_data_exchange_url, provider_catalog_search_url, contract_management_service_url, contract_management_service_key
 
 
 def __get_connector_config() -> (str, str, str):

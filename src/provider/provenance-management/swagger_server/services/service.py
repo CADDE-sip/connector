@@ -80,6 +80,7 @@ def voucher_sent_call(
         contract_id:str,
         hash_get_data:str,
         contract_management_service_url:str,
+        contract_management_service_key:str,
         external_interface: ExternalInterface) -> str:
     """
     データ証憑通知（受信）を行う。
@@ -90,6 +91,7 @@ def voucher_sent_call(
        contract_id str : 取引ID
        hash_get_data str : ハッシュ値
        contract_management_service_url str : 契約管理サービスURL
+       contract_management_service_key str : 契約管理サービスキー
        external_interface ExternalInterface : 外部にリクエストを行うインタフェース
 
     Returns:
@@ -101,17 +103,17 @@ def voucher_sent_call(
     """
 
     # TODO 契約管理サービスのIF仕様に応じて変更予定
-    voucher_sent_headers = {}
+    voucher_sent_headers = {
+        'x-api-key': contract_management_service_key
+    }
     voucher_sent_body = {
         'consumer_id': consumer_id,
-        #'consumer_connector_id': consumer_connector_id,
         'provider_id': provider_id,
-        #'provider_connector_id': provider_connector_id,
         'contract_id': contract_id,
         'hash': hash_get_data
     }
     response = external_interface.http_post(
-        contract_management_service_url, voucher_sent_headers, voucher_sent_body)
+        contract_management_service_url, voucher_sent_headers, voucher_sent_body, False)
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(

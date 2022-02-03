@@ -164,6 +164,14 @@ paths:
         explode: false
         schema:
           type: string
+      - name: x-cadde-contract-management-key
+        in: header
+        description: 契約管理サービスキー
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
       responses:
         "200":
           description: 処理完了のレスポンスを返す

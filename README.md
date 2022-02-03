@@ -67,7 +67,8 @@ sh setup.sh
   | provider_connector_data_exchange_url  | 提供者データ提供 IF の URL                                                                                                                                         |
   | provider_connector_catalog_search_url | 提供者カタログ検索 IF の URL                                                                                                                                       |
   | provider_connector_id                 | 来歴管理登録するときに提供者を特定するためのID                                                                                                                     |
-  | contract_management_service_url       | 認証サーバの URL を設定 (2021 年 3 月版では未使用)                                                                                                                 |
+  | contract_management_service_url       | 契約管理サーバの URL                                                                                                                                               |
+  | contract_management_service_key       | 契約管理サーバの API キー                                                                                                                                          |
 
 - connector.json
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
@@ -296,7 +297,8 @@ sh setup.sh
   | provider_id                           | 来歴管理登録するときに提供者を特定するためのID                        |
   | provider_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                            |
   | provider_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                  |
-  | contract_management_service_url       | 認証サーバの URL を設定                                               |
+  | contract_management_service_url       | 契約管理サーバの URL                                                  |
+  | contract_management_service_key       | 契約管理サーバの API キー                                             |
   | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                 |
 
 (6) 来歴管理をおこなう場合

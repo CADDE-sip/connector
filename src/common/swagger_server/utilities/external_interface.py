@@ -75,7 +75,8 @@ class ExternalInterface:
             self,
             target_url: str,
             headers: dict = None,
-            post_body: dict = None):
+            post_body: dict = None,
+            verify: bool = True):
         """
         対象URLに対してhttp(post)通信を行ってレスポンスを取得する。
 
@@ -102,9 +103,14 @@ class ExternalInterface:
 
         headers['Cache-Control'] = 'no-cache'
 
+        req = requests
+        if not verify:
+           req = requests.Session()
+           req.verify = False
+
         try:
             if 'Content-Type' in headers and headers['Content-Type'] == 'application/x-www-form-urlencoded':
-                response = requests.post(
+                response = req.post(
                     target_url,
                     headers=headers,
 
@@ -114,7 +120,7 @@ class ExternalInterface:
                     data=post_body
                 )
             else:
-                response = requests.post(
+                response = req.post(
                     target_url,
                     headers=headers,
 
