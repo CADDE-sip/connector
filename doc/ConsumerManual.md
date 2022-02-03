@@ -87,12 +87,12 @@ NGSI情報取得については、[別紙参照](./README_NGSI.md)
 ### (3-1) 来歴確認 
 来歴管理モジュールに対して来歴確認を実行します。<br>
 APIの実行例を下記に示します。<br>
-- directionヘッダには、履歴取得方向(BACKWARD(=default)、FORWARD、 BOTH)を指定。<br>
-- depthヘッダには換実績記録用リソースIDで指定されたイベントからの深さを指定(-1を指定するとすべて取得)。<br>
-- URLパスの{caddec-resource-id-for-provenance}には対象の交換実績記録用リソースIDを指定。<br>
+- x-directionヘッダには、履歴取得方向(BACKWARD(=default)、FORWARD、 BOTH)を指定。<br>
+- x-depthヘッダには、換実績記録用リソースIDで指定されたイベントからの深さを指定(-1を指定するとすべて取得)。<br>
+- x-caddec-resource-id-for-provenanceヘッダには、対象の交換実績記録用リソースIDを指定。<br>
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/lineage/{caddec-resource-id-for-provenance}" -H "Cache-Control: no-cache"
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/lineage" -H "x-caddec-resource-id-for-provenance:{caddec-resource-id-for-provenance}" -H "Cache-Control: no-cache" -H "x-direction:BACKWARD" -H "x-depth:-1" 
 ```
 
 ### (3-2) API履歴ID検索 
