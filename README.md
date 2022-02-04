@@ -316,7 +316,7 @@ sh setup.sh
 ### 提供者コネクタ起動手順 
 ```
 cd connector/src/provider/
-docker-compose up -p provider -d
+docker-compose -p provider up -d
 ```
 
 ### 提供者コネクタ起動確認
