@@ -101,7 +101,7 @@ APIの実行例を下記に示します。<br>
 - ボディにはJSON形式で{"selector":{ 検索条件 }}を指定します。
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/searchevents" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{"selector": { "cdleventid":"<識別情報>" }}'
+$ curl -v -X POST "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/searchevents" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{"selector": { "cdleventid":"<識別情報>" }}'
 ```
 
 # (参考1) データ取得I/Fのパラメータとデータカタログの紐づけ
