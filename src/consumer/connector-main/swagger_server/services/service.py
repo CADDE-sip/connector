@@ -424,8 +424,8 @@ def history_confirmation_call(
         caddec_resource_id_for_provenance
 
     headers = {
-        'direction': direction,
-        'depth': depth
+        'x-direction': direction,
+        'x-depth': depth
     }
 
     response = external_interface.http_get(send_url, headers)
