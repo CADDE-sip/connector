@@ -185,6 +185,14 @@ def fetch_data(
     consumer_id = None
     contract_id = ''
     contract_check_enable = __get_contract_check_enable(resource_url, resource_api_type, internal_interface)
+
+    # カスタムヘッダー取得
+    options_dict = None
+    try:
+        options_dict = __exchange_options_dict(options)
+    except Exception:
+        raise CaddeException('04009E')
+
     # 認証認可処理実施
     if authorization is not None:
         # トークン連携(認可トークン取得)
@@ -246,9 +254,19 @@ def fetch_data(
             api_token = token_pat_req_response.headers['api-token']
 
             # リソースID取得
+            resource_url_for_resource_id = resource_url
+            if(resource_api_type == 'api/ngsi'):
+                for key in options_dict:
+                    if 'fiware-service' == key.lower(): 
+                        ngsi_tenant = options_dict[key].strip()
+                    if 'fiware-servicepath' == key.lower(): 
+                        ngsi_service_path = options_dict[key].strip()
+                resource_url_for_resource_id = resource_url + ',Fiware-Service=' + ngsi_tenant + ',Fiware-ServicePath="' + ngsi_service_path + '"'
+                resource_url_for_resource_id = urllib.parse.quote(resource_url_for_resource_id)
+
             token_resource_headers = {
                 'Authorization': api_token,
-                'x-resource-url': resource_url
+                'x-resource-url': resource_url_for_resource_id
             }
 
             token_resource_response = external_interface.http_get(
@@ -282,11 +300,6 @@ def fetch_data(
 
     response_bytes = None
     response_headers = {}
-    options_dict = None
-    try:
-        options_dict = __exchange_options_dict(options)
-    except Exception:
-        raise CaddeException('04009E')
 
     # リソースURLから、CKANを逆引き検索して、契約確認要否と交換実績記録用リソースIDを取得
     resource_id_for_provenance, dashboard_log_info = __ckan_search_execute(
