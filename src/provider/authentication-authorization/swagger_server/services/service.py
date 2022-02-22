@@ -297,6 +297,9 @@ def token_resource_execute(
                 response.text])
 
     response_text_dict = json.loads(response.text)
+    if len(response_text_dict) != 1:
+        raise CaddeException(message_id='0A016E')
+
     resource_id = response_text_dict[0]
 
     return resource_id

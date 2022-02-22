@@ -60,12 +60,12 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
 
     else:
         fileName = get_url_file_name(resource_url)
-        senf_file_response = send_file(
+        send_file_response = send_file(
             response_bytes,
             as_attachment=True,
             attachment_filename=fileName)
 
-        senf_file_response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
-        senf_file_response.headers['x-cadde-contract-id'] = headers_dict['x-cadde-contract-id']
+        send_file_response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
+        send_file_response.headers['x-cadde-contract-id'] = headers_dict['x-cadde-contract-id']
 
-        return senf_file_response, 200
+        return send_file_response, 200

@@ -194,6 +194,7 @@ def fetch_data(
         raise CaddeException('04009E')
 
     # 認証認可処理実施
+    api_token = ''
     if authorization is not None:
         # トークン連携(認可トークン取得)
         token_federation_headers = {
@@ -257,11 +258,13 @@ def fetch_data(
             resource_url_for_resource_id = resource_url
             if(resource_api_type == 'api/ngsi'):
                 for key in options_dict:
+                    ngsi_tenant = ''
+                    ngsi_service_path = ''
                     if 'fiware-service' == key.lower(): 
-                        ngsi_tenant = options_dict[key].strip()
+                        ngsi_tenant = ',Fiware-Service=' + options_dict[key].strip()
                     if 'fiware-servicepath' == key.lower(): 
-                        ngsi_service_path = options_dict[key].strip()
-                resource_url_for_resource_id = resource_url + ',Fiware-Service=' + ngsi_tenant + ',Fiware-ServicePath="' + ngsi_service_path + '"'
+                        ngsi_service_path = ',Fiware-ServicePath=' + options_dict[key].strip()
+                resource_url_for_resource_id = resource_url + ngsi_tenant + ngsi_service_path
                 resource_url_for_resource_id = urllib.parse.quote(resource_url_for_resource_id)
 
             token_resource_headers = {
@@ -325,6 +328,9 @@ def fetch_data(
 
     # リソースURLのドメインが認可確認有の場合、データ証憑通知（送信）
     if contract_check_enable:
+        if not api_token:
+            raise CaddeException(message_id='04023E')
+
         # ハッシュ値算出
         hash_value = hashlib.sha512(response_data).hexdigest()
 
