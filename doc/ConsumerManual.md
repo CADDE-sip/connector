@@ -166,6 +166,11 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
   | トークンの値  | IdPが発行するトークンを設定します。 |
 <br>
 
+トークンは、下記コマンドによって得られるレスポンスのaccess_tokenを使用する。
+```
+$ curl -v -X POST "https://key-authen.test.data-linkage.jp/auth/realms/idp/protocol/openid-connect/token" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "grant_type=password" -d "username={利用者ID}" -d "password={利用者のパスワード}" -d "client_id={利用者のクライアントID}" -d "client_secret={利用者のシークレット}"
+```
+
 # (参考2) SIPデータカタログ項目仕様
 横断検索,詳細検索によって取得できるカタログ仕様の詳細については、下記を参照してください。
 - [SIPデータカタログ項目仕様V1.1(2020年12月24日版).xlsx](catalog/SIPデータカタログ項目仕様V1.1(2020年12月24日版).xlsx)
