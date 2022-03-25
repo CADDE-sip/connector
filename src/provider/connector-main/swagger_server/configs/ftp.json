@@ -4,7 +4,7 @@
             "domain" : "FTP_SERVER_URL:443",
             "ftp_id" : "anonymous",
             "ftp_pass" : "anonymous",
-            "authorization" : "enable"
+            "authorization" : "disable"
         }
     ]
 }
