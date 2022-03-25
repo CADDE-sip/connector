@@ -20,9 +20,8 @@
   - コネクタは、カタログ検索、データ交換、認証、認可、来歴、契約の機能を具備します。認可、契約を利用する場合の詳細な設定方法は、別途お問い合わせください。
   - 利用者側システム(WebApp)、提供者側の CKAN カタログサイト、データ提供用のデータ管理(FTP サーバ,NGSI サーバ,HTTP サーバ)は、コネクタ設置前に事前に準備されていることを前提とします。
   - 利用者システム(WebApp)-利用者コネクタ間および、利用者コネクタ、提供者コネクタ間の通信路のセキュリティ（TLS 認証、IDS、IPS、ファイアウォール等)においては、OSS ソフトウェア、アプライアンス装置を用いて、コネクタ外で、利用者および提供者が準備するものとします。
-  - 利用者ID、提供者 ID は、コネクタ外で事前に採番されていることを前提とします。
+  - CADDEユーザIDは、コネクタ外で事前に採番されていることを前提とします。※CADDEユーザIDは、本READEME上では、利用者ID、提供者IDと記載しています。
   
-
 - Linux 上での動作を前提とします。
 
   - Docker、Docker Compose が事前インストールされていることを前提とします。
@@ -74,12 +73,12 @@ sh setup.sh
 
 - connector.json
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
-  <br>認証認可サーバに登録した利用者コネクタのIDとシークレットを記載<br>
+  <br>認証サーバに登録した利用者コネクタのIDとシークレットを記載<br>
 
   | 設定パラメータ                        | 概要                                                                                                                                                               |
   | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | consumer_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                                                                                                                         |
-  | consumer_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                                                                                                               |
+  | consumer_connector_id                 | 認証サーバに設定した利用者コネクタのID                                                                                                                         |
+  | consumer_connector_secret             | 認証サーバが発行した利用者コネクタのシークレット                                                                                                               |
   | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                                                                                                              |
 
 - ngsi.json
@@ -89,13 +88,13 @@ sh setup.sh
 
   | 設定パラメータ | 概要                                                 |
   | :------------- | :--------------------------------------------------- |
-  | ngsi_auth      | 以下の利用者 ID を保持                               |
-  | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
-  | auth           | NGSI へ API アクセスするためのアクセストークン       |
+  | ngsi_auth      | 以下、ドメイン毎の設定を配列で保持                               |
+  | domain      　 | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載              |
+  | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
 
 - idp.json
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
-  <br>IdPのURLと認証認可サーバのアイデンティティプロバイダー名を記載
+  <br>IdPのURLと認証サーバのアイデンティティプロバイダー名を記載
   <br>利用者側で外部IdPによる認証を行わない場合、CADDEが提供するIdPを利用
 
   | 設定パラメータ               | 概要                           |
@@ -104,11 +103,11 @@ sh setup.sh
   | CADDEが連携する外部IdPのURL  | アイデンティティプロバイダー名 |
 
 - authentication.json
-  <br>connector/src/consumer/authentication-authorization/swagger_server/configs/に配置<br>認証認可時の接続先を記載
+  <br>connector/src/consumer/authentication-authorization/swagger_server/configs/に配置<br>認証時の接続先を記載
 
   | 設定パラメータ                     | 概要                                                                     |
   | :--------------------------------- | :----------------------------------------------------------------------- |
-  | authentication_server_url          | 認証認可サーバのURL                                                      |
+  | authentication_server_url          | 認証サーバのURL                                                      |
   | introspect                         | トークン検証設定                                                         |
   | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token"固定          |
   | federation                         | トークン連携設定                                                         |
@@ -234,11 +233,12 @@ sh setup.sh
 
   | 設定パラメータ | 概要                                                                                          |
   | :------------- | :-------------------------------------------------------------------------------------------- |
-  | basic_auth     | 以下のドメインを配列で保持                                                                    |
+  | basic_auth     | 以下、ドメイン毎の設定を配列で保持                               |
   | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載      |
   | basic_id       | 対象ドメインへのファイル取得 http 接続時のベーシック認証 ID を設定                            |
   | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                      |
   | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                      |
+  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
 
 (2-2) 認証なしHTTPサーバに接続の場合<br>
  http.jsonファイルの編集不要。
@@ -250,10 +250,11 @@ sh setup.sh
 
   | 設定パラメータ | 概要                           |
   | :------------- | :-------------------------------------------------------------------------------------------- |
-  | ftp_auth       | 以下のドメインを配列で保持                                                                    |
+  | ftp_auth       | 以下、ドメイン毎の設定を配列で保持                               |
   | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載      |
   | ftp_id         | ftp 接続時の ID を設定                                                                        |
   | ftp_pass       | ftp 接続時のパスワードを設定                                                                  |
+  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
 
 (3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
  ftp.jsonファイルの編集不要。
@@ -264,17 +265,18 @@ sh setup.sh
 
   | 設定パラメータ | 概要                                                 |
   | :------------- | :--------------------------------------------------- |
-  | ngsi_auth      | 以下の利用者 ID を保持                               |
-  | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
+  | ngsi_auth      | 以下、ドメイン毎の設定を配列で保持                               |
+  | domain      　 | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載              |
   | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
+  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
 
-(5) 認証認可をおこなう場合
+(5) 認証および認可をおこなう場合
 - authentication.json
-  <br>connector/src/provider/authentication-authorization/swagger_server/configs/に配置<br>認証認可時の接続先を記載
+  <br>connector/src/provider/authentication-authorization/swagger_server/configs/に配置<br>認証および認可時の接続先を記載
 
   | 設定パラメータ                     | 概要                                                                     |
   | :--------------------------------- | :----------------------------------------------------------------------- |
-  | authentication_server_url          | 認証認可サーバのURL                                                      |
+  | authentication_server_url          | 認可サーバのURL                                                      |
   | introspect                         | トークン検証設定                                                         |
   | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token"固定          |
   | federation                         | トークン連携設定                                                         |
@@ -291,13 +293,13 @@ sh setup.sh
   | contract - grant_type              | 許諾タイプ。"urn:ietf:params:oauth:grant-type:uma-ticket"固定            |
 
 - connector.json
-  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>認証認可サーバに登録した提供者コネクタのIDとシークレットを記載<br>
+  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>認可サーバに登録した提供者コネクタのIDとシークレットを記載<br>
 
   | 設定パラメータ                        | 概要                                                                  |
   | :------------------------------------ | :-------------------------------------------------------------------- |
   | provider_id                           | 来歴管理登録するときに提供者を特定するためのID                        |
-  | provider_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                            |
-  | provider_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                  |
+  | provider_connector_id                 | 認可サーバに設定した提供者コネクタのID                            |
+  | provider_connector_secret             | 認可サーバが発行した提供者コネクタのシークレット                  |
   | contract_management_service_url       | 契約管理サーバの URL                                                  |
   | contract_management_service_key       | 契約管理サーバの API キー                                             |
   | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                 |

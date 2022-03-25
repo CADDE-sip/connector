@@ -168,9 +168,11 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 
 トークンは、下記コマンドによって得られるレスポンスのaccess_tokenを使用する。
 ```
-$ curl -v -X POST "https://key-authen.test.data-linkage.jp/auth/realms/idp/protocol/openid-connect/token" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "grant_type=password" -d "username={利用者ID}" -d "password={利用者のパスワード}" -d "client_id=auth_client"
+$ curl -v -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "username={利用者ID}" -d "password={利用者のパスワード}" https://key-authen.test.data-linkage.jp/cadde/api/v1/consumertoken
 ```
 
 # (参考2) SIPデータカタログ項目仕様
 横断検索,詳細検索によって取得できるカタログ仕様の詳細については、下記を参照してください。
-- [SIPデータカタログ項目仕様V1.1(2020年12月24日版).xlsx](catalog/SIPデータカタログ項目仕様V1.1(2020年12月24日版).xlsx)
+- [SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx](catalog/SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx)
+- [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pptx](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pptx)
+- [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx)

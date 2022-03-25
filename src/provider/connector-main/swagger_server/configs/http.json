@@ -4,7 +4,7 @@
             "domain" : "HTTP_SERVER_URL:8080",
             "basic_id" : "anonymous",
             "basic_pass" : "anonymous",
-            "authorization" : "enable"
+            "authorization" : "disable"
         }
     ]
 }

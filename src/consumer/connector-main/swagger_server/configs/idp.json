@@ -1,4 +1,4 @@
 {
-    "http://sample.co.jp/auth/realms/cadde_realm" : "cadde",
+    "https://key-authen.test.data-linkage.jp/auth/realms/cadde-authentication" : "cadde",
     "http://idp.co.jp/" : "idp_subject_issuer"
 }
