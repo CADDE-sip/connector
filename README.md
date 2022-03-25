@@ -268,13 +268,13 @@ sh setup.sh
   | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
   | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
 
-(5) 認証認可をおこなう場合
+(5) 認証および認可をおこなう場合
 - authentication.json
-  <br>connector/src/provider/authentication-authorization/swagger_server/configs/に配置<br>認証認可時の接続先を記載
+  <br>connector/src/provider/authentication-authorization/swagger_server/configs/に配置<br>認証および認可時の接続先を記載
 
   | 設定パラメータ                     | 概要                                                                     |
   | :--------------------------------- | :----------------------------------------------------------------------- |
-  | authentication_server_url          | 認証認可サーバのURL                                                      |
+  | authentication_server_url          | 認可サーバのURL                                                      |
   | introspect                         | トークン検証設定                                                         |
   | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token"固定          |
   | federation                         | トークン連携設定                                                         |
@@ -291,13 +291,13 @@ sh setup.sh
   | contract - grant_type              | 許諾タイプ。"urn:ietf:params:oauth:grant-type:uma-ticket"固定            |
 
 - connector.json
-  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>認証認可サーバに登録した提供者コネクタのIDとシークレットを記載<br>
+  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>認可サーバに登録した提供者コネクタのIDとシークレットを記載<br>
 
   | 設定パラメータ                        | 概要                                                                  |
   | :------------------------------------ | :-------------------------------------------------------------------- |
   | provider_id                           | 来歴管理登録するときに提供者を特定するためのID                        |
-  | provider_connector_id                 | 認証認可サーバに設定した利用者コネクタのID                            |
-  | provider_connector_secret             | 認証認可サーバが発行した利用者コネクタのシークレット                  |
+  | provider_connector_id                 | 認可サーバに設定した提供者コネクタのID                            |
+  | provider_connector_secret             | 認可サーバが発行した提供者コネクタのシークレット                  |
   | contract_management_service_url       | 契約管理サーバの URL                                                  |
   | contract_management_service_key       | 契約管理サーバの API キー                                             |
   | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                 |
