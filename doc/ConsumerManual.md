@@ -168,7 +168,7 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 
 トークンは、下記コマンドによって得られるレスポンスのaccess_tokenを使用する。
 ```
-$ curl -v -X POST "https://key-authen.test.data-linkage.jp/auth/realms/idp/protocol/openid-connect/token" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "grant_type=password" -d "username={利用者ID}" -d "password={利用者のパスワード}" -d "client_id={利用者のクライアントID}" -d "client_secret={利用者のシークレット}"
+$ curl -v -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "username={利用者ID}" -d "password={利用者のパスワード}" https://key-authen.test.data-linkage.jp/cadde/api/v1/consumertoken
 ```
 
 # (参考2) SIPデータカタログ項目仕様
