@@ -89,9 +89,9 @@ sh setup.sh
 
   | 設定パラメータ | 概要                                                 |
   | :------------- | :--------------------------------------------------- |
-  | ngsi_auth      | 以下の利用者 ID を保持                               |
-  | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
-  | auth           | NGSI へ API アクセスするためのアクセストークン       |
+  | ngsi_auth      | 以下のドメインを配列で保持                               |
+  | domain      　 | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載              |
+  | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
 
 - idp.json
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
@@ -239,6 +239,7 @@ sh setup.sh
   | basic_id       | 対象ドメインへのファイル取得 http 接続時のベーシック認証 ID を設定                            |
   | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                      |
   | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                      |
+  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
 
 (2-2) 認証なしHTTPサーバに接続の場合<br>
  http.jsonファイルの編集不要。
@@ -254,6 +255,7 @@ sh setup.sh
   | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載      |
   | ftp_id         | ftp 接続時の ID を設定                                                                        |
   | ftp_pass       | ftp 接続時のパスワードを設定                                                                  |
+  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
 
 (3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
  ftp.jsonファイルの編集不要。
@@ -264,9 +266,10 @@ sh setup.sh
 
   | 設定パラメータ | 概要                                                 |
   | :------------- | :--------------------------------------------------- |
-  | ngsi_auth      | 以下の利用者 ID を保持                               |
-  | 利用者 ID      | 利用者 ID を記載する 以下の auth を保持              |
+  | ngsi_auth      | 以下のドメインを配列で保持                               |
+  | domain      　 | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載              |
   | auth           | NGSI へ API アクセスするためのアクセストークンを設定 |
+  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
 
 (5) 認証および認可をおこなう場合
 - authentication.json
