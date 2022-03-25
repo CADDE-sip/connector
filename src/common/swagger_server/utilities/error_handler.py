@@ -62,5 +62,6 @@ def handle_api_exception(exception: Exception) -> Response:
     response_info.headers['X-Content-Type-Options'] = 'nosniff'
     response_info.headers['X-XSS-Protection'] = '1; mode=block'
     response_info.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response_info.headers['Referrer-Policy'] = "no-referrer always"
 
     return response_info

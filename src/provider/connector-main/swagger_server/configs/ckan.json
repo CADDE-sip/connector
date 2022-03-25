@@ -1,5 +1,4 @@
-
 {
-    "release_ckan_url" : "http://RELEASE_CKAN_URL:5010",
-    "detail_ckan_url" : "http://DETAIL_CKAN_URL:5011"
+    "release_ckan_url" : "RELEASE_CKAN_URL",
+    "detail_ckan_url" : "DETAIL_CKAN_URL"
 }

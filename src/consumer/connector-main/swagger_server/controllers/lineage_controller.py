@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 external_interface = ExternalInterface()
 
 
-def lineage(caddec_resource_id_for_provenance, direction=None, depth=None):  # noqa: E501
+def lineage(x_caddec_resource_id_for_provenance=None, x_direction=None, x_depth=None):  # noqa: E501
     """API. 来歴確認呼び出し
 
     指定された交換実績記録用リソースIDから始まる来歴情報を取得する。  # noqa: E501
@@ -30,12 +30,13 @@ def lineage(caddec_resource_id_for_provenance, direction=None, depth=None):  # n
     # 引数の値は利用しない。
     # direction、depthはyamlファイルでデフォルト値が設定されているが、
     # openapiではデフォルト値が廃止されているため、取得できない場合がある。
+    caddec_resource_id_for_provenance = connexion.request.headers['x-caddec-resource-id-for-provenance']
     direction = None
     depth = None
-    if 'direction' in connexion.request.headers:
-        direction = connexion.request.headers['direction']
-    if 'depth' in connexion.request.headers:
-        depth = connexion.request.headers['depth']
+    if 'x-direction' in connexion.request.headers:
+        direction = connexion.request.headers['x-direction']
+    if 'x-depth' in connexion.request.headers:
+        depth = connexion.request.headers['x-depth']
 
     logger.debug(get_message('1B001N',
                              [caddec_resource_id_for_provenance,
@@ -57,5 +58,6 @@ def lineage(caddec_resource_id_for_provenance, direction=None, depth=None):  # n
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response.headers['Referrer-Policy'] = "no-referrer always"
 
     return response

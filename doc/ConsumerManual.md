@@ -20,10 +20,11 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/api/3/
 APIの実行例を下記に示します。<br>
 - x-cadde-searchヘッダには、'detail'を指定。
 - x-cadde-providerヘッダには、横断カタログ検索結果(extras:caddec_provider_id)から取得した提供者IDを指定。
-- Authorizationヘッダには認証認可要求の応答に含まれるアクセストークン(access_token)の値を指定(認証認可を行う場合)。
-- 検索クエリ内の{データセットID} には、横断カタログ検索結果(extras:caddec_dataset_id_for_detail)の値を設定
+- x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
+- Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
+- 検索クエリ内の{詳細検索用データセットID} には、横断カタログ検索結果(extras:caddec_dataset_id_for_detail)の値を設定
 ```
-$ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/api/3/action/package_search?fq=id:"{データセットID}"' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}"
+$ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/api/3/action/package_search?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}"
 ```
 
 ### (1-3) ファイル取得
@@ -37,11 +38,11 @@ APIの実行例を下記に示します。<br>
 - x-cadde-providerヘッダには、詳細カタログ検索結果(extras:caddec_provider_id)から取得した提供者IDを指定。
 - x-cadde-resource-urlヘッダには、詳細カタログ検索結果(resources:download_url)から取得したファイルのダウンロードURLを指定。
 - x-cadde-resource-api-typeヘッダには、詳細カタログ検索結果(resources:caddec_resource_type)から取得したリソース提供手段の識別子(file/http or file/ftp)を指定。
-- x-cadde-contractヘッダには、認証認可を行う場合はrequiredを、そうでない場合はnotRequiredを指定。
-- Authorizationヘッダには、認証認可を行う場合は認証認可要求の応答に含まれるアクセストークン(access_token)の値を指定。
+- x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
+- Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}"  -H "x-cadde-contract: required" -H "x_cadde_provider: {提供者ID}" -H "Authorization: {トークン}"  -o {出力ファイル名}
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}" -o {出力ファイル名}
 ```
 
 ### (1-3-2) ファイル取得(NGSI)
@@ -70,11 +71,11 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/api/3/
 APIの実行例を下記に示します。<br>
 - x-cadde-resource-urlヘッダには、横断カタログ検索結果(resources:download_url)から取得したファイルのダウンロードURLを指定。
 - x-cadde-resource-api-typeヘッダには、横断カタログ検索結果(resources:caddec_resource_type)から取得したリソース提供手段の識別子(file/http or file/ftp)を指定。
-- x-cadde-contractヘッダには、認証認可を行う場合はrequiredを、そうでない場合はnotRequiredを指定。
-- Authorizationヘッダには、認証認可を行う場合は認証認可要求の応答に含まれるアクセストークン(access_token)の値を指定。
+- x-idp-urlヘッダには、アクセストークンを取得したIdPのURLを指定。トークン未設定の場合はヘッダ未設定。
+- Authorizationヘッダには、認証認可を行う場合はIdPが発行したトークンの値を指定。認証認可を行わない場合はヘッダ未設定。
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}"  -H "x-cadde-contract: required" -H "Authorization: {トークン}" -o {出力ファイル名}
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/file" -s -S -H "Cache-Control: no-cache" -H "x-cadde-resource-url: {リソースURL}" -H "x-cadde-resource-api-type: {リソース提供手段の識別子}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}" -o {出力ファイル名}
 ```
 
 ### (2-2-2) ファイル取得(NGSI)
@@ -86,12 +87,12 @@ NGSI情報取得については、[別紙参照](./README_NGSI.md)
 ### (3-1) 来歴確認 
 来歴管理モジュールに対して来歴確認を実行します。<br>
 APIの実行例を下記に示します。<br>
-- directionヘッダには、履歴取得方向(BACKWARD(=default)、FORWARD、 BOTH)を指定。<br>
-- depthヘッダには交換実績記録用リソースIDで指定されたイベントからの深さを指定(-1を指定するとすべて取得)。<br>
-- URLパスの{caddec-resource-id-for-provenance}には対象の交換実績記録用リソースIDを指定。<br>
+- x-directionヘッダには、履歴取得方向(BACKWARD(=default)、FORWARD、 BOTH)を指定。<br>
+- x-depthヘッダには、換実績記録用リソースIDで指定されたイベントからの深さを指定(-1を指定するとすべて取得)。<br>
+- x-caddec-resource-id-for-provenanceヘッダには、対象の交換実績記録用リソースIDを指定。<br>
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/lineage/{caddec-resource-id-for-provenance}" -H "Cache-Control: no-cache"
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v1/history/lineage" -H "x-caddec-resource-id-for-provenance:{caddec-resource-id-for-provenance}" -H "Cache-Control: no-cache" -H "x-direction:BACKWARD" -H "x-depth:-1" 
 ```
 
 ### (3-2) API履歴ID検索 
@@ -143,36 +144,32 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 <br>
 本ヘッダに対応するデータカタログの項目は以下の通りです。
 
-  | APIリクエストヘッダ | カタログ項目 | カタログパラメータ        |
-  | :------------------ | :----------- | :------------------------ |
-  | x-cadde-provider    | 提供者ID     | extras:caddec_provider_id |
+  | APIリクエストヘッダ | カタログ項目 | カタログパラメータ         |
+  | :------------------ | :----------- | :------------------------- |
+  | x-cadde-provider    | 提供者ID     | extras:caddec_provider_id  |
 <br>
 
-### 4. x-cadde-contract
+### 4. x-idp-url
 
-CADDEコネクタがデータセットまたはリソースを利用するために契約の確認を要するか否かを表す識別子です。
+トークンを発行したIdPのURLを指定します。CADDEコネクタが連携するIdPを特定するために用います。
 
-  | x-cadde-contract            | 概要                                               |
-  | :-------------------------- | :------------------------------------------------- |
-  | required または notRequired | 認証認可の要否を設定します。 |
-
-<br>
-本ヘッダに対応するデータカタログの項目は以下の通りです。
-
-  | APIリクエストヘッダ | カタログ項目   | カタログパラメータ                |
-  | :------------------ | :------------- | :-------------------------------- |
-  | x-cadde-contract    | 契約確認の要否 | resources:caddec_contract_required |
-
-<br>
+  | x-idp-url   | 概要                                       |
+  | :---------- | :----------------------------------------- |
+  | IdPのURL    | トークンを発行したIdPのURLを設定します。   |
 
 ### 5. Authorization
 
 利用者トークンを示すヘッダです。
 
-  | Authorization | 概要                              |
-  | :------------ | :-------------------------------- |
-  | トークンの値  | 認証認可サーバが返すaccess_tokenを設定します。 |
+  | Authorization | 概要                                |
+  | :------------ | :---------------------------------- |
+  | トークンの値  | IdPが発行するトークンを設定します。 |
 <br>
+
+トークンは、下記コマンドによって得られるレスポンスのaccess_tokenを使用する。
+```
+$ curl -v -X POST "https://key-authen.test.data-linkage.jp/auth/realms/idp/protocol/openid-connect/token" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "grant_type=password" -d "username={利用者ID}" -d "password={利用者のパスワード}" -d "client_id={利用者のクライアントID}" -d "client_secret={利用者のシークレット}"
+```
 
 # (参考2) SIPデータカタログ項目仕様
 横断検索,詳細検索によって取得できるカタログ仕様の詳細については、下記を参照してください。

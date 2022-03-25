@@ -1,0 +1,4 @@
+{
+    "http://sample.co.jp/auth/realms/cadde_realm" : "cadde",
+    "http://idp.co.jp/" : "idp_subject_issuer"
+}

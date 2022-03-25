@@ -19,7 +19,7 @@ def search(q=None, Authorization=None):  # noqa: E501
 
     :param q: CKAN検索条件クエリ CKAN APIに準拠
     :type q: str
-    :param Authorization: 契約トークン
+    :param Authorization: 認証トークン
     :type Authorization: str
 
     :rtype: None
@@ -46,4 +46,5 @@ def search(q=None, Authorization=None):  # noqa: E501
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response.headers['Referrer-Policy'] = "no-referrer always"
     return response

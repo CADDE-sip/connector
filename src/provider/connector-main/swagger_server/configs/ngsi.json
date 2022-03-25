@@ -1,7 +1,9 @@
 {
-    "ngsi_auth" : {
-        "TEST_ID" : {
-            "auth" : "input API key."
+    "ngsi_auth" : [
+        {
+            "domain" : "SERVER_URL:PORT",
+            "auth" : "input API key.",
+            "authorization" : "enable"
         }
-    }
+    ]
 }

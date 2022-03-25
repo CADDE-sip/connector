@@ -23,7 +23,7 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
     :type x-cadde-resource-url: str
     :param x-cadde-resource-api-type: リソース提供手段識別子
     :type x-cadde-resource-api-type: str
-    :param Authorization: 契約トークン
+    :param Authorization: 認証トークン
     :type Authorization: str
     :param x-cadde-options: データ提供IFが使用するカスタムヘッダー("key1:value1,key2:value2・・・"形式)
     :type x-cadde-options: str
@@ -60,10 +60,12 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
 
     else:
         fileName = get_url_file_name(resource_url)
-        senf_file_response = send_file(
+        send_file_response = send_file(
             response_bytes,
             as_attachment=True,
             attachment_filename=fileName)
-        senf_file_response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
 
-        return senf_file_response, 200
+        send_file_response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
+        send_file_response.headers['x-cadde-contract-id'] = headers_dict['x-cadde-contract-id']
+
+        return send_file_response, 200

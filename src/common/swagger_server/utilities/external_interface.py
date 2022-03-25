@@ -25,7 +25,8 @@ class ExternalInterface:
             self,
             target_url: str,
             headers: dict = None,
-            auth: tuple = None):
+            auth: tuple = None,
+            post_body: dict = None):
         """
         対象URLに対してhttp(get)通信を行ってレスポンスを取得する。
 
@@ -33,6 +34,7 @@ class ExternalInterface:
             target_url str : 接続するURL
             headers : 設定するheader {ヘッダー名:パラメータ}
             auth : ベーシック認証時のidとpass
+            post_body : 設定するbody部
 
         Returns:
             response : get通信のレスポンス
@@ -55,7 +57,8 @@ class ExternalInterface:
                 timeout=(
                     self.__HTTP_CONNECT_TIMEOUT,
                     self.__HTTP_READ_TIMEOUT),
-                auth=auth)
+                auth=auth,
+                params=post_body)
 
         except Timeout:
             raise CaddeException('01006E')
@@ -72,7 +75,8 @@ class ExternalInterface:
             self,
             target_url: str,
             headers: dict = None,
-            post_body: dict = None):
+            post_body: dict = None,
+            verify: bool = True):
         """
         対象URLに対してhttp(post)通信を行ってレスポンスを取得する。
 
@@ -99,9 +103,14 @@ class ExternalInterface:
 
         headers['Cache-Control'] = 'no-cache'
 
+        req = requests
+        if not verify:
+           req = requests.Session()
+           req.verify = False
+
         try:
             if 'Content-Type' in headers and headers['Content-Type'] == 'application/x-www-form-urlencoded':
-                response = requests.post(
+                response = req.post(
                     target_url,
                     headers=headers,
 
@@ -111,7 +120,7 @@ class ExternalInterface:
                     data=post_body
                 )
             else:
-                response = requests.post(
+                response = req.post(
                     target_url,
                     headers=headers,
 

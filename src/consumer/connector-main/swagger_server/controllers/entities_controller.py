@@ -1,6 +1,7 @@
 import connexion
 
 import re
+import urllib
 from flask import make_response
 from logging import getLogger
 
@@ -40,7 +41,7 @@ def retrieve_entity():
                                        entityIdで指定したエンティティの情報を取得する。
     x-cadde-resource-api-type  str  : リソース提供手段識別子
     x-cadde-provider           str  : 提供者ID
-    x-cadde-contract           str  : 契約確認要否
+    x-idp-url                  str  : IdP URL
     Authorization              str  : 利用者トークン
     x-cadde-options            str  : APIごとに利用する固有のオプション
                                       例： "key:val, key2:val2, ..."
@@ -48,13 +49,15 @@ def retrieve_entity():
     """
     resource_url = connexion.request.headers["x-cadde-resource-url"]
     resource_api_type = connexion.request.headers["x-cadde-resource-api-type"]
-    contract = connexion.request.headers["x-cadde-contract"]
 
     provider = None
+    idp_url = None
     authorization = None
 
     if "x-cadde-provider" in connexion.request.headers:
         provider = connexion.request.headers["x-cadde-provider"]
+    if "x-idp-url" in connexion.request.headers:
+        idp_url = connexion.request.headers["x-idp-url"]
     if "Authorization" in connexion.request.headers:
         authorization = connexion.request.headers["Authorization"]
 
@@ -64,8 +67,8 @@ def retrieve_entity():
         logger.debug("NGSIオプションを設定します。options:{}".format(options))
 
     # HTTP Request Headerのチェック
-    # x-cadde-provider、Authorization、x_cadde_optionsはオプションなのでチェックしない（2020/9版）
-    if not resource_url or not resource_api_type or not contract:
+    # x-cadde-provider、Authorization、x_cadde_optionsはオプションなのでチェックしない
+    if not resource_url or not resource_api_type:
         # invalid param
         logger.debug("リクエストヘッダが取得できませんでした。")
         raise CaddeException("00001E", status_code=400)
@@ -88,7 +91,9 @@ def retrieve_entity():
 
     # エンティティの一覧取得の場合はentityTypeが指定されていることをチェック
     if not re.match(r"https?://.*/v2.*/entities/", resource_url):
-        if not re.match(r"https?://.*/v2.*/entities\?.*type=", resource_url):
+        parse_url = urllib.parse.urlparse(resource_url)
+        query = urllib.parse.parse_qs(parse_url.query)
+        if 'type' not in query:
             logger.debug("エンティティの一覧取得にはクエリにタイプ指定が必要です。")
             raise CaddeException("00001E", status_code=400)
 
@@ -110,7 +115,7 @@ def retrieve_entity():
     for key, value in connexion.request.headers.items():
         if key.lower() == "fiware-service" or \
            key.lower() == "fiware-servicepath":
-            options_dict[key] = value
+            options_dict[key.lower()] = value
 
     logger.debug(
         get_message(
@@ -118,7 +123,7 @@ def retrieve_entity():
             [resource_url,
              resource_api_type,
              log_message_none_parameter_replace(provider),
-             contract,
+             idp_url,
              log_message_none_parameter_replace(authorization)]))
 
     try:
@@ -126,7 +131,7 @@ def retrieve_entity():
         data, headers = fetch_data(resource_url,
                                    resource_api_type,
                                    provider,
-                                   contract,
+                                   idp_url,
                                    authorization,
                                    options_dict)
     except BaseException:
@@ -139,4 +144,5 @@ def retrieve_entity():
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response.headers['Referrer-Policy'] = "no-referrer always"
     return response

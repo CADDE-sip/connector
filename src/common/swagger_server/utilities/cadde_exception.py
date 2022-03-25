@@ -30,15 +30,15 @@ class CaddeException(Exception):
             if replace_str_list is not None and len(replace_str_list) == 1:
                 # エラーメッセージの場合は透過
                 json.loads(replace_str_list[0])
-                self.error_message = replace_str_list[0]
+                self.error_message = replace_str_list[0] + '(' + message_id + ')'
                 self.is_transparent = True
             else:
                 result = get_message_and_status_code(
                     message_id, replace_str_list)
-                self.error_message = result['message']
+                self.error_message = result['message'] + '(' + message_id + ')'
         except Exception:
             result = get_message_and_status_code(message_id, replace_str_list)
-            self.error_message = result['message']
+            self.error_message = result['message'] + '(' + message_id + ')'
 
         if not status_code:
             self.http_status_code = result['http_status_code']

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: CADDE v1 Specification 提供者 コネクタメイン
-  version: "1.0"
+  title: CADDE v3 Specification 提供者 コネクタメイン
+  version: "3.0"
 servers:
 - url: /
 paths:
@@ -11,15 +11,18 @@ paths:
       - Search
       summary: API. カタログ検索(詳細検索)
       description: |-
-        提供者カタログサイトからCKANカタログ情報を取得する.
+        提供者カタログサイトからCKANカタログ情報を取得する。
+
         Response:
-        * 処理が成功した場合は200を返す
+        * 処理が成功した場合は200を返す。
         * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
       operationId: search
       parameters:
       - name: q
         in: query
-        description: CKAN検索条件クエリ CKAN APIに準拠
+        description: |-
+         CKAN検索条件クエリ
+         CKAN APIに準拠
         required: false
         style: form
         explode: true
@@ -27,7 +30,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 契約トークン
+        description: 認証トークン
         required: false
         style: simple
         explode: false
@@ -35,7 +38,7 @@ paths:
           type: string
       responses:
         "200":
-          description: CKANから取得したカタログ情報を返す.
+          description: CKANから取得したカタログ情報
           content:
             application/json:
               example:
@@ -62,8 +65,7 @@ paths:
                     type: about:blank
         "401":
           description: |-
-            利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用)
-            契約有無確認処理での契約無しの場合のエラーメッセージ(2020月09版では未使用)
+            利用者確認処理での認証失敗の場合のエラーメッセージ
           content:
             application/json:
               schema:
@@ -75,6 +77,23 @@ paths:
                     status: 401
                     title: ""
                     type: ""
+        "408":
+          description: |-
+            タイムアウトが発生した場合のエラーメッセージ
+          content:
+            application/octet-stream:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: エラーが発生しました。エラー:(エラー内容)
+                    status: 408
+                    title: ""
+                    type: ""
         "500":
           description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
           content:
@@ -84,21 +103,21 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
-      x-swagger-router-controller: swagger_server.controllers.search_controller
       x-openapi-router-controller: swagger_server.controllers.search_controller
   /cadde/api/v1/file:
     get:
       tags:
       - Files
-      summary: API. ファイル取得(cadde)
+      summary: API. データ交換要求
       description: |-
-        CADDEインタフェースを用いてファイルを取得する
+        CADDEインタフェースを用いてファイルを取得する。
+
         Response:
-        * 処理が成功した場合は200を返す
+        * 処理が成功した場合は200を返す。
         * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
       operationId: files
       parameters:
@@ -112,7 +131,9 @@ paths:
           type: string
       - name: x-cadde-resource-api-type
         in: header
-        description: リソース提供手段識別子 FTP、HTTP、NGSIのいずれかを指定する(FTP:file/ftp, HTTP:file/http, NGSI:api/ngsi)
+        description: |-
+         リソース提供手段識別子
+         FTP、HTTP、NGSIのいずれかを指定する(FTP:file/ftp, HTTP:file/http, NGSI:api/ngsi)
         required: true
         style: simple
         explode: false
@@ -120,7 +141,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 契約トークン
+        description: 認証トークン
         required: false
         style: simple
         explode: false
@@ -128,7 +149,10 @@ paths:
           type: string
       - name: x-cadde-options
         in: header
-        description: データ提供IFが使用するカスタムヘッダー("key1:value1,key2:value2・・・"形式)
+        description: |-
+         NGSIオプション
+         データ提供IFが使用するカスタムヘッダー
+         ("key1:value1,key2:value2・・・"形式)
         required: false
         style: simple
         explode: false
@@ -136,8 +160,8 @@ paths:
           type: string
       responses:
         "200":
-          description: 呼び出し時のリソース提供手段識別子が"file/ftp","file/http"の場合はダウンロードしたファイル "api/ngsi"の場合はJSON形式、また、ヘッダx-cadde-optionsにレスポンスヘッダ情報を設定する。
-            ヘッダ情報に識別情報を設定する
+          description: |-
+           呼び出し時のリソース提供手段識別子が"file/ftp","file/http"の場合はダウンロードしたファイル "api/ngsi"の場合はJSON形式、また、ヘッダx-cadde-optionsにレスポンスヘッダ情報、ヘッダ情報に識別情報を設定
           content:
             application/octet-stream:
               schema:
@@ -162,8 +186,7 @@ paths:
                     title: Bad Request
                     type: about:blank
         "401":
-          description: "利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用) \n契約有無確認処理での契約無しの\
-            場合のエラーメッセージ(2020月09版では未使用)"
+          description: "認証認可処理での認証失敗の場合のエラーメッセージ"
           content:
             application/octet-stream:
               schema:
@@ -179,7 +202,7 @@ paths:
                     title: ""
                     type: ""
         "403":
-          description: FTP接続で認証失敗の場合のエラーメッセージ
+          description: ベーシック認証に失敗した場合のエラーメッセージ
           content:
             application/octet-stream:
               schema:
@@ -196,8 +219,7 @@ paths:
                     type: ""
         "404":
           description: |-
-            FTP接続で指定したディレクトリにファイルが存在しない場合のエラーメッセージ
-            HTTP接続で指定したURLにファイルが存在しない場合のエラーメッセージ
+            FTP接続で指定したディレクトリにファイルが存在しない場合のエラーメッセージ、または、HTTPS接続で指定したURLにファイルが存在しない場合のエラーメッセージ
           content:
             application/octet-stream:
               schema:
@@ -224,11 +246,10 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
-      x-swagger-router-controller: swagger_server.controllers.files_controller
       x-openapi-router-controller: swagger_server.controllers.files_controller
 components:
   schemas:

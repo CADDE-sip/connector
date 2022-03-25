@@ -14,14 +14,13 @@ def search_catalog_ckan(
 
     Args:
         query_string str : 検索条件のクエリストリング
-        contract_token str : HTTPリクエストヘッダとしての契約トークン
+        contract_token str : HTTPリクエストヘッダとしての認証トークン
         external_interface ExternalInterface :  コネクタ外部とのインタフェース
 
     Returns:
         str : 取得したデータ文字列
 
     Raises:
-        Cadde_excption : クエリストリングがNoneの場合、エラーコード : 00001E
         Cadde_excption : ステータスコード200OKでない場合 エラーコード : 05002E
     """
 

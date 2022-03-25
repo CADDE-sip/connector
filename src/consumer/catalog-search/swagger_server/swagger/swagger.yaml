@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: CADDE v1 Specification 利用者 カタログ検索I/F
-  version: "1.0"
+  title: CADDE v3 Specification 利用者 カタログ検索I/F
+  version: "3.0"
 servers:
 - url: /
 paths:
@@ -12,15 +12,18 @@ paths:
       summary: API. カタログ検索
       description: |-
         横断検索、詳細検索を判定し、
-        横断検索サイトまたは提供者カタログサイトからカタログ情報を取得する
+        横断検索サイトまたは提供者カタログサイトからカタログ情報を取得する。
+        
         Response:
-        * 処理が成功した場合は200を返す
+        * 処理が成功した場合は200を返す。
         * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
       operationId: search
       parameters:
       - name: q
         in: query
-        description: CKAN検索条件クエリ CKAN APIに準拠
+        description: |-
+         CKAN検索条件クエリ
+         CKAN APIに準拠
         required: false
         style: form
         explode: true
@@ -28,7 +31,9 @@ paths:
           type: string
       - name: x-cadde-search
         in: header
-        description: 横断検索、詳細検索を指定する(横断検索:meta、詳細検索:detail)
+        description: |-
+         検索種別
+         横断検索、詳細検索を指定する(横断検索:meta、詳細検索:detail)
         required: true
         style: simple
         explode: false
@@ -36,7 +41,9 @@ paths:
           type: string
       - name: x-cadde-provider-connector-url
         in: header
-        description: 提供者コネクタURL x-cadde-searchがmetaの場合は不要、detailの場合は必須
+        description: |-
+         カタログサイト（詳細検索）アクセスURL
+         x-cadde-searchがmetaの場合は不要、detailの場合は必須
         required: false
         style: simple
         explode: false
@@ -44,7 +51,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 契約トークン
+        description: 認証トークン
         required: false
         style: simple
         explode: false
@@ -52,7 +59,7 @@ paths:
           type: string
       responses:
         "200":
-          description: CKANから取得したカタログ情報を返す.
+          description: CKANから取得したカタログ情報を返す
           content:
             application/json:
               example:
@@ -78,9 +85,7 @@ paths:
                     title: Bad Request
                     type: about:blank
         "401":
-          description: |-
-            利用者確認処理での認証失敗の場合のエラーメッセージ(2020月09版では未使用)
-            契約有無確認処理での契約無しの場合のエラーメッセージ(2020月09版では未使用)
+          description: "認証認可処理での認証失敗の場合のエラーメッセージ"
           content:
             application/json:
               schema:
@@ -92,6 +97,20 @@ paths:
                     status: 401
                     title: ""
                     type: ""
+        "408":
+          description: |-
+            リクエストタイムアウト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: リクエストタイムアウトによるエラーが発生しました。
+                    status: 408
+                    title: ""
+                    type: ""
         "500":
           description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
           content:
@@ -101,11 +120,10 @@ paths:
               examples:
                 response:
                   value:
-                    detail: エラー発生しました。エラー:(エラー内容)
+                    detail: エラーが発生しました。エラー:(エラー内容)
                     status: 500
                     title: ""
                     type: ""
-      x-swagger-router-controller: swagger_server.controllers.search_controller
       x-openapi-router-controller: swagger_server.controllers.search_controller
 components:
   schemas:
