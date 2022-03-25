@@ -3,7 +3,7 @@
         {
             "domain" : "SERVER_URL:PORT",
             "auth" : "input API key.",
-            "authorization" : "enable"
+            "authorization" : "disable"
         }
     ]
 }
