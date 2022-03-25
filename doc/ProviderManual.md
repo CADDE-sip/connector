@@ -56,4 +56,3 @@ curl -v -X DELETE -H "Content-Type: application/json" -H "Authorization: {アク
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx)
 
 
-
