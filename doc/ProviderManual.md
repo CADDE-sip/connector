@@ -36,7 +36,7 @@
 
 #### (1) アクセストークン取得
 ```
-curl -v -X POST "https://key-author.test.data-linkage.jp/auth/realms/idp/protocol/openid-connect/token" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "grant_type=password" -d "username={提供者ID}" -d "password={提供者のパスワード}" -d "client_id={提供者のクライアントID}" -d "client_secret={提供者のシークレット}"
+curl -v -X POST -H "Content-Type: application/json" -d "client_id={提供者のクライアントID}" -d "client_secret={提供者のシークレット}" https://key-author.test.data-linkage.jp/cadde/api/v1/apitoken
 ```
 
 #### (2-1) 認可設定
