@@ -28,6 +28,26 @@
 - リソース提供手段の識別子 (resources:caddec_resource_type): カタログ項目を設定しない。
 - コネクタ利用の要否 (resources:caddec_contract_required): notRequired または requiredを設定
 
+### 4. 提供者によるリソースに対する認可
+　提供者環境内のリソースに対して、アクセス許可を与える場合は、認可サーバに対して認可設定を設定する必要があります。
+　(1)アクセストークン取得APIを使用し、トークン取得後、（2-1)認可設定APIにより、指定したリソースに対する認可設定、(2-2)認可削除APIにより、指定したリソースに対する認可削除を行えます。
+ 
+　※アクセストークン取得時の提供者クライアントID,シークレットについては別途問い合わせください。
+
+#### (1) アクセストークン取得
+```
+curl -v -X POST "https://key-author.test.data-linkage.jp/auth/realms/idp/protocol/openid-connect/token" -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d "grant_type=password" -d "username={提供者ID}" -d "password={提供者のパスワード}" -d "client_id={提供者のクライアントID}" -d "client_secret={提供者のシークレット}"
+```
+
+#### (2-1) 認可設定
+```
+curl -v -X POST -H "Content-Type: application/json" -H "Authorization: {アクセストークン}" -d'{"provider_id":"<提供者ID>", "consumer_id":"<利用者ID>","resource_url":"<リソースURL>"}' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization
+```
+
+#### (2-2) 認可削除
+```
+curl -v -X DELETE -H "Content-Type: application/json" -H "Authorization: {アクセストークン}" -d'{"provider_id":"<提供者ID>", "consumer_id":"<利用者ID>","resource_url":"<リソースURL>" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization
+```
 
 # (参考1) SIPデータカタログ項目仕様
 横断検索用カタログサイト、詳細検索用カタログサイトに登録するカタログ仕様の詳細については、下記を参照してください。
