@@ -36,17 +36,17 @@
 
 #### (1) アクセストークン取得
 ```
-curl -v -X POST -H "Content-Type: application/json" -d "provider_id={提供者のクライアントID}" -d "client_secret={提供者のシークレット}" https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/token
+curl -v -X POST -H "Content-Type: application/json" -d '{ "provider_id": "{提供者ID}", "client_secret": "{提供者のシークレット}" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/token
 ```
 
 #### (2-1) 認可設定
 ```
-curl -v -X POST -H "Content-Type: application/json" -H "Authorization: {アクセストークン}" -d'{"provider_id":"<提供者ID>", "consumer_id":["<利用者ID>"],"resource_url":"<リソースURL>"}' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization
+curl -v -X POST -H "Content-Type: application/json" -d '{ "access_token": "{アクセストークン}", "provider_id": "{提供者ID}", "consumer_id": ["{利用者ID}"], "resource_url": "{リソースURL}" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/provider
 ```
 
 #### (2-2) 認可削除
 ```
-curl -v -X DELETE -H "Content-Type: application/json" -H "Authorization: {アクセストークン}" -d'{"provider_id":"<提供者ID>", "consumer_id":["<利用者ID>"],"resource_url":"<リソースURL>" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization
+curl -v -X DELETE -H "Content-Type: application/json" -d '{ "access_token": "{アクセストークン}", "provider_id": "{提供者ID}", "consumer_id": ["{利用者ID}"], "resource_url": "{リソースURL}" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/provider
 ```
 
 # (参考1) SIPデータカタログ項目仕様
