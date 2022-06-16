@@ -98,7 +98,7 @@ sh setup.sh
   | :--------------------------------- | :----------------------------------------------------------------------- |
   | authentication_server_url          | 認証サーバのURL                                                      |
   | introspect                         | トークン検証設定                                                         |
-  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token"固定          |
+  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token/introspect"固定          |
   | federation                         | トークン連携設定                                                         |
   | federation - endpoint              | トークン連携エンドポイント。"protocol/openid-connect/token"固定          |
   | federation - grant_type            | 許諾タイプ。"urn:ietf:params:oauth:grant-type:token-exchange"固定        |
