@@ -414,11 +414,12 @@ def fetch_data(
         fee = ''
         price_range = ''
         package_info = json.loads(package_info_text)
-        for extra in package_info['result']['results'][0]['extras']:
-            if extra['key'] == 'fee':
-                fee = extra['value']
-            if extra['key'] == 'pricing_price_range':
-                price_range = extra['value']
+        if package_info['result']['results']:
+            for extra in package_info['result']['results'][0]['extras']:
+                if extra['key'] == 'fee':
+                    fee = extra['value']
+                if extra['key'] == 'pricing_price_range':
+                    price_range = extra['value']
 
         dt_now = datetime.datetime.now()
         log_message = {}
