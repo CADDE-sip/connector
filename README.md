@@ -172,11 +172,12 @@ docker-compose -p consumer down
 ### 利用者コネクタAPI
 利用者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
-- 利用者_カタログ検索IF.html
-- 利用者_コネクタメイン.html
-- 利用者_データ交換IF(CADDE).html
-- 利用者_認証認可IF.html
-- 利用者_来歴管理IF.html
+- 利用者_認証IF.html
+- 利用者コネクタ外部IF_コネクタメイン.html
+- 利用者コネクタ内部IF_カタログ検索IF.html
+- 利用者コネクタ内部IF_データ交換IF(CADDE).html
+- 利用者コネクタ内部IF_認証認可IF.html
+- 利用者コネクタ内部IF_来歴管理.html
 
 ### コネクタを利用した NGSIデータの取得方法
 [CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照
