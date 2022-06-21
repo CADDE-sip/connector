@@ -352,11 +352,12 @@ docker-compose -p provider down
 ### 提供者コネクタAPI
 提供者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
-- 提供者_カタログ検索IF.html
-- 提供者_コネクタメイン.html
-- 提供者_データ交換IF(CADDE).html
-- 提供者_認証認可IF.html
-- 提供者_来歴管理IF.html
+- 提供者_認可IF.html
+- 提供者コネクタ外部IF_カタログ検索IF.html
+- 提供者コネクタ外部IF_データ交換IF(CADDE).html
+- 提供者コネクタ内部IF_コネクタメイン.html
+- 提供者コネクタ内部IF_認証認可IF.html
+- 提供者コネクタ内部IF_来歴管理IF.html
 
 ## LICENSE
 [MIT](./LICENSE.md)
