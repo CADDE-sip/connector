@@ -98,7 +98,7 @@ sh setup.sh
   | :--------------------------------- | :----------------------------------------------------------------------- |
   | authentication_server_url          | 認証サーバのURL                                                      |
   | introspect                         | トークン検証設定                                                         |
-  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token"固定          |
+  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token/introspect"固定          |
   | federation                         | トークン連携設定                                                         |
   | federation - endpoint              | トークン連携エンドポイント。"protocol/openid-connect/token"固定          |
   | federation - grant_type            | 許諾タイプ。"urn:ietf:params:oauth:grant-type:token-exchange"固定        |
@@ -172,11 +172,12 @@ docker-compose -p consumer down
 ### 利用者コネクタAPI
 利用者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
-- 利用者_カタログ検索IF.html
-- 利用者_コネクタメイン.html
-- 利用者_データ交換IF(CADDE).html
-- 利用者_認証認可IF.html
-- 利用者_来歴管理IF.html
+- 利用者_認証IF.html
+- 利用者コネクタ外部IF_コネクタメイン.html
+- 利用者コネクタ内部IF_カタログ検索IF.html
+- 利用者コネクタ内部IF_データ交換IF(CADDE).html
+- 利用者コネクタ内部IF_認証認可IF.html
+- 利用者コネクタ内部IF_来歴管理.html
 
 ### コネクタを利用した NGSIデータの取得方法
 [CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照
@@ -267,7 +268,7 @@ sh setup.sh
   | :--------------------------------- | :----------------------------------------------------------------------- |
   | authentication_server_url          | 認可サーバのURL                                                      |
   | introspect                         | トークン検証設定                                                         |
-  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token"固定          |
+  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token/introspect"固定          |
   | federation                         | トークン連携設定                                                         |
   | federation - endpoint              | トークン連携エンドポイント。"protocol/openid-connect/token"固定          |
   | federation - grant_type            | 許諾タイプ。"urn:ietf:params:oauth:grant-type:token-exchange"固定        |
@@ -351,11 +352,12 @@ docker-compose -p provider down
 ### 提供者コネクタAPI
 提供者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
-- 提供者_カタログ検索IF.html
-- 提供者_コネクタメイン.html
-- 提供者_データ交換IF(CADDE).html
-- 提供者_認証認可IF.html
-- 提供者_来歴管理IF.html
+- 提供者_認可IF.html
+- 提供者コネクタ外部IF_カタログ検索IF.html
+- 提供者コネクタ外部IF_データ交換IF(CADDE).html
+- 提供者コネクタ内部IF_コネクタメイン.html
+- 提供者コネクタ内部IF_認証認可IF.html
+- 提供者コネクタ内部IF_来歴管理IF.html
 
 ## LICENSE
 [MIT](./LICENSE.md)
