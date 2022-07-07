@@ -32,7 +32,7 @@
 1. プロキシ(Squid)取得
 
 ```
-git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
+git clone https://(ユーザID)@github.com/CADDE-sip/connector.git
 ```
 
 2. コンフィグファイルの設定、ファイル配置
@@ -116,7 +116,7 @@ docker-compose down
 1. リバースプロキシ(nginx)取得
 
 ```
-git clone https://(ユーザID)@github.com/202009-LimitedRelease/connector.git
+git clone https://(ユーザID)@github.com/CADDE-sip/connector.git
 ```
 
 2. コンフィグファイルの設定、ファイル配置
