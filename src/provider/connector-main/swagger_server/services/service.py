@@ -257,9 +257,9 @@ def fetch_data(
             # リソースID取得
             resource_url_for_resource_id = resource_url
             if(resource_api_type == 'api/ngsi'):
+                ngsi_tenant = ''
+                ngsi_service_path = ''
                 for key in options_dict:
-                    ngsi_tenant = ''
-                    ngsi_service_path = ''
                     if 'fiware-service' == key.lower(): 
                         ngsi_tenant = ',Fiware-Service=' + options_dict[key].strip()
                     if 'fiware-servicepath' == key.lower(): 
