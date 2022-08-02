@@ -45,7 +45,7 @@
 1. 利用者コネクタ取得
 
 ```
-git clone https://(ユーザID)@github.com/CADDE-sip/connector
+git clone https://github.com/CADDE-sip/connector
 cd connector
 ```
 
@@ -195,7 +195,7 @@ docker-compose -p consumer down
 ### 提供者コネクタ構築手順
 1. 提供者コネクタの取得
 ```
-git clone https://(ユーザID)@github.com/CADDE-sip/connector
+git clone https://github.com/CADDE-sip/connector
 cd connector
 ```
 
