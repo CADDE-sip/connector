@@ -67,7 +67,6 @@ sh setup.sh
   | 提供者 ID                             | 提供者 ID を記載する 以下の 3 パラメータを保持<br>provider_connector_data_exchange_url<br>provider_connector_catalog_search_url<br>contract_management_service_url |
   | provider_connector_data_exchange_url  | 提供者データ提供 IF の URL                                                                                                                                         |
   | provider_connector_catalog_search_url | 提供者カタログ検索 IF の URL                                                                                                                                       |
-  | provider_connector_id                 | 来歴管理登録するときに提供者を特定するためのID                                                                                                                     |
   | contract_management_service_url       | 契約管理サーバの URL                                                                                                                                               |
   | contract_management_service_key       | 契約管理サーバの API キー                                                                                                                                          |
 
