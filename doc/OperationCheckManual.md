@@ -12,6 +12,7 @@
 - 利用者コネクタのプロキシに動作確認環境専用のクライアント証明書が設定されていることを前提とします。<br>
   [証明書のダウンロードはこちらから](../misc/OperationCheck/OperationCheckClientCertificate.zip) 
 
+## 動作確認手順
 1. アクセストークン取得
 
 ```
@@ -48,6 +49,7 @@ example_http.txt
   [証明書のダウンロードはこちらから](../misc/OperationCheck/OperationCheckClientCertificate.zip) 
 - 提供者コネクタにFWが存在する場合はIPアドレス「35.75.141.64」を許可設定されていることを前提とします。
 
+## 動作確認手順
 1. アクセストークン取得
 
 ```
