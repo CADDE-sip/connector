@@ -1,0 +1,8 @@
+{
+    "provider_id" : "cadde:verify_user01.aa",
+    "provider_connector_id" : "https://verify-provider.test.data-linkage.jp/",
+    "provider_connector_secret" : "dcfe2dbf-8cd1-4dd3-8512-8c7f044348aa",
+    "contract_management_service_url" : "test_contract_management_service_url",
+    "contract_management_service_key" : "test_contract_management_service_key",
+    "history_management_token" : "test_history_management_token"
+}

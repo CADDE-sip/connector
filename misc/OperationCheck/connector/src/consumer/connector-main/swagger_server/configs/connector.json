@@ -1,0 +1,5 @@
+{
+    "consumer_connector_id" : "https://verify-consumer.test.data-linkage.jp/",
+    "consumer_connector_secret" : "25f1c50c-15e6-45d7-a918-cd273d43e276",
+    "history_management_token" : "test_history_management_token"
+}
