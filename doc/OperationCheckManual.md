@@ -9,8 +9,8 @@
 構築済みの利用者コネクタを動作確認環境の提供者コネクタと接続する手順です。
 
 ## 前提
-- 利用者コネクタのプロキシに動作確認環境専用のクライアント証明書が設定されていることを前提とします。
-  [証明書のダウンロードはこちらから](misc/OperationCheck/OperationCheckClientCertificate) 
+- 利用者コネクタのプロキシに動作確認環境専用のクライアント証明書が設定されていることを前提とします。<br>
+  [証明書のダウンロードはこちらから](../misc/OperationCheck/OperationCheckClientCertificate.zip) 
 
 1. アクセストークン取得
 
@@ -44,8 +44,8 @@ example_http.txt
 動作確認環境の利用者コネクタと構築済みの提供者コネクタを接続する手順です。
 
 ## 前提
-- 提供者コネクタのリバースプロキシに動作確認環境専用のCA証明書が設定されていることを前提とします。
-  [証明書のダウンロードはこちらから](misc/OperationCheck/OperationCheckClientCertificate) 
+- 提供者コネクタのリバースプロキシに動作確認環境専用のCA証明書が設定されていることを前提とします。<br>
+  [証明書のダウンロードはこちらから](../misc/OperationCheck/OperationCheckClientCertificate.zip) 
 - 提供者コネクタにFWが存在する場合はIPアドレス「35.75.141.64」を許可設定されていることを前提とします。
 
 1. アクセストークン取得
