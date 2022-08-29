@@ -358,6 +358,10 @@ docker-compose -p provider down
 - 提供者コネクタ内部IF_認証認可IF.html
 - 提供者コネクタ内部IF_来歴管理IF.html
 
+## 動作確認環境利用ガイド
+動作確認の利用方法については下記参照。<br>
+[動作確認環境利用ガイド](doc/OperationCheckManual.md "動作確認環境利用ガイド")
+
 ## LICENSE
 [MIT](./LICENSE.md)
 
