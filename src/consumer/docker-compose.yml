@@ -2,7 +2,7 @@ version: "3"
 services:
   consumer-catalog-search:
     build: catalog-search
-    image: consumer/catalog-search:1.1
+    image: consumer/catalog-search:3.0.0
     hostname: consumer_catalog_search
     container_name: consumer_catalog_search
     restart: always
@@ -21,7 +21,7 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   consumer-connector-main:
     build: connector-main
-    image: consumer/connector-main:1.1
+    image: consumer/connector-main:3.0.0
     hostname: consumer_connector_main
     container_name: consumer_connector_main
     restart: always
@@ -42,7 +42,7 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   consumer-data-exchange:
     build: data-exchange
-    image: consumer/data-exchange:1.1
+    image: consumer/data-exchange:3.0.0
     hostname: consumer_data_exchange
     container_name: consumer_data_exchange
     restart: always
@@ -61,7 +61,7 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   authentication-authorization:
     build: authentication-authorization
-    image: consumer/authentication-authorization:1.1
+    image: consumer/authentication-authorization:3.0.0
     hostname: consumer_authentication_authorization
     container_name: consumer_authentication_authorization
     restart: always
@@ -80,7 +80,7 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   provenance-management:
     build: provenance-management
-    image: consumer/provenance-management:1.1
+    image: consumer/provenance-management:3.0.0
     hostname: consumer_provenance_management
     container_name: consumer_provenance_management
     restart: always
