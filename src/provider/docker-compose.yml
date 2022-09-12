@@ -2,7 +2,7 @@ version: "3"
 services:
   provider-catalog-search:
     build: catalog-search
-    image: provider/catalog-search:1.1
+    image: provider/catalog-search:3.0.0
     hostname: provider_catalog_search
     container_name: provider_catalog_search
     restart: always
@@ -20,7 +20,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   provider-connector-main:
     build: connector-main
-    image: provider/connector-main:1.1
+    image: provider/connector-main:3.0.0
     hostname: provider_connector_main
     container_name: provider_connector_main
     restart: always
@@ -36,7 +36,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   provider-data-exchange:
     build: data-exchange
-    image: provider/data-exchange:1.1
+    image: provider/data-exchange:3.0.0
     hostname: provider_data_exchange
     container_name: provider_data_exchange
     restart: always
@@ -54,7 +54,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   provider-authentication-authorization:
     build: authentication-authorization
-    image: provider/authentication-authorization:1.1
+    image: provider/authentication-authorization:3.0.0
     hostname: provider_authentication_authorization
     container_name: provider_authentication_authorization
     restart: always
@@ -70,7 +70,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   provider-provenance-management:
     build: provenance-management
-    image: provider/provenance-management:1.1
+    image: provider/provenance-management:3.0.0
     hostname: provider_provenance_management
     container_name: provider_provenance_management
     restart: always
