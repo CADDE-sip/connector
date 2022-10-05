@@ -1,0 +1,10 @@
+{
+    "connector_location": {
+        "cadde:verify_user01.aa": {
+            "provider_connector_data_exchange_url": "https://verify-provider.test.data-linkage.jp/cadde/api/v1/file",
+            "provider_connector_catalog_search_url": "https://verify-provider.test.data-linkage.jp/api/3/action/package_search",
+            "contract_management_service_url" : "http://example.com",
+            "contract_management_service_key" : "test_contract_management_service_key"
+        }
+    }
+}
