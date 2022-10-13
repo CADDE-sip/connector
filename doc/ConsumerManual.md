@@ -23,7 +23,7 @@ APIの実行例を下記に示します。<br>
 - Authorizationヘッダには、認証・認可を行う場合はIdPが発行したトークンの値を指定。認証・認可を行わない場合はヘッダ未設定。
 - 検索クエリ内の{詳細検索用データセットID} には、横断カタログ検索結果(extras:caddec_dataset_id_for_detail)の値を設定
 ```
-$ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization: {トークン}" -H "x-idp-url: {IdPのURL}"
+$ curl -v -X GET 'http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/catalog?fq=caddec_dataset_id_for_detail:{詳細検索用データセットID}' -s -S -H "Cache-Control: no-cache" -H "x-cadde-search: detail" -H "x-cadde-provider: {提供者ID}" -H "Authorization:Bearer {トークン}" -H "x-idp-url: {IdPのURL}"
 ```
 
 ### (1-3) ファイル取得
@@ -152,7 +152,7 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 
   | Authorization | 概要                                |
   | :------------ | :---------------------------------- |
-  | トークンの値  | IdPが発行するトークンを設定します。 |
+  | トークンの値  | IdPが発行するトークンを設定します。（Bearer指定） |
 <br>
 
 トークンは、下記コマンドによって得られるレスポンスのaccess_tokenを使用する。

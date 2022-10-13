@@ -90,7 +90,7 @@ sh setup.sh
   | auth                               | NGSI へ API アクセスするためのアクセストークンを設定                           |
 
 - authentication.json
-  <br>connector/src/consumer/authentication-authorization/swagger_server/configs/に配置<br>認証時の接続先を記載
+  <br>connector/src/consumer/authentication/swagger_server/configs/に配置<br>認証時の接続先を記載
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
@@ -270,7 +270,7 @@ sh setup.sh
 
 (5) 認証および認可をおこなう場合
 - authorization.json
-  <br>connector/src/provider/authentication-authorization/swagger_server/configs/に配置<br>認証および認可時の接続先を記載
+  <br>connector/src/provider/authorization/swagger_server/configs/に配置<br>認証および認可時の接続先を記載
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
