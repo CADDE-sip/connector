@@ -1,10 +1,9 @@
 {
     "ftp_auth": [
         {
-            "domain" : "FTP_SERVER_URL:443",
+            "domain" : "ftp://example.com:443",
             "ftp_id" : "anonymous",
-            "ftp_pass" : "anonymous",
-            "authorization" : "disable"
+            "ftp_pass" : "anonymous"
         }
     ]
 }

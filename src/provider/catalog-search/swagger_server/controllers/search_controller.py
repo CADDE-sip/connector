@@ -35,7 +35,7 @@ def search(q=None, Authorization=None):  # noqa: E501
 
     logger.debug(
         get_message(
-            '05001N', [
+            '010101001N', [
                 query_string, log_message_none_parameter_replace(authorization)]))
 
     data = search_catalog_ckan(query_string, authorization, external_interface)

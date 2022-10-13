@@ -1,9 +1,28 @@
 {
     "ngsi_auth" : [
         {
-            "domain" : "SERVER_URL:PORT",
-            "auth" : "input API key.",
-            "authorization" : "disable"
+            "domain" : "example.com:8080",
+            "auth" : "input API key."
+        }
+    ],
+    "authorization": [
+        {
+            "url" : "https://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/open",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url" : "https://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/open",
+            "enable" : false
         }
     ]
 }

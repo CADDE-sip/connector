@@ -9,16 +9,16 @@ from swagger_server.utilities.internal_interface import InternalInterface
 
 # 接続先URL (仮の値)
 __URL_HISTORY_LINEAGE = '/lineage/'
-__URL_HISTORY_SEARCHEVENTS =  '/searchevents'
+__URL_HISTORY_SEARCHEVENTS = '/searchevents'
 
 # コンフィグ情報
 __CONFIG_PROVENANCE_FILE_PATH = '/usr/src/app/swagger_server/configs/provenance.json'
 __CONFIG_PROVENANCE_MANAGEMENT_URL = 'provenance_management_api_url'
 
-# 受信履歴登録要求のcdleventtypeの値
+# 受信履歴登録のcdleventtypeの値
 __CDL_EVENT_TYPE_RECEIVED = 'Received'
 
-# 受信履歴登録要求のレスポンスの識別情報のキー
+# 受信履歴登録のレスポンスの識別情報のキー
 __EVENTWITHHASH_RESPONSE_EVENT_ID_KEY = 'cdleventid'
 
 # 履歴取得方向の正常値リスト
@@ -31,18 +31,20 @@ __DEPTH_MIN_VALUE = -1
 def received_history_registration(
         provider_id: str,
         consumer_id: str,
-        caddec_resource_id_for_provenance: str,
-        token: str,
+        resource_id_for_provenance: str,
+        provenance_management_service_url: str,
+        authorization: str,
         internal_interface: InternalInterface,
         external_interface: ExternalInterface) -> str:
     """
     来歴管理I/Fに受信履歴登録を依頼する
 
     Args:
-        provider_id str: 提供者ID
-        consumer_id str: 利用者ID
-        caddec_resource_id_for_provenance str:  交換実績記録用リソースID
-        token: str:  来歴管理者トークン(2021年3月版は未使用)
+        provider_id str: CADDEユーザID（提供者）
+        consumer_id str: CADDEユーザID（利用者）
+        resource_id_for_provenance str:  交換実績記録用リソースID
+        provenance_management_service_url str:  来歴管理サービスURL
+        authorization: str:  認証トークン
         internal_interface InternalInterface : コンフィグ情報取得処理を行うインタフェース
         external_interface ExternalInterface : 外部にリクエストを行うインタフェース
 
@@ -50,10 +52,9 @@ def received_history_registration(
         str : 識別情報
 
     Raises:
-        Cadde_excption : コンフィグファイルからprovenance_management_api_urlを取得できない場合、エラーコード : 00002E
-        Cadde_excption : 来歴管理に登録できなかった場合 エラーコード : 19002E
+        Cadde_excption : 来歴管理に登録できなかった場合 エラーコード : 020301002E
     """
-    cdlpreviousevents = [caddec_resource_id_for_provenance]
+    cdlpreviousevents = [resource_id_for_provenance]
 
     # コンフィグファイルからURL取得
     try:
@@ -61,12 +62,11 @@ def received_history_registration(
             __CONFIG_PROVENANCE_FILE_PATH)
         server_url = config[__CONFIG_PROVENANCE_MANAGEMENT_URL]
     except Exception:
-        raise CaddeException(
-            message_id='00002E',
-            status_code=500,
-            replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
+        # 取得ができない場合はパラメータよりURLを設定
+        server_url = provenance_management_service_url
 
     configuration = openapi_client.Configuration(host=server_url)
+
     with openapi_client.ApiClient(configuration=configuration) as api_client:
         api_instance = register_event_api.RegisterEventApi(api_client)
         request = CDLEvent(
@@ -75,28 +75,32 @@ def received_history_registration(
             cdlpreviousevents=cdlpreviousevents,
             datauser=consumer_id,
             dataprovider=provider_id)
+
         try:
             response = api_instance.eventwithhash(request=request)
-            identification_information = response['cdleventid']
         except Exception as e:
-            raise CaddeException(message_id='19002E',
-                                 status_code=500,
-                                 replace_str_list=[str(e)])
+            raise CaddeException(
+                message_id='020301002E',
+                replace_str_list=[str(e)])
+        if 'cdleventid' not in response:
+            raise CaddeException(message_id='020301003E')
+        identification_information = response['cdleventid']
 
     return identification_information
 
 
 def history_confirmation_call(
-        caddec_resource_id_for_provenance: str,
+        resource_id_for_provenance: str,
         direction: str,
         depth: int,
+        authorization: str,
         internal_interface: InternalInterface,
         external_interface: ExternalInterface) -> Response:
     """
-    来歴管理I/Fに来歴確認呼び出し処理を依頼する
+    来歴管理I/Fに来歴確認処理を依頼する
 
     Args:
-        caddec_resource_id_for_provenance str: 交換実績記録用リソースID
+        resource_id_for_provenance str: 交換実績記録用リソースID
         direction str: 履歴取得方向
         depth int: 検索深度
         internal_interface InternalInterface : コンフィグ情報取得処理を行うインタフェース
@@ -106,19 +110,19 @@ def history_confirmation_call(
         Response : 来歴管理I/Fのレスポンス
 
     Raises:
-        Cadde_excption : コンフィグファイルからprovenance_management_api_urlを取得できない場合、エラーコード : 00002E
-        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 1D002E
-        Cadde_excption : レスポンスを正常に取得できなかった場合 エラーコード : 1D003E
-        Cadde_excption : 履歴取得方向に不正な値が設定されている場合 エラーコード : 1D004E
-        Cadde_excption : 検索深度に不正な値が設定されている場合 エラーコード : 1D005E
+        Cadde_excption : コンフィグファイルからprovenance_management_api_urlを取得できない場合  エラーコード : 020302002E
+        Cadde_excption : ステータスコード2xxでない場合                                          エラーコード : 020302003E
+        Cadde_excption : レスポンスを正常に取得できなかった場合                                 エラーコード : 020302004E
+        Cadde_excption : 履歴取得方向に不正な値が設定されている場合                             エラーコード : 020302005E
+        Cadde_excption : 検索深度に不正な値が設定されている場合                                 エラーコード : 020302006E
 
     """
 
     if direction is not None and direction not in __DIRECTION_NORMALITY_VALUES:
-        raise CaddeException(message_id='1D004E')
+        raise CaddeException(message_id='020302002E')
 
     if depth is not None and bool(depth < __DEPTH_MIN_VALUE):
-        raise CaddeException(message_id='1D005E')
+        raise CaddeException(message_id='020302003E')
 
     # コンフィグファイルからURL取得
     try:
@@ -127,11 +131,10 @@ def history_confirmation_call(
         server_url = config[__CONFIG_PROVENANCE_MANAGEMENT_URL]
     except Exception:
         raise CaddeException(
-            message_id='00002E',
-            status_code=500,
+            message_id='020302004E',
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
 
-    send_url = server_url + __URL_HISTORY_LINEAGE + caddec_resource_id_for_provenance + '?'
+    send_url = server_url + __URL_HISTORY_LINEAGE + resource_id_for_provenance + '?'
 
     if direction is not None:
         send_url = send_url + 'direction=' + direction
@@ -144,18 +147,19 @@ def history_confirmation_call(
     response = external_interface.http_get(send_url)
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            message_id='1D002E',
+            message_id='020302005E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])
 
     if not hasattr(response, 'text') or not response.text:
-        raise CaddeException(message_id='1D003E')
+        raise CaddeException(message_id='020302006E')
 
     return response
 
 
 def history_id_search_call(
+        authorization: str,
         body: dict,
         internal_interface: InternalInterface,
         external_interface: ExternalInterface) -> Response:
@@ -171,9 +175,9 @@ def history_id_search_call(
         Response : 来歴管理I/Fのレスポンス
 
     Raises:
-        Cadde_excption : コンフィグファイルからprovenance_management_api_urlを取得できない場合、エラーコード : 00002E
-        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 1E002E
-        Cadde_excption : レスポンスを正常に取得できなかった場合 エラーコード : 1E003E
+        Cadde_excption : コンフィグファイルからprovenance_management_api_urlを取得できない場合、エラーコード : 020303002E
+        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 020303003E
+        Cadde_excption : レスポンスを正常に取得できなかった場合 エラーコード : 020303004E
 
     """
     header_dict = {'Content-Type': 'application/json'}
@@ -185,8 +189,7 @@ def history_id_search_call(
         server_url = config[__CONFIG_PROVENANCE_MANAGEMENT_URL]
     except Exception:
         raise CaddeException(
-            message_id='00002E',
-            status_code=500,
+            message_id='020303002E',
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
 
     response = external_interface.http_post(
@@ -194,24 +197,24 @@ def history_id_search_call(
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            message_id='1E002E',
+            message_id='020303003E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])
 
     if not hasattr(response, 'text') or not response.text:
-        raise CaddeException(message_id='1E003E')
+        raise CaddeException(message_id='020303004E')
 
     return response
-    
+
 
 def voucher_received_call(
-        provider_id:str,
-        consumer_id:str,
-        contract_id:str,
-        hash_get_data:str,
-        contract_management_service_url:str,
-        contract_management_service_key:str,
+        provider_id: str,
+        consumer_id: str,
+        contract_id: str,
+        hash_get_data: str,
+        contract_management_service_url: str,
+        authorization: str,
         external_interface: ExternalInterface) -> str:
     """
     来歴管理I/Fにデータ証憑通知（受信）を依頼する。
@@ -222,19 +225,19 @@ def voucher_received_call(
        contract_id str : 取引ID
        hash_get_data str : ハッシュ値
        contract_management_service_url str : 契約管理サービスURL
-       contract_management_service_key str : 契約管理サービスキー
+       authorization str : 認可トークン
        external_interface ExternalInterface : 外部にリクエストを行うインタフェース
 
     Returns:
         Response : 来歴管理I/Fのレスポンス
 
     Raises:
-        Cadde_excption : エラーが発生している場合は エラーコード : 1F002E
+        Cadde_excption : エラーが発生している場合は エラーコード : 020304002E
 
     """
 
     voucher_received_headers = {
-        'x-api-key': contract_management_service_key
+        'Authorization': authorization
     }
     voucher_received_body = {
         'consumer_id': consumer_id,
@@ -247,13 +250,9 @@ def voucher_received_call(
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            message_id='1F002E',
+            message_id='020304002E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])
 
-    # TODO 契約管理サービスのIF仕様に応じて変更予定
-    result = ''
-    return result
-    
-    
+    return response

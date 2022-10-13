@@ -12,8 +12,8 @@ internal_interface = InternalInterface()
 external_interface = ExternalInterface()
 
 
-def searchevents(body=None):  # noqa: E501
-    """API. 履歴ID検索呼び出し
+def searchevents(authorization=None, body=None):  # noqa: E501
+    """API. 履歴ID検索
 
     ボディ部に設定した検索条件を基に履歴情報を取得する。 ヘッダに&#x60;content-type: application/json&#x60; を追加してください.  # noqa: E501
 
@@ -23,13 +23,20 @@ def searchevents(body=None):  # noqa: E501
 
     :rtype: CDLEventList
     """
+
+    authorization = connexion.request.headers['Authorization']
+
     if connexion.request.is_json:
         #    body = Body.from_dict(connexion.request.get_json())  # noqa: E501
         body = connexion.request.get_json()
 
-    logger.debug(get_message('1E001N', [body]))
+    logger.debug(get_message('020303001N', [body]))
 
-    search_result = history_id_search_call(body, internal_interface, external_interface)
+    search_result = history_id_search_call(
+        authorization,
+        body,
+        internal_interface,
+        external_interface)
     response_headers = dict(search_result.headers)
     if 'Transfer-Encoding' in response_headers:
         del response_headers['Transfer-Encoding']

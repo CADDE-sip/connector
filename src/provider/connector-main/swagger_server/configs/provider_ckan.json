@@ -1,0 +1,5 @@
+{
+    "release_ckan_url" : "https://example.com",
+    "detail_ckan_url" : "https://example.com",
+    "authorization" : true
+}

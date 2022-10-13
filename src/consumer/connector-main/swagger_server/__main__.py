@@ -17,7 +17,7 @@ def main():
     app.add_api(
         'swagger.yaml',
         arguments={
-            'title': 'CADDE v1 Specification 利用者 コネクタメイン'},
+            'title': 'CADDE v4 Specification 利用者 コネクタメイン'},
         pythonic_params=True)
     app.run(port=8080, threaded=True)
 

@@ -11,13 +11,15 @@ logger = logging.getLogger(__name__)
 external_interface = ExternalInterface()
 
 
-def lineage(x_caddec_resource_id_for_provenance=None, x_direction=None, x_depth=None):  # noqa: E501
-    """API. 来歴確認呼び出し
+def lineage(cadde_resource_id_for_provenance=None, authorization=None, direction=None, depth=None):  # noqa: E501
+    """API. 来歴確認
 
     指定された交換実績記録用リソースIDから始まる来歴情報を取得する。  # noqa: E501
 
-    :param caddec_resource_id_for_provenance: 交換実績記録用リソースID
-    :type caddec_resource_id_for_provenance: str
+    :param authorization: 利用者トークン
+    :type authorization: str
+    :param cadde_resource_id_for_provenance: 交換実績記録用リソースID
+    :type cadde_resource_id_for_provenance: str
     :param direction: 履歴取得方向 [BACKWARD(&#x3D;default),FORWARD, BOTH]
     :type direction: str
     :param depth: 交換実績記録用リソースIDで指定されたイベントからの深さ. 0は、交換実績記録用リソースIDで指定されたイベントを要求します. 正の整数は、指定されたレコードから指定された深さ以下のである全てのイベントを要求します. -1は、指定されたイベントから到達可能な全てのイベントを要求します.
@@ -30,21 +32,22 @@ def lineage(x_caddec_resource_id_for_provenance=None, x_direction=None, x_depth=
     # 引数の値は利用しない。
     # direction、depthはyamlファイルでデフォルト値が設定されているが、
     # openapiではデフォルト値が廃止されているため、取得できない場合がある。
-    caddec_resource_id_for_provenance = connexion.request.headers['x-caddec-resource-id-for-provenance']
+    authorization = connexion.request.headers['Authorization']
     direction = None
     depth = None
-    if 'x-direction' in connexion.request.headers:
-        direction = connexion.request.headers['x-direction']
-    if 'x-depth' in connexion.request.headers:
-        depth = connexion.request.headers['x-depth']
+    if 'x-cadde-direction' in connexion.request.headers:
+        direction = connexion.request.headers['x-cadde-direction']
+    if 'x-cadde-depth' in connexion.request.headers:
+        depth = connexion.request.headers['x-cadde-depth']
 
-    logger.debug(get_message('1B001N',
-                             [caddec_resource_id_for_provenance,
+    logger.debug(get_message('020005001N',
+                             [cadde_resource_id_for_provenance,
                               log_message_none_parameter_replace(direction),
                               log_message_none_parameter_replace(depth)]))
 
     search_result = history_confirmation_call(
-        caddec_resource_id_for_provenance,
+        authorization,
+        cadde_resource_id_for_provenance,
         direction,
         depth,
         external_interface)

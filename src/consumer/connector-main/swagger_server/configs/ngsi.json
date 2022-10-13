@@ -1,9 +1,8 @@
 {
     "ngsi_auth" : [
         {
-            "domain" : "SERVER_URL:PORT",
-            "auth" : "input API key.",
-            "authorization" : "disable"
+            "domain" : "example.com:PORT",
+            "auth" : "input API key."
         }
     ]
 }

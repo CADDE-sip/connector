@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: CADDE v3 Specification 提供者 来歴管理I/F
-  version: "3.0"
+  title: CADDE v4 Specification 提供者 来歴管理I/F
+  version: "4.0"
 servers:
 - url: /
 paths:
@@ -9,9 +9,9 @@ paths:
     post:
       tags:
       - Sent
-      summary: API. 送信履歴登録要求
+      summary: API. 送信履歴登録
       description: |-
-        送信履歴登録要求を行い、識別情報を取得する。
+        来歴管理に送信履歴登録を行い、識別情報を取得する。
 
         Response:
         * 処理が成功した場合は200を返す。
@@ -34,7 +34,7 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-caddec-resource-id-for-provenance
+      - name: x-cadde-resource-id-for-provenance
         in: header
         description: 交換実績記録用リソースID
         required: true
@@ -42,9 +42,9 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-token
+      - name: Authorization
         in: header
-        description: 来歴管理者用トークン
+        description: 認証方式：Bearer。利認証トークン
         required: true
         style: simple
         explode: false
@@ -60,51 +60,26 @@ paths:
               explode: false
               schema:
                 type: string
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
+            x-cadde-provenance-management-service-url:
+              description: 来歴管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
+              example: ""
         "500":
           description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: コンフィグファイルに必須パラメータが設定されていなかった場合
                   value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
+                    detail: コンフィグファイルに(取得パラメータ)が設定されていません。CADDE管理者に問い合わせください。
                     status: 500
                     title: ""
                     type: ""
@@ -113,9 +88,9 @@ paths:
     post:
       tags:
       - Voucher
-      summary: API. データ証憑通知（送信）要求
+      summary: API. データ証憑通知（送信）
       description: |-
-        データ証憑通知（受信）を行う。
+        契約管理サービスにデータ証憑通知（受信）を行う。
 
         Response:
         * 処理が成功した場合は200を返す。
@@ -146,7 +121,7 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-hash-get-data
+      - name: x-cadde-hash-get-data
         in: header
         description: |-
          ハッシュ値
@@ -156,7 +131,7 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-cadde-contract-management-url
+      - name: x-cadde-contract-management-service-url
         in: header
         description: 契約管理サービスURL
         required: true
@@ -164,9 +139,9 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-cadde-contract-management-key
+      - name: Authorization
         in: header
-        description: 契約管理サービスキー
+        description: 認証方式：Bearer。利認証トークン
         required: true
         style: simple
         explode: false
@@ -175,54 +150,9 @@ paths:
       responses:
         "200":
           description: 処理完了のレスポンスを返す
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
+              example: ""
       x-openapi-router-controller: swagger_server.controllers.voucher_sent_controller
 components:
   schemas:

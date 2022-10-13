@@ -39,7 +39,7 @@ def search(q=None, x_cadde_search=None, x_cadde_provider_connector_url=None, Aut
     search = connexion.request.headers['x-cadde-search']
 
     if search == 'meta':
-        logger.debug(get_message('16001N', [query_string, search]))
+        logger.debug(get_message('020101001N', [query_string, search]))
 
         data = search_catalog_meta(
             query_string, internal_interface, external_interface)
@@ -48,13 +48,13 @@ def search(q=None, x_cadde_search=None, x_cadde_provider_connector_url=None, Aut
         if 'x-cadde-provider-connector-url' in connexion.request.headers:
             provider_connector_url = connexion.request.headers['x-cadde-provider-connector-url']
         else:
-            raise CaddeException(message_id='00001E')
+            raise CaddeException(message_id='020101002E')
 
         authorization = None
         if 'Authorization' in connexion.request.headers:
             authorization = connexion.request.headers['Authorization']
 
-        logger.debug(get_message('17001N', [query_string, log_message_none_parameter_replace(
+        logger.debug(get_message('020101003N', [query_string, log_message_none_parameter_replace(
             provider_connector_url), log_message_none_parameter_replace(authorization), search]))
 
         data = search_catalog_detail(

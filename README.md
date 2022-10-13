@@ -3,9 +3,9 @@
   本ドキュメントは、コネクタの実装方法/利用方法についてのガイドラインです。<br>
   したがって、分野間データ連携基盤(CADDE)やコネクタの基本事項についての説明は割愛しています。<br>
   コネクタについてのご質問、ご不明点、ご指摘事項、利用時の不具合、などがありましたら、以下にご連絡ください。<br>
+  ※CADDEは情報・システム研究機構（国立情報学研究所）が商標登録出願中です。<br>
+<br>
 [問い合わせ先](#問い合わせ先)
-
-※CADDEは情報・システム研究機構（国立情報学研究所）が商標登録出願中です。<br>
 
 # 分野間データ連携基盤: コネクタ
 
@@ -38,7 +38,7 @@
 
 # 利用者コネクタ
 ## 利用者コネクタ環境準備
-[分野間データ連携基盤: TLS相互認証設定例 利用者環境プロキシ設定](misc/README.md "利用者環境プロキシ設定") 参照。
+[分野間データ連携基盤: TLS相互認証設定例 利用者環境プロキシ設定](doc/TSLManual.md "利用者環境プロキシ設定") 参照。
 
 ## 利用者コネクタ構築手順
 
@@ -61,64 +61,58 @@ sh setup.sh
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置<br>提供者側に接続を行う際に指定する提供者側のアドレス設定を記載<br>
   <br>個別にデータ提供者接続先情報を追加する場合は、利用者コネクタ内のlocation.jsonを編集してください。<br>
 
-  | 設定パラメータ                        | 概要                                                                                                                                                               |
-  | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | connector_location                    | 以下の提供者 ID を保持                                                                                                                                             |
-  | 提供者 ID                             | 提供者 ID を記載する 以下の 3 パラメータを保持<br>provider_connector_data_exchange_url<br>provider_connector_catalog_search_url<br>contract_management_service_url |
-  | provider_connector_data_exchange_url  | 提供者データ提供 IF の URL                                                                                                                                         |
-  | provider_connector_catalog_search_url | 提供者カタログ検索 IF の URL                                                                                                                                       |
-  | provider_connector_id                 | 来歴管理登録するときに提供者を特定するためのID                                                                                                                     |
-  | contract_management_service_url       | 契約管理サーバの URL                                                                                                                                               |
-  | contract_management_service_key       | 契約管理サーバの API キー                                                                                                                                          |
+  | 設定パラメータ                     | 概要                                                                           |
+  | :--------------------------------- | :----------------------------------------------------------------------------- |
+  | connector_location                 | 以下の提供者 ID を保持                                                         |
+  | 提供者 ID                          | 提供者 ID を記載する 以下のパラメータを保持<br>provider_connector_url          |
+  | provider_connector_url             | 提供者コネクタのアクセスURL                                                    |
 
 - connector.json
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
   <br>認証サーバに登録した利用者コネクタのIDとシークレットを記載<br>
 
-  | 設定パラメータ                        | 概要                                                                                                                                                               |
-  | :------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | consumer_connector_id                 | 認証サーバに設定した利用者コネクタのID                                                                                                                         |
-  | consumer_connector_secret             | 認証サーバが発行した利用者コネクタのシークレット                                                                                                               |
-  | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                                                                                                              |
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | consumer_connector_id              | 認証サーバに設定した利用者コネクタのID                          |
+  | consumer_connector_secret          | 認証サーバが発行した利用者コネクタのシークレット                |
+  | location_service_url               | ロケーションサービスのアクセスURL                               |
+  | trace_log_enable                   | トレース用ログ出力有無                                          |
 
-- idp.json
+- ngsi.json
+  <br>利用者コネクタから提供者コネクタを介さずNGSIサーバに直接アクセスする場合の利用者ID、アクセストークンを設定
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
-  <br>IdPのURLと認証サーバのアイデンティティプロバイダー名を記載
-  <br>利用者側で外部IdPによる認証を行わない場合、CADDEが提供するIdPを利用
+  <br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
 
-  | 設定パラメータ               | 概要                           |
-  | :--------------------------- | :----------------------------- |
-  | CADDEが提供するIdP           | "cadde"固定                    |
-  | CADDEが連携する外部IdPのURL  | アイデンティティプロバイダー名 |
+  | 設定パラメータ                     | 概要                                                                           |
+  | :--------------------------------- | :----------------------------------------------------------------------------- |
+  | ngsi_auth                          | 以下、ドメイン毎の設定を配列で保持                                             |
+  | domain                             | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載         |
+  | auth                               | NGSI へ API アクセスするためのアクセストークンを設定                           |
 
 - authentication.json
   <br>connector/src/consumer/authentication-authorization/swagger_server/configs/に配置<br>認証時の接続先を記載
 
-  | 設定パラメータ                     | 概要                                                                     |
-  | :--------------------------------- | :----------------------------------------------------------------------- |
-  | authentication_server_url          | 認証サーバのURL                                                      |
-  | introspect                         | トークン検証設定                                                         |
-  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token/introspect"固定          |
-  | federation                         | トークン連携設定                                                         |
-  | federation - endpoint              | トークン連携エンドポイント。"protocol/openid-connect/token"固定          |
-  | federation - grant_type            | 許諾タイプ。"urn:ietf:params:oauth:grant-type:token-exchange"固定        |
-  | federation - subject_token_type    | トークンタイプ。"urn:ietf:params:oauth:token-type:access_token"固定      |
-  | federation - requested_token_type  | 要求トークンタイプ。"urn:ietf:params:oauth:token-type:access_token"固定  |
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | authentication_server_url          | 認証サーバのアクセスURL                                         |
 
-- ckan.json
+- public_ckan.json
   <br>connector/src/consumer/catalog-search/swagger_server/configs/に配置<br>CKAN の横断検索時の接続先の設定を記載
-  
-  | 設定パラメータ | 概要                     |
-  | :------------- | :----------------------- |
-  | ckan_url       | 横断検索時の横断検索サーバのURLを記載 | 
+
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | public_ckan_url                    | 横断検索時の横断検索サーバのURLを記載                           |
 
 - provenance.json
-  <br>connector/src/consumer/provenance-management/swagger_server/configs/に配置<br>来歴管理サーバのURLの設定を記載
-  <br>来歴管理I/FがおなじDockerネットワークで起動している場合は変更不要
-  
-  | 設定パラメータ                 | 概要                     |
-  | :----------------------------- | :----------------------- |
-  | provenance_management_api_url  | 来歴管理サーバのURL      | 
+  <br>connector/src/consumer/provenance-management/swagger_server/configs/に配置
+  <br>来歴管理サーバのURLの設定を記載
+  <br>※来歴の検索時に使用する
+  <br>※来歴管理を行う場合は認証認可が必須のためconnector.jsonの設定も必要となる
+  <br>※データ取得時は提供者側の来歴管理サーバのアクセスURL宛に履歴登録を行うため、本設定は使用しない
+
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | provenance_management_api_url      | 来歴管理サーバのアクセスURL                                     | 
 
 4. 利用者環境情報の設定
 
@@ -145,24 +139,24 @@ cp -p (自己署名SSL証明書ファイル名) /etc/docker/certs.d/(自己署�
 
 ```
 cd connector/src/consumer
-docker-compose -p consumer up -d
+docker compose -p consumer up -d
 ```
 
 2. 利用者コネクタ起動確認
 StateがすべてUpとなっていることを確認
 ```
-docker-compose -p consumer ps
-                Name                             Command             State      Ports
----------------------------------------------------------------------------------------
-consumer_authentication_authorization   python3 -m swagger_server   Up         8080/tcp
-consumer_catalog_search                 python3 -m swagger_server   Up         8080/tcp
-consumer_connector_main                 python3 -m swagger_server   Up         0.0.0.0:80->8080/tcp
-consumer_data_exchange                  python3 -m swagger_server   Up         8080/tcp
-consumer_provenance_management          python3 -m swagger_server   Up         8080/tcp
+docker compose -p consumer ps
+NAME                             COMMAND                  SERVICE                   STATUS              PORTS
+consumer_authentication          "python3 -m swagger_…"   authentication            running             8080/tcp
+consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-search   running             8080/tcp
+consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main   running             0.0.0.0:80->8080/tcp, :::80->8080/tcp
+consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange    running             8080/tcp
+consumer_provenance_management   "python3 -m swagger_…"   provenance-management     running             8080/tcp
+forward-proxy                    "/usr/sbin/squid '-N…"   squid                     running             0.0.0.0:3128->3128/tcp, :::3128->3128/tcp
 ```
 ## 利用者コネクタ停止手順
 ```
-docker-compose -p consumer down
+docker compose -p consumer down
 ```
 
 ## 利用者コネクタ利用ガイド
@@ -172,12 +166,11 @@ docker-compose -p consumer down
 ### 利用者コネクタAPI
 利用者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
-- 利用者_認証IF.html
-- 利用者コネクタ外部IF_コネクタメイン.html
-- 利用者コネクタ内部IF_カタログ検索IF.html
-- 利用者コネクタ内部IF_データ交換IF(CADDE).html
-- 利用者コネクタ内部IF_認証認可IF.html
-- 利用者コネクタ内部IF_来歴管理.html
+- 利用者_カタログ検索IF.html
+- 利用者_コネクタメイン.html
+- 利用者_データ交換IF(CADDE).html
+- 利用者_認証認可IF.html
+- 利用者_来歴管理IF.html
 
 ### コネクタを利用した NGSIデータの取得方法
 [CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照
@@ -188,7 +181,7 @@ docker-compose -p consumer down
 # 提供者コネクタ
 
 ## 提供者コネクタ環境準備
-[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](misc/README.md "提供者環境リバースプロキシ設定")  参照。
+[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TSLManual.md "提供者環境リバースプロキシ設定")  参照。
 
 [提供者環境構築ガイド](doc/ProviderManual.md "提供者環境構築ガイド")
 
@@ -208,121 +201,119 @@ sh setup.sh
 3. コンフィグファイルの設定<br>
 
 (1) CKANサーバを提供者コネクタ経由で詳細検索および公開する場合
-- ckan.json
+- provider_ckan.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>CKANの接続先の設定を記載
-  
-  | 設定パラメータ    | 概要                      |
-  | :---------------- | :------------------------ |
-  | release_ckan_url  | 横断検索用CKANのURLを記載 |
-  | detail_ckan_url   | 詳細検索用CKANのURLを記載 |
-  
+
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | release_ckan_url                   | カタログサイト(公開)のアクセスURL                               |
+  | detail_ckan_url                    | カタログサイト(詳細)のアクセスURL                               |
+  | authorization                      | カタログサイト(詳細)アクセス時に認可確認を行うか否かを設定      |
+
 (2) データ管理サーバ(HTTPサーバ)を提供者コネクタ経由で公開する場合<br>
-(2-1) basic認証ありHTTPサーバに接続の場合
+(2-1) 認証ありHTTPサーバに接続の場合
 - http.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>http 接続でファイル取得する際に basic 認証が必要なドメインの設定を記載<br>
 
-  | 設定パラメータ | 概要                                                                                          |
-  | :------------- | :-------------------------------------------------------------------------------------------- |
-  | basic_auth     | 以下、ドメイン毎の設定を配列で保持                               |
-  | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載      |
-  | basic_id       | 対象ドメインへのファイル取得 http 接続時のベーシック認証 ID を設定                            |
-  | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                      |
-  | basic_pass     | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                      |
-  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
+  | 設定パラメータ                     | 概要                                                                                                                                                   |
+  | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | basic_auth                         | 以下、ドメイン毎の設定を配列で保持                                                                                                                     |
+  | domain                             | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                                               |
+  | basic_id                           | 対象ドメインへのファイル取得 http 接続時のベーシック認証 ID を設定                                                                                     |
+  | basic_pass                         | 対象ドメインへのファイル取得 http 接続時のベーシック認証パスワードを設定                                                                               |
+  | authorization                      | リソースの認可確認設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当するリソースの認可確認設定が存在しない場合、認可確認有無はTrueで動作する |
+  | url                                | 認可確認有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、認可確認設定を適用                 |
+  | enable                             | 認可確認有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                               |
+  | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する         |
+  | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用         |
+  | enable                             | 取引市場利用有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                           |
 
-(2-2) basic認証なしHTTPサーバに接続の場合<br>
- http.jsonファイルの編集不要。
+(2-2) 認証なしHTTPサーバに接続の場合<br>
+ http.jsonファイルのbasic_auth編集不要。
   
 (3) データ管理サーバ(FTPサーバ)を提供者コネクタ経由で公開する場合
 (3-1) anonymous/anonymous以外をID/パスワードとするFTPサーバに接続の場合
 - ftp.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>ftp 接続時の設定を記載<br>
 
-  | 設定パラメータ | 概要                           |
-  | :------------- | :-------------------------------------------------------------------------------------------- |
-  | ftp_auth       | 以下、ドメイン毎の設定を配列で保持                               |
-  | domain         | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載      |
-  | ftp_id         | ftp 接続時の ID を設定                                                                        |
-  | ftp_pass       | ftp 接続時のパスワードを設定                                                                  |
-  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
+  | 設定パラメータ                     | 概要                                                                                                                                                   |
+  | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | ftp_auth                           | 以下、ドメイン毎の設定を配列で保持                                                                                                                     |
+  | domain                             | basic 認証が必要なドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                                               |
+  | ftp_id                             | ftp 接続時の ID を設定                                                                                                                                 |
+  | ftp_pass                           | ftp 接続時のパスワードを設定                                                                                                                           |
+  | authorization                      | リソースの認可確認設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当するリソースの認可確認設定が存在しない場合、認可確認有無はTrueで動作する |
+  | url                                | 認可確認有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、認可確認設定を適用                 |
+  | enable                             | 認可確認有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                               |
+  | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する         |
+  | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用         |
+  | enable                             | 取引市場利用有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                           |
 
 (3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
- ftp.jsonファイルの編集不要。
+ ftp.jsonファイルのftp_auth編集不要。
 
 (4) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
 - ngsi.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
 
-  | 設定パラメータ | 概要                                                 |
-  | :------------- | :--------------------------------------------------- |
-  | ngsi_auth      | 以下、ドメイン毎の設定を配列で保持                               |
-  | domain      　 | データ提供サーバのドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載              |
-  | auth           | データ提供サーバのアクセストークンを設定 |
-  | authorization  | リソースの認可確認有無 (認可確認を行う場合enable, 認可確認を行わない場合disableを設定     |
+  | 設定パラメータ                     | 概要                                                                                                                                                   |
+  | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | ngsi_auth                          | 以下、ドメイン毎の設定を配列で保持                                                                                                                     |
+  | domain                             | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                                                                 |
+  | auth                               | NGSI へ API アクセスするためのアクセストークンを設定                                                                                                   |
+  | authorization                      | リソースの認可確認設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当するリソースの認可確認設定が存在しない場合、認可確認有無はTrueで動作する |
+  | url                                | 認可確認有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、認可確認設定を適用                 |
+  | enable                             | 認可確認有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                               |
+  | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する         |
+  | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用         |
+  | enable                             | 取引市場利用有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                           |
 
 (5) 認証および認可をおこなう場合
-- authentication.json
+- authorization.json
   <br>connector/src/provider/authentication-authorization/swagger_server/configs/に配置<br>認証および認可時の接続先を記載
 
-  | 設定パラメータ                     | 概要                                                                     |
-  | :--------------------------------- | :----------------------------------------------------------------------- |
-  | authentication_server_url          | 認可サーバのURL                                                      |
-  | introspect                         | トークン検証設定                                                         |
-  | introspect - endpoint              | トークン検証エンドポイント。"protocol/openid-connect/token/introspect"固定          |
-  | federation                         | トークン連携設定                                                         |
-  | federation - endpoint              | トークン連携エンドポイント。"protocol/openid-connect/token"固定          |
-  | federation - grant_type            | 許諾タイプ。"urn:ietf:params:oauth:grant-type:token-exchange"固定        |
-  | federation - subject_token_type    | トークンタイプ。"urn:ietf:params:oauth:token-type:access_token"固定      |
-  | federation - requested_token_type  | 要求トークンタイプ。"urn:ietf:params:oauth:token-type:access_token"固定  |
-  | federation - subject_issuer        | 認証と連携するアイデンティティプロバイダー名                             |
-  | pat_req                            | APIトークン取得設定                                                      |
-  | pat_req - endpoint                 | APIトークン連携エンドポイント。"protocol/openid-connect/token"固定       |
-  | pat_req - grant_type               | 許諾タイプ。"client_credentials"固定                                     |
-  | contract                           | 認可確認設定                                                             |
-  | contract - endpoint                | 認可確認エンドポイント。"protocol/openid-connect/token"固定              |
-  | contract - grant_type              | 許諾タイプ。"urn:ietf:params:oauth:grant-type:uma-ticket"固定            |
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | authorization_server_url           | 認可サーバのアクセスURL                                         |
 
 - connector.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>認可サーバに登録した提供者コネクタのIDとシークレットを記載<br>
 
-  | 設定パラメータ                        | 概要                                                                  |
-  | :------------------------------------ | :-------------------------------------------------------------------- |
-  | provider_id                           | 来歴管理登録するときに提供者を特定するためのID                        |
-  | provider_connector_id                 | 認可サーバに設定した提供者コネクタのID                            |
-  | provider_connector_secret             | 認可サーバが発行した提供者コネクタのシークレット                  |
-  | contract_management_service_url       | 契約管理サーバの URL                                                  |
-  | contract_management_service_key       | 契約管理サーバの API キー                                             |
-  | history_management_token              | 来歴管理が使用するトークン (2022 年 3 月版では未使用)                 |
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | provider_id                        | 来歴管理登録するときに提供者を特定するためのID                  |
+  | provider_connector_id              | 認可サーバに設定した提供者コネクタのID                          |
+  | provider_connector_secret          | 認可サーバが発行した提供者コネクタのシークレット                |
+  | trace_log_enable                   | トレース用ログ出力有無                                          |
 
 (6) 来歴管理をおこなう場合
 - provenance.json
   <br>connector/src/provider/provenance-management/swagger_server/configs/に配置
   <br>来歴管理サーバのURLの設定を記載
-  <br>来歴管理I/FがおなじDockerネットワークで起動している場合は変更不要  
   <br>※来歴管理を行う場合は認証認可が必須のため(5)の設定も必要となる
-  
-  | 設定パラメータ                 | 概要                     |
-  | :----------------------------- | :----------------------- |
-  | provenance_management_api_url  | 来歴管理サーバのURL      | 
+  <br>※データ取得時は提供者側の来歴管理サーバのアクセスURLを利用者側に返却する
 
+  | 設定パラメータ                     | 概要                                                            |
+  | :--------------------------------- | :-------------------------------------------------------------- |
+  | provenance_management_api_url      | 来歴管理サーバのアクセスURL                                     | 
 
 ### 提供者コネクタ起動手順 
 ```
 cd connector/src/provider/
-docker-compose -p provider up -d
+docker compose -p provider up -d
 ```
 
 ### 提供者コネクタ起動確認
 StateがすべてUpとなっていることを確認
 ```
-docker-compose -p provider ps
-         Name                                Command              State            Ports
---------------------------------------------------------------------------------------------------
-provider_authentication_authorization  python3 -m swagger_server   Up      8080/tcp
-provider_catalog_search                python3 -m swagger_server   Up      0.0.0.0:28080->8080/tcp
-provider_connector_main                python3 -m swagger_server   Up      8080/tcp
-provider_data_exchange                 python3 -m swagger_server   Up      0.0.0.0:38080->8080/tcp
-provider_provenance_management         python3 -m swagger_server   Up      8080/tcp
+docker compose -p provider ps
+NAME                             COMMAND                  SERVICE                          STATUS              PORTS
+provider_authorization           "python3 -m swagger_…"   provider-authorization           running             8080/tcp
+provider_catalog_search          "python3 -m swagger_…"   provider-catalog-search          running             8080/tcp
+provider_connector_main          "python3 -m swagger_…"   provider-connector-main          running             8080/tcp
+provider_data_exchange           "python3 -m swagger_…"   provider-data-exchange           running             8080/tcp
+provider_provenance_management   "python3 -m swagger_…"   provider-provenance-management   running             8080/tcp
+reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:443->443/tcp, :::443->443/tcp
 ```
 
 ### 提供者コネクタ動作確認
@@ -346,38 +337,34 @@ curl {提供者コネクタIPアドレス}:38080/cadde/api/v1/file -H "x-cadde-r
 
 ### 提供者コネクタ停止手順 
 ```
-docker-compose -p provider down
+docker compose -p provider down
 ```
 
 ### 提供者コネクタAPI
 提供者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
-- 提供者_認可IF.html
-- 提供者コネクタ外部IF_カタログ検索IF.html
-- 提供者コネクタ外部IF_データ交換IF(CADDE).html
-- 提供者コネクタ内部IF_コネクタメイン.html
-- 提供者コネクタ内部IF_認証認可IF.html
-- 提供者コネクタ内部IF_来歴管理IF.html
+- 提供者_カタログ検索IF.html
+- 提供者_コネクタメイン.html
+- 提供者_データ交換IF(CADDE).html
+- 提供者_認証認可IF.html
+- 提供者_来歴管理IF.html
 
 ## LICENSE
 [MIT](./LICENSE.md)
 
 ## 問い合わせ先
-コネクタ利用開始時、コネクタ利用後の問い合わせは、下記窓口宛にご連絡ください。  
+お問い合わせ時には、下記必要項目を記載の上、問い合わせ窓口宛にご連絡ください。<br>
 問い合わせ窓口：sip2cadde_support＠nii.ac.jp <br><br>
-
-1. コネクタ利用開始時  
-下記ファイルを記載し送付をお願いします。  
-[コネクタ_利用登録申請書_2022年度版.xlsx](doc/form/コネクタ_利用登録申請書_2022年度版.xlsx) 
-
-2. コネクタ利用後の問い合わせ時  
-下記記載の上、「コネクタ_問い合わせ詳細確認事項.xlsx」を添付し送付をお願いします。  
-① 分類：選択[資材関連(GitHubからのダウンロード等)/構築関連(コネクタ構築中)/各種仕様確認/その他]  
-② 連絡先  
-③ 問い合わせ内容  
-④ 対応希望日  
- [コネクタ_問い合わせ詳細確認事項.xlsx](doc/form/コネクタ_問い合わせ詳細確認事項.xlsx)  
-
-
- 
+*********<br>
+①分類：選択[資材関連(GitHubからのダウンロード等)/構築関連(コネクタ構築中)/各種仕様確認/その他] <br>
+②連絡先 <br>
+③問い合わせ内容 <br>
+④対応希望日 <br>
+⑤事象発生日 <br>
+⑥利用環境(OS/CPU/メモリ/コネクタバージョン/コネクタ種別(利用者or提供者))  <br>
+⑦動作不良のAPIやエラーコード等 <br>
+⑧添付資料：画面キャプチャやログ等 <br>
+⑨関連する過去の問い合わせ番号 <br>
+**********<br><br>
+⑤～⑨について、構築中の不具合や動作不良に関する問い合わせの場合、可能な範囲でご記載ください。<br>
 

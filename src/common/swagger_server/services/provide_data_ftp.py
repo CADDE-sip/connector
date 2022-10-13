@@ -42,44 +42,45 @@ def provide_data_ftp(
         BytesIO :取得データ
 
     Raises:
-        Cadde_excption: パラメータが正常でない場合 エラーコード: 00001E
-        Cadde_excption: コンフィグファイルから設定が取得できない場合 エラーコード: 00002E
-        Cadde_excption: ファイルのダウンロードに失敗した場合 エラーコード: 02002E
-        Cadde_excption: FTP接続時の認証に失敗している場合 エラーコード: 02003E
-        Cadde_excption: 参照先ディレクトリもしくは、ファイルが存在しない場合 エラーコード: 02004E
-        Cadde_excption: タイムアウトが発生した場合 エラーコード: 02005E
-        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合 エラーコード: 02006E
+        Cadde_excption: リソースURLが取得できない場合 エラーコード: 000301002E
+        Cadde_excption: コンフィグファイルから設定が取得できない場合          エラーコード: 000301003E
+        Cadde_excption: パラメータが正常でない場合(ftp_id)                    エラーコード: 000301004E
+        Cadde_excption: パラメータが正常でない場合(ftp_pass)                  エラーコード: 000301005E
+        Cadde_excption: ファイルのダウンロードに失敗した場合                  エラーコード: 000301006E
+        Cadde_excption: FTP接続時の認証に失敗している場合                     エラーコード: 000301007E
+        Cadde_excption: 参照先ディレクトリもしくは、ファイルが存在しない場合  エラーコード: 000301008E
+        Cadde_excption: タイムアウトが発生した場合                            エラーコード: 000301009E
+        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合       エラーコード: 000301010E
 
     """
     if not resource_url:
-        raise CaddeException("00001E")
+        raise CaddeException("000301002E")
 
-    logger.debug(get_message("02001N", [resource_url]))
-
-    ftp_auth = None
+    logger.debug(get_message("000301001N", [resource_url]))
 
     try:
         domain = __get_domain(resource_url)
     except Exception:
-        raise CaddeException('02006E')
+        raise CaddeException('000301003E')
 
     ftp_auth_domain = []
     try:
         config = config_get_interface.config_read(__CONFIG_FILE_PATH)
-        ftp_auth_domain = [e for e in config[__CONFIG_KEY_FTP_AUTH] if e[__CONFIG_KEY_FTP_DOMAIN] == domain]
+        ftp_auth_domain = [e for e in config[__CONFIG_KEY_FTP_AUTH]
+                           if e[__CONFIG_KEY_FTP_DOMAIN] == domain]
     except Exception:
         pass
 
     if 0 < len(ftp_auth_domain):
         if __CONFIG_KEY_FTP_ID not in ftp_auth_domain[0]:
             raise CaddeException(
-                '00002E',
+                '000301004E',
                 status_code=None,
                 replace_str_list=[__CONFIG_KEY_FTP_ID])
 
         if __CONFIG_KEY_FTP_PASS not in ftp_auth_domain[0]:
             raise CaddeException(
-                '00002E',
+                '000301005E',
                 status_code=None,
                 replace_str_list=[__CONFIG_KEY_FTP_PASS])
 
@@ -88,7 +89,7 @@ def provide_data_ftp(
     else:
         ftp_id = __FTP_DEFAULT_IDPASS
         ftp_pass = __FTP_DEFAULT_IDPASS
- 
+
     parsed_resource_url = __url_analysis(resource_url)
 
     response = None
@@ -96,19 +97,19 @@ def provide_data_ftp(
         response = file_get_interface.ftp_get(
             parsed_resource_url, ftp_id, ftp_pass)
     except TimeoutError:
-        raise CaddeException('02005E')
+        raise CaddeException('000301006E')
     except Exception as e:
         error_message = str(e)
         error_code = error_message.split(' ')[0]
         if error_code == '530':
-            raise CaddeException('02003E')
+            raise CaddeException('000301007E')
         elif error_code == '550':
-            raise CaddeException('02004E')
+            raise CaddeException('000301008E')
         elif error_message == 'timed out':
-            raise CaddeException('02005E')
+            raise CaddeException('000301009E')
         else:
             raise CaddeException(
-                '02002E',
+                '000301010E',
                 status_code=None,
                 replace_str_list=[error_message])
 
