@@ -1,4 +1,4 @@
-FROM alpine:3.9
+FROM alpine:3.16
 
 RUN apk add --no-cache squid && \
   mkdir -p /etc/squid/conf.d && \

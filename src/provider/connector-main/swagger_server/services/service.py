@@ -395,7 +395,7 @@ def fetch_data(
             'x-cadde-provider': provider_id,
             'x-cadde-consumer': consumer_id,
             'x-cadde-contract-id': contract_id,
-            'x-hash-get-data': hash_value,
+            'x-cadde-hash-get-data': hash_value,
             'x-cadde-contract-management-service-url': contract_url,
             'Authorization': authorization
         }

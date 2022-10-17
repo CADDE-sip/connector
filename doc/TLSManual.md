@@ -1,139 +1,140 @@
-# ����ԃf�[�^�A�g���: TLS���ݔF�ؐݒ��
-- ���p�҃R�l�N�^-�񋟎҃R�l�N�^�Ԃ̒ʐM�ɂ����Ă�TLS�ɂ�鑊�ݔF�؂��s�����Ƃ��O��ƂȂ�A  
-���p�ҋy�ђ񋟎҂ɂď���������̂ƂȂ�B
-- �{�y�[�W�ł̓T���v���Ƃ��ė��p�҃R�l�N�^-�񋟎҃R�l�N�^�Ԃɂ�����TLS���ݔF�؂��������邽�߂̐ݒ����L�ڂ���B
-- TLS���ݔF�؂͉��}�̃v���L�V�y�у��o�[�X�v���L�V�ɂĎ�������B
+# 分野間データ連携基盤: TLS相互認証設定例
+- 利用者コネクタ-提供者コネクタ間の通信においてはTLSによる相互認証を行うことが前提となり、  
+利用者及び提供者にて準備するものとなる。
+- 本ページではサンプルとして利用者コネクタ-提供者コネクタ間におけるTLS相互認証を実現するための設定例を記載する。
+- TLS相互認証は下図のプロキシ及びリバースプロキシにて実現する。
 ![Alt text](../doc/png/conf_example.png?raw=true "Title")
 
-## �O�����
+## 前提条件
 
-- �{�y�[�W�ŃT���v���Ƃ��Č��J����OSS�y�ѓ���m�F�ς݂̃o�[�W�����͈ȉ��̒ʂ�
-    - �v���L�V�FSquid 4.10
-    - ���o�[�X�v���L�V�FNginx 1.19.2
+- 本ページでサンプルとして公開するOSS及び動作確認済みのバージョンは以下の通り
+    - プロキシ：Squid 4.10
+    - リバースプロキシ：Nginx 1.23.1
 
-- �v���L�V����у��o�[�X�v���V�L�̓R�l�N�^�Ɋ܂܂��
-    - �v���L�V�F���p�҃R�l�N�^(connector/src/consumer/squid)
-    - ���o�[�X�v���L�V�F�񋟎҃R�l�N�^(connector/src/provider/nginx)
+- プロキシおよびリバースプロシキはコネクタに含まれる
+    - プロキシ：利用者コネクタ(connector/src/consumer/squid)
+    - リバースプロキシ：提供者コネクタ(connector/src/provider/nginx)
 
-- TLS���ݔF�؂ɕK�v�ȏؖ����A�閧��(pem�`��)�̓��[�U�[�ɂĎ��O�ɏ����ς݂ł��邱�Ƃ�O��Ƃ���B
-  - �e���ŕK�v�ȃt�@�C���͈ȉ��̒ʂ�
-    - ���p�ґ��F�N���C�A���g�ؖ����A�閧��(�Í����Ȃ�)
-    - �񋟎ґ��F�T�[�o�[�ؖ����A�閧���A�N���C�A���g�F�ؐݒ�pCA�ؖ���
+- TLS相互認証に必要な証明書、秘密鍵(pem形式)はユーザーにて事前に準備済みであることを前提とする。
+  - 各環境で必要なファイルは以下の通り
+    - 利用者側：クライアント証明書、秘密鍵(暗号化なし)
+    - 提供者側：サーバー証明書、秘密鍵、クライアント認証設定用CA証明書
 
-- Linux ��ł̓����O��Ƃ���B
-  - Docker�ADocker Compose �����O�C���X�g�[������Ă��邱�Ƃ�O��Ƃ���B
-  - �Ή����� Docker Version �͈ȉ��̒ʂ�Ƃ���B
+- Linux 上での動作を前提とする。
+  - Docker、Docker Compose が事前インストールされていることを前提とする。
+  - 対応する Docker Version は以下の通りとする。
     - Docker 20.10.1
-  - �Ή����� OS �́ALinux �̏�L Docker ���T�|�[�g���� OS �Ƃ���B
+  - 対応する OS は、Linux の上記 Docker がサポートする OS とする。
 
-- �{�y�[�W�ł�TLS���ݔF�؂ɕK�v�Ȑݒ�l�݂̂̋L�ڂƂȂ�B
-  - TLS�F�؈ȊO�̓���Ɋւ��ݒ�ɂ��Ă͕K�v�ɉ����ă��[�U�[���ōl�����邱�ƁB
+- 本ページではTLS相互認証に必要な設定値のみの記載となる。
+  - TLS認証以外の動作に関わる設定については必要に応じてユーザー側で考慮すること。
 
-# ���p�Ҋ��v���L�V�ݒ�
+# 利用者環境プロキシ設定
 
-## �v���L�V(Squid)�\�z�菇
+## プロキシ(Squid)構築手順
 
-1. �R���t�B�O�t�@�C���̐ݒ�A�t�@�C���z�u
+1. コンフィグファイルの設定、ファイル配置
 
-SSL Bump�ݒ�p���ȏ���SSL�ؖ������쐬
+SSL Bump設定用自己署名SSL証明書を作成
 ```
 openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout squidCA.pem -out squidCA.pem
 ```
-���ؖ����̗L��������365���ŉ��u�����Ă��邽�߁A�K�v�ɉ����Ċ�����ݒ肷�邱�ƁB
+※証明書の有効期限は365日で仮置きしているため、必要に応じて期限を設定すること。
 
-SSL Bump�ݒ�p���ȏ���SSL�ؖ����A�N���C�A���g�ؖ����A�閧�������L�f�B���N�g���ɔz�u
+SSL Bump設定用自己署名SSL証明書、クライアント証明書、秘密鍵を下記ディレクトリに配置
 ```
 connector/src/consumer/squid/volumes/ssl/
 ```
 
 
 - squid.conf
-  <br>connector/src/consumer/squid/volumes�ɔz�u<br>
+  <br>connector/src/consumer/squid/volumesに配置<br>
 
-  | �ݒ�p�����[�^ | �T�v |
+  | 設定パラメータ | 概要 |
   | :------------- | :-------------------------- |
-  | http_port | ssl_bump��ݒ�B |
-  | tls_outgoing_options | �T�[�o�[�ڑ����Ɏg�p����N���C�A���g�ؖ����A�閧����ݒ� |
+  | http_port | ssl_bumpを設定。 |
+  | tls_outgoing_options | サーバー接続時に使用するクライアント証明書、秘密鍵を設定 |
 
- - �ݒ��
+ - 設定例
 ```
 http_port 3128 ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=4MB cert=/etc/squid/ssl/squidCA.pem
-tls_outgoing_options cert=/etc/squid/ssl/{�N���C�A���g�ؖ���} key=/etc/squid/ssl/{�N���C�A���g�閧��}
+tls_outgoing_options cert=/etc/squid/ssl/{クライアント証明書} key=/etc/squid/ssl/{クライアント秘密鍵}
 ```
-�N���C�A���g�ؖ����A�閧���̓��[�U�[�ŏ��������t�@�C�����ɒu��������B
+クライアント証明書、秘密鍵はユーザーで準備したファイル名に置き換える。
 
-3. ����v���L�V(Squid)�N��
+3. 初回プロキシ(Squid)起動
 
 ```
 cd connector/src/consumer/squid
-docker-compose -f docker-compose_initial.yml up -d --build
+docker compose -f docker-compose_initial.yml up -d --build
 ```
 
-4. ����v���L�V(Squid)�N���m�F
+4. 初回プロキシ(Squid)起動確認
 
 ```
-docker-compose ps
+docker compose ps
     Name                Command           State           Ports
 ------------------------------------------------------------------------
 forward-proxy   /usr/sbin/squid -NYCd 1   Up      0.0.0.0:3128->3128/tcp
 ```
 
-5. ����v���L�V(Squid)TLS�ݒ�
+5. 初回プロキシ(Squid)TLS設定
 
 ```
 docker exec -it forward-proxy /usr/lib/squid/security_file_certgen -c -s /var/lib/squid/ssl_db -M 20MB
 docker cp forward-proxy:/var/lib/squid/ssl_db ./volumes/
-docker-compose -f docker-compose_initial.yml stop
+docker compose -f docker-compose_initial.yml down
 ```
-## �v���L�V(Squid)�N���菇
-[����ԃf�[�^�A�g���](README.md "���p�҃R�l�N�^�N���菇")  �Q�ƁB
+## プロキシ(Squid)起動手順
+[分野間データ連携基盤](README.md "利用者コネクタ起動手順")  参照。
 
-## �v���L�V(Squid)��~�菇
-[����ԃf�[�^�A�g���](README.md "���p�҃R�l�N�^��~�菇")  �Q�ƁB
+## プロキシ(Squid)停止手順
+[分野間データ連携基盤](README.md "利用者コネクタ停止手順")  参照。
 
 
-# �񋟎Ҋ����o�[�X�v���L�V�ݒ�
+# 提供者環境リバースプロキシ設定
 
-## ���o�[�X�v���L�V(nginx)�\�z�菇
+## リバースプロキシ(nginx)構築手順
 
-1. �R���t�B�O�t�@�C���̐ݒ�A�t�@�C���z�u
+1. コンフィグファイルの設定、ファイル配置
 
-�T�[�o�[�ؖ����A�閧���A�N���C�A���g�F�ؗpCA�ؖ��������L�f�B���N�g���ɔz�u
+サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置
 ```
 connector/src/provider/nginx/volumes/ssl/
 ```
 
 
 - default.conf
-  <br>connector/src/provider/nginx/volumes/�ɔz�u<br>
+  <br>connector/src/provider/nginx/volumes/に配置<br>
 
-  | �ݒ�p�����[�^ | �T�v |
+  | 設定パラメータ | 概要 |
   | :------------- | :-------------------------- |
-  | ssl_certificate | �T�[�o�[�ؖ�����ݒ� |
-  | ssl_certificate_key | �閧���t�@�C����ݒ� |
-  | ssl_verify_client | �N���C�A���g�F�؎g�p���ɐݒ�(�ݒ�l:on) |
-  | ssl_client_certificate | �N���C�A���g�F�؂Ɏg�p����CA�ؖ�����ݒ� |
-  | location /cadde/api/v1/file | proxy_pass�ɒ񋟎҃R�l�N�^�̃J�^���O����IF���w�� |
-  | location /api/3/action/package_search | proxy_pass�ɒ񋟎҃R�l�N�^�̃f�[�^����IF���w�� |
+  | ssl_certificate | サーバー証明書を設定 |
+  | ssl_certificate_key | 秘密鍵ファイルを設定 |
+  | ssl_verify_client | クライアント認証使用時に設定(設定値:on) |
+  | ssl_client_certificate | クライアント認証に使用するCA証明書を設定 |
+  | location /cadde/api/v1/file | proxy_passに提供者コネクタのカタログ検索IFを指定 |
+  | location /api/3/action/package_search | proxy_passに提供者コネクタのデータ交換IFを指定 |
 
- - �ݒ��
+ - 設定例
 ```
-    ssl_certificate /etc/nginx/ssl/{�T�[�o�[�ؖ���};
-    ssl_certificate_key /etc/nginx/ssl/{�T�[�o�[�閧��};
+    ssl_certificate /etc/nginx/ssl/{サーバー証明書};
+    ssl_certificate_key /etc/nginx/ssl/{サーバー秘密鍵};
     ssl_verify_client on;
-    ssl_client_certificate /etc/nginx/ssl/{CA�ؖ���};
+    ssl_client_certificate /etc/nginx/ssl/{CA証明書};
     location /cadde/api/v1/file {
-        proxy_pass http://{�񋟎҃R�l�N�^��FQDN�܂���IP�A�h���X}:38080/cadde/api/v1/file;
+        proxy_pass http://{提供者コネクタのFQDNまたはIPアドレス}:38080/cadde/api/v1/file;
     }
 
     location /api/3/action/package_search {
-        proxy_pass http://{�񋟎҃R�l�N�^��FQDN�܂���IP�A�h���X}:28080/api/3/action/package_search;
+        proxy_pass http://{提供者コネクタのFQDNまたはIPアドレス}:28080/api/3/action/package_search;
     }
 ```
-�T�[�o�[�ؖ���,�T�[�o�[�閧��,CA�ؖ����̓��[�U�[�ŗp�ӂ����t�@�C�����ɒu��������B
+サーバー証明書,サーバー秘密鍵,CA証明書はユーザーで用意したファイル名に置き換える。
 
-## ���o�[�X�v���L�V(nginx)�N���菇
-[����ԃf�[�^�A�g���](README.md "�񋟎҃R�l�N�^�N���菇 ")  �Q�ƁB
+## リバースプロキシ(nginx)起動手順
+[分野間データ連携基盤](README.md "提供者コネクタ起動手順 ")  参照。
 
-## ���o�[�X�v���L�V(nginx)��~�菇
-[����ԃf�[�^�A�g���](README.md "�񋟎҃R�l�N�^��~�菇 ")  �Q�ƁB
+## リバースプロキシ(nginx)停止手順
+[分野間データ連携基盤](README.md "提供者コネクタ停止手順 ")  参照。
+

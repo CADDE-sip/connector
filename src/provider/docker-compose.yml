@@ -11,6 +11,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    ports:
+      - "28080:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
@@ -43,6 +45,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    ports:
+      - "38080:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
@@ -82,7 +86,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   reverse-proxy:
     container_name: reverse-proxy
-    image: nginx:1.19.2
+    image: nginx:1.23.1
     volumes:
       - ./nginx/volumes/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/volumes/default.conf:/etc/nginx/conf.d/default.conf

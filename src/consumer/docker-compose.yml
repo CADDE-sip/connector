@@ -99,8 +99,7 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   squid:
     container_name: forward-proxy
-    #build: .
-    image: cadde-squid
+    image: cadde-squid:4.0.0
     ports:
       - "3128:3128"
     volumes:
