@@ -122,12 +122,13 @@ connector/src/provider/nginx/volumes/ssl/
     ssl_certificate_key /etc/nginx/ssl/{サーバー秘密鍵};
     ssl_verify_client on;
     ssl_client_certificate /etc/nginx/ssl/{CA証明書};
-    location /cadde/api/v1/file {
-        proxy_pass http://{提供者コネクタのFQDNまたはIPアドレス}:38080/cadde/api/v1/file;
+
+    location /cadde/api/v4/file {
+        proxy_pass http://provider_data_exchange:8080/cadde/api/v4/file;
     }
 
-    location /api/3/action/package_search {
-        proxy_pass http://{提供者コネクタのFQDNまたはIPアドレス}:28080/api/3/action/package_search;
+    location /cadde/api/v4/catalog {
+        proxy_pass http://provider_catalog_search:8080/cadde/api/v4/catalog;
     }
 ```
 サーバー証明書,サーバー秘密鍵,CA証明書はユーザーで用意したファイル名に置き換える。
@@ -137,4 +138,3 @@ connector/src/provider/nginx/volumes/ssl/
 
 ## リバースプロキシ(nginx)停止手順
 [分野間データ連携基盤](README.md "提供者コネクタ停止手順 ")  参照。
-

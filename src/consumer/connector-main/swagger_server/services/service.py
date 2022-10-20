@@ -620,6 +620,7 @@ def __get_location_info(provider, location_service_url, external_interface) -> (
         return provider_connector_url
 
     # コンフィグから再取得を試みる
+    logger.info(f'Not Found {provider} from {location_service_url}')
     try:
         config = internal_interface.config_read(__CONFIG_LOCATION_FILE_PATH)
     except Exception:  # pathミス
@@ -670,8 +671,9 @@ def __get_location_from_location_service(provider, location_service_url, externa
     except Exception:
         return provider_connector_url
     # レスポンスからロケーション情報取得
-    if __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL in response:
-        provider_connector_url = response[__LOCATION_SERVICE_PROVIDER_CONNECTOR_URL]
+    response_text_dict = json.loads(response.text)
+    if __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL in response_text_dict:
+        provider_connector_url = response_text_dict[__LOCATION_SERVICE_PROVIDER_CONNECTOR_URL]
 
     return provider_connector_url
 

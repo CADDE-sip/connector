@@ -57,7 +57,7 @@ __ACCESS_POINT_SENT_URL = 'http://provider_provenance_management:8080/eventwithh
 __ACCESS_POINT_VOUCHER_URL = 'http://provider_provenance_management:8080/voucher/sent'
 
 # 交換実績記録用ID
-__RESOURCE_ID_FOR_PROVENANCE = 'cadde_resource_id_for_provenance'
+__RESOURCE_ID_FOR_PROVENANCE = 'caddec_resource_id_for_provenance'
 
 
 __URL_SPLIT_CHAR = '/'
@@ -321,7 +321,7 @@ def fetch_data(
 
         # リソースURLを識別子に合わせて補正する
         convert_resource_url = __convert_resource_url(
-            resource_api_type, resource_url, options)
+            resource_api_type, resource_url, options_dict)
 
         # 認可確認
         token_contract_headers = {
@@ -351,7 +351,7 @@ def fetch_data(
 
     # リソースURLから、CKANを逆引き検索して、交換実績記録用リソースIDを取得
     resource_id_for_provenance = __ckan_search_execute(
-        release_ckan_url, detail_ckan_url, resource_url, resource_api_type, options_dict, external_interface)
+        release_ckan_url, detail_ckan_url, resource_url, resource_api_type, options_dict, auth_check_enable, external_interface)
 
     # 識別子ごとにデータ取得
     if (resource_api_type == 'api/ngsi'):
@@ -758,6 +758,7 @@ def __ckan_search_execute(release_ckan_url,
                           resource_url,
                           resource_api_type,
                           options_dict,
+                          auth_check_enable,
                           external_interface) -> (str,
                                                   str):
     """
@@ -766,6 +767,10 @@ def __ckan_search_execute(release_ckan_url,
         release_ckan_url str : 公開CKANのURL
         detail_ckan_url: 詳細CKANのURL
         resource_url: リソースURL
+        resource_api_type: リソース提供手段識別子
+        options_dict: データ提供IFが使用するカスタムヘッダー
+        auth_check_enable: 認可確認有無(True or False)
+        external_interface: 外部リクエストを行うインタフェース
 
     Returns:
         resource_id_for_provenance: 交換実績記録用ID(str or None)
@@ -789,9 +794,25 @@ def __ckan_search_execute(release_ckan_url,
         detail_ckan_url = detail_ckan_url + __CKAN_RESOURCE_SEARCH_PATH
 
     if resource_api_type == 'api/ngsi':
-        # /entitiesまでをクエリとすることで、候補となるURL（/entities?type=hogeや /entities/entity1など）を
-        # すべて対象とする。
-        query_url = resource_url.split('entities')[0] + 'entities'
+        if auth_check_enable:
+            # 認可が必要なNGSIデータ
+            query_url = urllib.parse.quote(resource_url)
+        else:
+            # 認可が不要なNGSIデータ
+            access_url = resource_url.split('entities')[0] + 'entities'
+            parse_url = urllib.parse.urlparse(resource_url)
+            query = urllib.parse.parse_qs(parse_url.query)
+            
+            # typeクエリは必ず指定される。
+            ngsi_type = ''
+            if 'type' in query.keys() and query['type'][0]:
+                ngsi_type = query['type'][0]
+            # 認可が不要なNGSIデータの場合、
+            # カタログURLがhttps://NGSIサーバのURL/v2.../entities?type=<データ種別>形式であるため、
+            # カタログ検索結果の成型時に比較で使用するresource_urlも同形式に変更する
+            resource_url = access_url + '?type=' + ngsi_type
+            query_url = urllib.parse.quote(resource_url)
+
         query_string = __CKAN_RESOURCE_SEARCH_PROPATY + query_url
     else:
         query_string = __CKAN_RESOURCE_SEARCH_PROPATY + resource_url
@@ -809,7 +830,7 @@ def __ckan_search_execute(release_ckan_url,
         detail_search_results_list = json.loads(
             detail_ckan_text)['result']['results']
 
-    ckan_check_result_list = __ckan_result_check(
+    release_search_results_list, detail_search_results_list, ckan_check_result_list = __ckan_result_check(
         release_search_results_list,
         detail_search_results_list,
         resource_url,
@@ -834,16 +855,20 @@ def __ckan_result_check(
         detail_search_results_list,
         resource_url,
         resource_api_type,
-        options_dict) -> list:
+        options_dict) -> (list, list, list):
     """
     公開CKANと詳細CKANの検索結果を確認する。
     Args:
         release_search_results_list str : 公開CKANの検索結果
         detail_search_results_list: 詳細CKANの検索結果
         resource_url: リソースURL
+        resource_api_type: リソース提供手段識別子
+        options_dict: データ提供IFが使用するカスタムヘッダー
 
     Returns:
-        検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
+        公開CKANの検索の絞り込み結果
+        詳細CKANの検索の絞り込み結果
+        交換実績記録用ID検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
 
     Raises:
         Cadde_excption: 検索結果が取得できなかった場合      エラーコード: 010000021E
@@ -851,49 +876,44 @@ def __ckan_result_check(
     """
 
     # 横断CKAN の整形結果取得
-    return_list = __single_ckan_result_molding(
+    release_list, return_list = __single_ckan_result_molding(
         release_search_results_list, resource_url, resource_api_type, options_dict)
 
     # 詳細CKAN の整形結果取得
     if detail_search_results_list is not None:
-        return_list.extend(
-            __single_ckan_result_molding(
-                detail_search_results_list,
-                resource_url, resource_api_type, options_dict))
+        detail_list, return_list_detail = __single_ckan_result_molding(
+            detail_search_results_list, resource_url, resource_api_type, options_dict)
+        return_list.extend(return_list_detail)
 
     # 検索結果が1件もない場合はエラー
     if len(return_list) == 0:
         raise CaddeException(message_id='010000021E')
 
-    return return_list
+    return release_list, detail_list, return_list
 
 
-def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_type, options_dict) -> dict:
+def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_type, options_dict) -> (list, list):
     """
     CKANの検索結果を成型する。
     Args:
         ckan_results_list list[dict] : CKANの検索結果
         resource_url: リソースURL
+        resource_api_type: リソース提供手段識別子
+        options_dict: データ提供IFが使用するカスタムヘッダー
 
     Returns:
-        検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
+        CKANの検索の絞り込み結果
+        交換実績記録用ID検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
     """
 
     return_list = []
+    return_search_list = []
 
     for one_data in ckan_results_list:
         add_dict = {}
 
         if resource_api_type == 'api/ngsi':
-            access_url = resource_url.split('entities')[0] + 'entities'
 
-            parse_url = urllib.parse.urlparse(resource_url)
-            query = urllib.parse.parse_qs(parse_url.query)
-
-            # typeクエリは必ず指定される。
-            ngsi_type = ''
-            if 'type' in query.keys() and query['type'][0]:
-                ngsi_type = query['type'][0]
             ngsi_tenant = ''
             ngsi_service_path = ''
 
@@ -914,12 +934,8 @@ def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_t
             if ckan_ngsi_tenant != ngsi_tenant or ckan_ngsi_service_path != ngsi_service_path:
                 continue
 
-            # NGSIデータ種別の確認。
-            if 'ngsi_entity_type' not in one_data.keys() or one_data['ngsi_entity_type'] != ngsi_type:
-                continue
+            if one_data['url'] != resource_url:
 
-            # URL確認
-            if one_data['url'] not in access_url:
                 continue
 
         else:
@@ -933,8 +949,9 @@ def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_t
             add_dict[__RESOURCE_ID_FOR_PROVENANCE] = ''
 
         return_list.append(add_dict)
+        return_search_list.append(one_data)
 
-    return return_list
+    return return_search_list, return_list
 
 
 def __convert_resource_url(resource_api_type, resource_url, options_dict) -> (str):

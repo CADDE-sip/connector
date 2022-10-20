@@ -89,20 +89,20 @@ def provide_data_ngsi(resource_url, options={}):
         elif err.code == 401:
             # Unauthorized
             logger.debug(get_message('000401004E'))
-            raise CaddeException('08002E', status_code=err.code)
+            raise CaddeException('000401004E', status_code=err.code)
         elif err.code == 404:
             # Not Found
             logger.debug(get_message('000401005E'))
-            raise CaddeException('08003E', status_code=err.code)
+            raise CaddeException('000401005E', status_code=err.code)
         elif err.code == 409:
             # Conflict
             logger.debug(get_message('000401006E'))
-            raise CaddeException('08004E', status_code=err.code)
+            raise CaddeException('000401006E', status_code=err.code)
         else:
             # Other errors
             logger.debug(get_message('000401007E', [err.reason]))
             raise CaddeException(
-                '08005E',
+                '000401007E',
                 status_code=500,
                 replace_str_list=[
                     err.reason])
