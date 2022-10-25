@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+import json
+import requests
+
 from flask import Response
-import openapi_client
-from openapi_client.api import register_event_api
-from openapi_client.model.cdl_event import CDLEvent
+
 from swagger_server.utilities.cadde_exception import CaddeException
 from swagger_server.utilities.external_interface import ExternalInterface
 from swagger_server.utilities.internal_interface import InternalInterface
 
 # 接続先URL (仮の値)
+__URL_HISTORY_EVENT_WITH_HASH = '/eventwithhash'
 __URL_HISTORY_LINEAGE = '/lineage/'
 __URL_HISTORY_SEARCHEVENTS = '/searchevents'
 
@@ -54,7 +56,6 @@ def received_history_registration(
     Raises:
         Cadde_excption : 来歴管理に登録できなかった場合 エラーコード : 020301002E
     """
-    cdlpreviousevents = [resource_id_for_provenance]
 
     # コンフィグファイルからURL取得
     try:
@@ -65,26 +66,41 @@ def received_history_registration(
         # 取得ができない場合はパラメータよりURLを設定
         server_url = provenance_management_service_url
 
-    configuration = openapi_client.Configuration(host=server_url)
+    body = {
+        'cdldatamodelversion': '2.0',
+        'cdleventtype': __CDL_EVENT_TYPE_RECEIVED,
+        'dataprovider': provider_id,
+        'datauser': consumer_id,
+        'cdlpreviousevents': [resource_id_for_provenance]
+        }
 
-    with openapi_client.ApiClient(configuration=configuration) as api_client:
-        api_instance = register_event_api.RegisterEventApi(api_client)
-        request = CDLEvent(
-            cdldatamodelversion='2.0',
-            cdleventtype=__CDL_EVENT_TYPE_RECEIVED,
-            cdlpreviousevents=cdlpreviousevents,
-            datauser=consumer_id,
-            dataprovider=provider_id)
+    body_data = json.dumps(body, indent=2).encode()
 
-        try:
-            response = api_instance.eventwithhash(request=request)
-        except Exception as e:
-            raise CaddeException(
-                message_id='020301002E',
-                replace_str_list=[str(e)])
-        if 'cdleventid' not in response:
-            raise CaddeException(message_id='020301003E')
-        identification_information = response['cdleventid']
+    headers = {
+        # HTTP header `Accept`
+        'Accept': 'application/json'  # noqa: E501
+    }
+    if authorization is not None:
+        headers['ID_Token'] = authorization  # noqa: E501
+
+    upfile = { 'request': ('', body_data, 'application/json')}
+
+    response = requests.post(
+        server_url + __URL_HISTORY_EVENT_WITH_HASH,headers=headers,files=upfile)
+
+    if response.status_code < 200 or 300 <= response.status_code:
+        raise CaddeException(
+            message_id='020301002E',
+            status_code=response.status_code,
+            replace_str_list=[
+                response.text])
+
+    response_text_dict = json.loads(response.text)
+
+    if 'cdleventid' not in response_text_dict:
+        raise CaddeException(message_id='020301003E')
+
+    identification_information = response_text_dict['cdleventid']
 
     return identification_information
 
@@ -134,6 +150,10 @@ def history_confirmation_call(
             message_id='020302004E',
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
 
+    headers = {}
+    if authorization is not None:
+        headers['ID_Token'] = authorization  # noqa: E501
+
     send_url = server_url + __URL_HISTORY_LINEAGE + resource_id_for_provenance + '?'
 
     if direction is not None:
@@ -144,7 +164,7 @@ def history_confirmation_call(
             send_url = send_url + '&'
         send_url = send_url + 'depth=' + str(depth)
 
-    response = external_interface.http_get(send_url)
+    response = external_interface.http_get(send_url, headers)
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
             message_id='020302005E',
@@ -191,6 +211,9 @@ def history_id_search_call(
         raise CaddeException(
             message_id='020303002E',
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
+
+    if authorization is not None:
+        header_dict['ID_Token'] = authorization  # noqa: E501
 
     response = external_interface.http_post(
         server_url + __URL_HISTORY_SEARCHEVENTS, header_dict, body)

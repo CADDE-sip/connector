@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-import openapi_client
-from openapi_client.api import register_event_api
-from openapi_client.model.cdl_event import CDLEvent
+import json
+import requests
 from swagger_server.utilities.cadde_exception import CaddeException
 from swagger_server.utilities.external_interface import ExternalInterface
 from swagger_server.utilities.internal_interface import InternalInterface
 
 # 送信履歴登録のcdleventtypeの値
 __CDL_EVENT_TYPE_SENT = 'Sent'
+
+# 接続先URL (仮の値)
+__URL_HISTORY_EVENT_WITH_HASH = '/eventwithhash'
 
 # 送信履歴登録のレスポンスの識別情報のキー
 __EVENTWITHHASH_RESPONSE_EVENT_ID_KEY = 'cdleventid'
@@ -20,7 +22,7 @@ __CONFIG_PROVENANCE_MANAGEMENT_URL = 'provenance_management_api_url'
 def sent_history_registration(
         provider_id: str,
         consumer_id: str,
-        cadde_resource_id_for_provenance: str,
+        resource_id_for_provenance: str,
         authorization: str,
         internal_interface: InternalInterface,
         external_interface: ExternalInterface) -> str:
@@ -30,7 +32,7 @@ def sent_history_registration(
     Args:
         provider_id str: CADDEユーザID（提供者）
         consumer_id str: CADDEユーザID（利用者）
-        cadde_resource_id_for_provenance str:  交換実績記録用リソースID
+        resource_id_for_provenance str:  交換実績記録用リソースID
         authorization: str:  認証トークン
         internal_interface InternalInterface : コンフィグ情報取得処理を行うインタフェース
         external_interface ExternalInterface : 外部にリクエストを行うインタフェース
@@ -43,7 +45,6 @@ def sent_history_registration(
         Cadde_excption : 来歴管理に登録できなかった場合                                         エラーコード : 010301003E
 
     """
-    cdlpreviousevents = [cadde_resource_id_for_provenance]
 
     # コンフィグファイルからURL取得
     try:
@@ -55,25 +56,42 @@ def sent_history_registration(
             message_id='010301002E',
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
 
-    configuration = openapi_client.Configuration(host=server_url)
-    with openapi_client.ApiClient(configuration=configuration) as api_client:
-        api_instance = register_event_api.RegisterEventApi(api_client)
-        request = CDLEvent(
-            cdldatamodelversion='2.0',
-            cdleventtype=__CDL_EVENT_TYPE_SENT,
-            cdlpreviousevents=cdlpreviousevents,
-            datauser=consumer_id,
-            dataprovider=provider_id)
-        try:
-            response = api_instance.eventwithhash(request=request)
-        except Exception as e:
-            raise CaddeException(message_id='010301003E',
-                                 replace_str_list=[str(e)])
+    body = {
+        'cdldatamodelversion': '2.0',
+        'cdleventtype': __CDL_EVENT_TYPE_SENT,
+        'dataprovider': provider_id,
+        'datauser': consumer_id,
+        'cdlpreviousevents': [resource_id_for_provenance]
+        }
 
-        if 'cdleventid' not in response:
-            raise CaddeException(message_id='010301004E')
+    body_data = json.dumps(body, indent=2).encode()
 
-        identification_information = response['cdleventid']
+    headers = {
+        # HTTP header `Accept`
+        'Accept': 'application/json'  # noqa: E501
+    }
+    if authorization is not None:
+        headers['ID_Token'] = authorization  # noqa: E501
+
+    upfile = { 'request': ('', body_data, 'application/json')}
+
+    response = requests.post(
+        server_url + __URL_HISTORY_EVENT_WITH_HASH,headers=headers,files=upfile)
+
+    if response.status_code < 200 or 300 <= response.status_code:
+        raise CaddeException(
+            message_id='010301003E',
+            status_code=response.status_code,
+            replace_str_list=[
+                response.text])
+
+    response_text_dict = json.loads(response.text)
+
+    if 'cdleventid' not in response_text_dict:
+        raise CaddeException(message_id='010301004E')
+
+    identification_information = response_text_dict['cdleventid']
+
     return identification_information, server_url
 
 

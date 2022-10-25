@@ -5,7 +5,6 @@ import logging
 import hashlib
 import urllib
 from io import BytesIO
-from urllib.parse import quote
 
 from swagger_server.utilities.cadde_exception import CaddeException
 from swagger_server.utilities.external_interface import ExternalInterface
@@ -351,7 +350,8 @@ def fetch_data(
 
     # リソースURLから、CKANを逆引き検索して、交換実績記録用リソースIDを取得
     resource_id_for_provenance = __ckan_search_execute(
-        release_ckan_url, detail_ckan_url, resource_url, resource_api_type, options_dict, auth_check_enable, external_interface)
+        release_ckan_url, detail_ckan_url, resource_url, resource_api_type,
+        options_dict, auth_check_enable, external_interface)
 
     # 識別子ごとにデータ取得
     if (resource_api_type == 'api/ngsi'):
@@ -802,7 +802,7 @@ def __ckan_search_execute(release_ckan_url,
             access_url = resource_url.split('entities')[0] + 'entities'
             parse_url = urllib.parse.urlparse(resource_url)
             query = urllib.parse.parse_qs(parse_url.query)
-            
+
             # typeクエリは必ず指定される。
             ngsi_type = ''
             if 'type' in query.keys() and query['type'][0]:

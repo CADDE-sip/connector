@@ -369,7 +369,7 @@ def fetch_data(authorization: str,
                 'x-cadde-resource-id-for-provenance': provenance_id,
                 'x-cadde-provenance-management-service-url': provenance_url,
                 'Authorization': auth_token,
-                }
+            }
 
             received_response = external_interface.http_post(
                 __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_RECEIVED, received_headers)
