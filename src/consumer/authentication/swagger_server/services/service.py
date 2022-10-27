@@ -10,7 +10,7 @@ from swagger_server.utilities.internal_interface import InternalInterface
 __CONFIG_AUTHENTICATION_FILE_PATH = '/usr/src/app/swagger_server/configs/authentication.json'
 __CONFIG_AUTHENTICATION_SERVER_URL = 'authentication_server_url'
 
-__CADDE_FEDERATION = '/cadde/api/v4/token/federation'
+__CADDE_FEDERATION = '/cadde/api/v4/token/federate'
 __CADDE_INTROSPECT = '/cadde/api/v4/token/introspect'
 
 
@@ -186,4 +186,3 @@ def __get_authentication_config(internal_interface) -> (str):
                 __CONFIG_AUTHENTICATION_SERVER_URL])
 
     return authentication_server_url
-

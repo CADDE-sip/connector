@@ -71,7 +71,7 @@ def sent_history_registration(
         'Accept': 'application/json'  # noqa: E501
     }
     if authorization is not None:
-        headers['ID_Token'] = authorization  # noqa: E501
+        headers['ID_Token'] = authorization[7:]  # noqa: E501
 
     upfile = { 'request': ('', body_data, 'application/json')}
 

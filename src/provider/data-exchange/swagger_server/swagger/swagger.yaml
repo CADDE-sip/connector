@@ -81,10 +81,6 @@ paths:
               description: 契約管理サービスURL
               schema:
                 type: string
-            x-cadde-others:
-              description: NGSIサーバにて設定されたヘッダー情報
-              schema:
-                type: string
           content:
             application/json:
               schema:

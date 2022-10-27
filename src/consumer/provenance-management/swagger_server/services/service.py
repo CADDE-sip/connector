@@ -81,7 +81,7 @@ def received_history_registration(
         'Accept': 'application/json'  # noqa: E501
     }
     if authorization is not None:
-        headers['ID_Token'] = authorization  # noqa: E501
+        headers['ID_Token'] = authorization[7:]  # noqa: E501
 
     upfile = { 'request': ('', body_data, 'application/json')}
 
@@ -152,7 +152,7 @@ def history_confirmation_call(
 
     headers = {}
     if authorization is not None:
-        headers['ID_Token'] = authorization  # noqa: E501
+        headers['ID_Token'] = authorization[7:]  # noqa: E501
 
     send_url = server_url + __URL_HISTORY_LINEAGE + resource_id_for_provenance + '?'
 
@@ -213,7 +213,7 @@ def history_id_search_call(
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
 
     if authorization is not None:
-        header_dict['ID_Token'] = authorization  # noqa: E501
+        header_dict['ID_Token'] = authorization[7:]  # noqa: E501
 
     response = external_interface.http_post(
         server_url + __URL_HISTORY_SEARCHEVENTS, header_dict, body)

@@ -44,7 +44,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 認証方式：Bearer。利認証トークン
+        description: 認証方式：Bearer。認証トークン
         required: true
         style: simple
         explode: false

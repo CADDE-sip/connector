@@ -225,7 +225,7 @@ paths:
       - Entities
       summary: API. データ取得(NGSI)
       description: |-
-        NGSIリクエストを受け付けメイン制御に処理を依頼する。
+        NGSIインタフェースを用いて、コンテキスト情報を取得する。
 
         Response:
         * 処理が成功した場合は200を返す。
@@ -326,8 +326,28 @@ paths:
                     status: 400
                     title: ""
                     type: ""
+        "401":
+          description: データ管理サーバ（NGSI）のAPI実行時に使用するアクセストークンが不正
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: 認証情報が不正です。
+        "404":
+          description: リソースURLに指定したリソースが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: 指定したリソースが見つかりませんでした。
         "403":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: 認証情報不正の場合のエラーメッセージ
           content:
             application/json:
               schema:
@@ -340,6 +360,18 @@ paths:
                     status: 403
                     title: ""
                     type: ""
+        "409":
+          description: |-
+           リクエストが競合したことを示す。
+            {entityId}で指定したデータが複数存在する場合に発生する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    error-message: 指定したリソースに対応するデータが複数存在します。
         "500":
           description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
           content:
