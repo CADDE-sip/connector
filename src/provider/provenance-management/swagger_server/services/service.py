@@ -18,6 +18,8 @@ __EVENTWITHHASH_RESPONSE_EVENT_ID_KEY = 'cdleventid'
 __CONFIG_PROVENANCE_FILE_PATH = '/usr/src/app/swagger_server/configs/provenance.json'
 __CONFIG_PROVENANCE_MANAGEMENT_URL = 'provenance_management_api_url'
 
+# データ証憑通知(送信)URL
+__ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT = '/api/cadde/v1/voucher/sent'
 
 def sent_history_registration(
         provider_id: str,
@@ -132,8 +134,9 @@ def voucher_sent_call(
         'contract_id': contract_id,
         'hash': hash_get_data
     }
+    access_url = contract_management_service_url + __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT
     response = external_interface.http_post(
-        contract_management_service_url, voucher_sent_headers, voucher_sent_body, False)
+        access_url, voucher_sent_headers, voucher_sent_body, False)
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(

@@ -250,4 +250,3 @@ def __get_authorization_config(internal_interface) -> (str):
             replace_str_list=[__CONFIG_AUTHORIZATION_SERVER_URL])
 
     return authorization_server_url
-

@@ -29,6 +29,8 @@ __DIRECTION_NORMALITY_VALUES = ['BACKWARD', 'FORWARD', 'BOTH']
 # 検索深度の最低値
 __DEPTH_MIN_VALUE = -1
 
+# データ証憑通知(受信)URL
+__ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_RECEIVED = '/api/cadde/v1/voucher/received'
 
 def received_history_registration(
         provider_id: str,
@@ -248,7 +250,7 @@ def voucher_received_call(
        contract_id str : 取引ID
        hash_get_data str : ハッシュ値
        contract_management_service_url str : 契約管理サービスURL
-       authorization str : 認可トークン
+       authorization str : 認証トークン
        external_interface ExternalInterface : 外部にリクエストを行うインタフェース
 
     Returns:
@@ -268,8 +270,9 @@ def voucher_received_call(
         'contract_id': contract_id,
         'hash': hash_get_data
     }
+    access_url = contract_management_service_url + __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_RECEIVED
     response = external_interface.http_post(
-        contract_management_service_url, voucher_received_headers, voucher_received_body, False)
+        access_url, voucher_received_headers, voucher_received_body, False)
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
