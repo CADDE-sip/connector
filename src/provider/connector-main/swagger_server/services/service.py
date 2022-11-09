@@ -517,8 +517,6 @@ def __get_ckan_config(internal_interface) -> (str, str):
 
     """
 
-    release_ckan_url = ''
-
     try:
         ckan_config = internal_interface.config_read(
             __CONFIG_CKAN_URL_FILE_PATH)
@@ -543,6 +541,9 @@ def __get_ckan_config(internal_interface) -> (str, str):
     except Exception:
         raise CaddeException(message_id='010000004E',
                              replace_str_list=[__CONFIG_CKAN_AUTHORIZATION])
+
+    if release_ckan_url == '':
+        release_ckan_url = None
 
     if detail_ckan_url == '':
         detail_ckan_url = None
@@ -782,10 +783,11 @@ def __ckan_search_execute(release_ckan_url,
     """
 
     # 公開CKANURL、詳細CKANURLの末尾に検索用文字列を設定
-    if release_ckan_url[-1:] == '/':
-        release_ckan_url = release_ckan_url.rstrip('/')
+    if release_ckan_url is not None:
+        if release_ckan_url[-1:] == '/':
+            release_ckan_url = release_ckan_url.rstrip('/')
 
-    release_ckan_url = release_ckan_url + __CKAN_RESOURCE_SEARCH_PATH
+        release_ckan_url = release_ckan_url + __CKAN_RESOURCE_SEARCH_PATH
 
     if detail_ckan_url is not None:
         if detail_ckan_url[-1:] == '/':
@@ -817,10 +819,13 @@ def __ckan_search_execute(release_ckan_url,
     else:
         query_string = __CKAN_RESOURCE_SEARCH_PROPATY + resource_url
 
-    release_ckan_text = search_catalog_ckan(
-        release_ckan_url, query_string, external_interface)
-    release_search_results_list = json.loads(release_ckan_text)[
-        'result']['results']
+    release_search_results_list = []
+
+    if release_ckan_url is not None:
+        release_ckan_text = search_catalog_ckan(
+            release_ckan_url, query_string, external_interface)
+        release_search_results_list = json.loads(
+            release_ckan_text)['result']['results']
 
     detail_search_results_list = []
 
@@ -980,3 +985,4 @@ def __convert_resource_url(resource_api_type, resource_url, options_dict) -> (st
     result_url = after_url
 
     return result_url
+
