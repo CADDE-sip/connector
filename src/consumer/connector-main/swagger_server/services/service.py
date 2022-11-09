@@ -668,12 +668,13 @@ def __get_location_from_location_service(provider, location_service_url, externa
     # 取得リクエストを実行
     try:
         response = external_interface.http_get(send_url, header)
+        # レスポンスからロケーション情報取得
+        response_text_dict = json.loads(response.text)
+        if __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL in response_text_dict:
+            provider_connector_url = response_text_dict[__LOCATION_SERVICE_PROVIDER_CONNECTOR_URL]
+
     except Exception:
-        return provider_connector_url
-    # レスポンスからロケーション情報取得
-    response_text_dict = json.loads(response.text)
-    if __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL in response_text_dict:
-        provider_connector_url = response_text_dict[__LOCATION_SERVICE_PROVIDER_CONNECTOR_URL]
+        pass
 
     return provider_connector_url
 
@@ -739,3 +740,4 @@ def __get_connector_config() -> (str, str, str, str):
             replace_str_list=[__CONFIG_TRACE_LOG_ENABLE])
 
     return consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable
+
