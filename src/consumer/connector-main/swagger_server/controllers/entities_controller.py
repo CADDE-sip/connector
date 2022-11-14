@@ -95,13 +95,12 @@ def retrieve_entity():
         logger.debug("データ管理サーバ（NGSI）の未サポートURLです。")
         raise CaddeException('020003005E')
 
-    # エンティティの一覧取得の場合はentityTypeが指定されていることをチェック
-    if not re.match(r"https?://.*/v2.*/entities/", resource_url):
-        parse_url = urllib.parse.urlparse(resource_url)
-        query = urllib.parse.parse_qs(parse_url.query)
-        if 'type' not in query:
-            logger.debug("エンティティの一覧取得にはクエリにタイプ指定が必要です。")
-            raise CaddeException('020003006E')
+    # エンティティタイプが指定されていることをチェック
+    parse_url = urllib.parse.urlparse(resource_url)
+    query = urllib.parse.parse_qs(parse_url.query)
+    if 'type' not in query:
+        logger.debug("クエリにタイプ指定が必要です。")
+        raise CaddeException('020003006E')
 
     # x_cadde_optionsのカンマ区切り文字列を辞書にする。
     # "key:val, key2:val2, ..."

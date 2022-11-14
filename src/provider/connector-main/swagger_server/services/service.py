@@ -36,11 +36,15 @@ __CONFIG_TRACE_LOG_ENABLE = 'trace_log_enable'
 # コンフィグ：認可確認
 __COMMON_KEY_AUTH_TARGET = 'authorization'
 __COMMON_KEY_AUTH_URL = 'url'
+__COMMON_KEY_AUTH_TENANT = 'tenant'
+__COMMON_KEY_AUTH_SERVICEPATH = 'servicepath'
 __COMMON_KEY_AUTH_ENABLE = 'enable'
 
 # コンフィグ：取引市場利用制御
 __COMMON_KEY_CONTRACT_TARGET = 'contract_management_service'
 __COMMON_KEY_CONTRACT_URL = 'url'
+__COMMON_KEY_CONTRACT_TENANT = 'tenant'
+__COMMON_KEY_CONTRACT_SERVICEPATH = 'servicepath'
 __COMMON_KEY_CONTRACT_ENABLE = 'enable'
 
 # CKAN検索用情報
@@ -242,22 +246,22 @@ def fetch_data(
     provider_id, provider_connector_id, provider_connector_secret, trace_log_enable = __get_connector_config(
         internal_interface)
 
-    # 認証設定情報取得
-    auth_check_enable = __get_auth_check_enable(
-        resource_url, resource_api_type, internal_interface)
-    print('auth_check_enable', auth_check_enable)
-
-    # 取引市場利用設定情報取得
-    contract_check_enable = __get_contract_check_enable(
-        resource_url, resource_api_type, internal_interface)
-    print('contract_check_enable', contract_check_enable)
-
     # カスタムヘッダー取得
     options_dict = None
     try:
         options_dict = __exchange_options_dict(options)
     except Exception:
         raise CaddeException('010002002E')
+
+    # 認証設定情報取得
+    auth_check_enable = __get_auth_check_enable(
+        resource_url, resource_api_type, options_dict, internal_interface)
+    print('auth_check_enable', auth_check_enable)
+
+    # 取引市場利用設定情報取得
+    contract_check_enable = __get_contract_check_enable(
+        resource_url, resource_api_type, options_dict, internal_interface)
+    print('contract_check_enable', contract_check_enable)
 
     # 変数設置
     consumer_id = ''
@@ -612,12 +616,14 @@ def __get_connector_config(internal_interface) -> (str, str, str, str):
 
 def __get_auth_check_enable(resource_url,
                             resource_api_type,
+                            options_dict,
                             internal_interface) -> str:
     """
     リソースURLのドメインからhttp.json、ftp.json、ngsi.jsonを検索して、認可確認の有無を返却
     Args:
         resource_url str : リソースURL
         resource_api_type str : リソース提供手段識別子
+        options_dict str : データ提供IFが使用するカスタムヘッダー
         internal_interface : 内部リクエストを行うインタフェース
 
     Returns:
@@ -666,8 +672,37 @@ def __get_auth_check_enable(resource_url,
         raise CaddeException('010000013E')
 
     try:
-        target_auth_data = [e for e in config_data[__COMMON_KEY_AUTH_TARGET]
-                            if e[__COMMON_KEY_AUTH_URL] in resource_url]
+        if (resource_api_type == 'api/ngsi'):
+            for e in config_data[__COMMON_KEY_AUTH_TARGET]: 
+                ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
+
+                if __COMMON_KEY_AUTH_URL not in e:
+                    continue
+
+                access_url, ngsi_type = ___parse_ngsi_url(resource_url)
+                auth_access_url, auth_ngsi_type = ___parse_ngsi_url(e[__COMMON_KEY_AUTH_URL])
+
+                if auth_access_url != access_url or auth_ngsi_type != ngsi_type:
+                    continue
+
+                if __COMMON_KEY_AUTH_TENANT in e and ngsi_tenant != e[__COMMON_KEY_AUTH_TENANT]:
+                    continue
+
+                if __COMMON_KEY_AUTH_TENANT not in e and '' != ngsi_tenant:
+                    continue
+
+                if __COMMON_KEY_AUTH_SERVICEPATH in e and ngsi_service_path != e[__COMMON_KEY_AUTH_SERVICEPATH]:
+                    continue
+
+                if __COMMON_KEY_AUTH_SERVICEPATH not in e and '' != ngsi_service_path:
+                    continue
+
+                target_auth_data.append(e)
+
+        else:
+            target_auth_data = [e for e in config_data[__COMMON_KEY_AUTH_TARGET]
+                                if e[__COMMON_KEY_AUTH_URL] in resource_url]
+
     except Exception:
         # コンフィグファイルから指定したURLの情報が取得できない場合は何もしない
         pass
@@ -684,12 +719,14 @@ def __get_auth_check_enable(resource_url,
 
 def __get_contract_check_enable(resource_url,
                                 resource_api_type,
+                                options_dict,
                                 internal_interface) -> str:
     """
     リソースURLのドメインからhttp.json、ftp.json、ngsi.jsonを検索して、取引市場利用の有無を返却
     Args:
         resource_url str : リソースURL
         resource_api_type str : リソース提供手段識別子
+        options_dict str : データ提供IFが使用するカスタムヘッダー
         internal_interface : 内部リクエストを行うインタフェース
 
     Returns:
@@ -738,8 +775,37 @@ def __get_contract_check_enable(resource_url,
         raise CaddeException('010000018E')
 
     try:
-        target_contract_data = [e for e in config_data[__COMMON_KEY_CONTRACT_TARGET]
-                                if e[__COMMON_KEY_CONTRACT_URL] in resource_url]
+        if (resource_api_type == 'api/ngsi'):
+            for e in config_data[__COMMON_KEY_CONTRACT_TARGET]: 
+                ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
+
+                if __COMMON_KEY_CONTRACT_URL not in e:
+                    continue
+
+                access_url, ngsi_type = ___parse_ngsi_url(resource_url)
+                contract_access_url, contract_ngsi_type = ___parse_ngsi_url(e[__COMMON_KEY_CONTRACT_URL])
+
+                if contract_access_url != access_url or contract_ngsi_type != ngsi_type:
+                    continue
+
+                if __COMMON_KEY_CONTRACT_TENANT in e and ngsi_tenant != e[__COMMON_KEY_CONTRACT_TENANT]:
+                    continue
+
+                if __COMMON_KEY_CONTRACT_TENANT not in e and '' != ngsi_tenant:
+                    continue
+
+                if __COMMON_KEY_CONTRACT_SERVICEPATH in e and ngsi_service_path != e[__COMMON_KEY_CONTRACT_SERVICEPATH]:
+                    continue
+
+                if __COMMON_KEY_CONTRACT_SERVICEPATH not in e and '' != ngsi_service_path:
+                    continue
+
+                target_contract_data.append(e)
+
+        else:
+            target_contract_data = [e for e in config_data[__COMMON_KEY_CONTRACT_TARGET]
+                                    if e[__COMMON_KEY_CONTRACT_URL] in resource_url]
+
     except Exception:
         # コンフィグファイルから指定したURLの情報が取得できない場合は何もしない
         pass
@@ -801,14 +867,8 @@ def __ckan_search_execute(release_ckan_url,
             query_url = urllib.parse.quote(resource_url)
         else:
             # 認可が不要なNGSIデータ
-            access_url = resource_url.split('entities')[0] + 'entities'
-            parse_url = urllib.parse.urlparse(resource_url)
-            query = urllib.parse.parse_qs(parse_url.query)
-
-            # typeクエリは必ず指定される。
-            ngsi_type = ''
-            if 'type' in query.keys() and query['type'][0]:
-                ngsi_type = query['type'][0]
+            access_url, ngsi_type = ___parse_ngsi_url(resource_url)
+            
             # 認可が不要なNGSIデータの場合、
             # カタログURLがhttps://NGSIサーバのURL/v2.../entities?type=<データ種別>形式であるため、
             # カタログ検索結果の成型時に比較で使用するresource_urlも同形式に変更する
@@ -919,14 +979,7 @@ def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_t
 
         if resource_api_type == 'api/ngsi':
 
-            ngsi_tenant = ''
-            ngsi_service_path = ''
-
-            for key in options_dict:
-                if 'fiware-service' == key.lower():
-                    ngsi_tenant = options_dict[key].strip()
-                if 'fiware-servicepath' == key.lower():
-                    ngsi_service_path = options_dict[key].strip()
+             ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
 
             # NGSIテナント、サービスパスの確認。指定しないケースを考慮する。
             ckan_ngsi_tenant = ''
@@ -985,4 +1038,30 @@ def __convert_resource_url(resource_api_type, resource_url, options_dict) -> (st
     result_url = after_url
 
     return result_url
+
+
+def __get_ngsi_option(options_dict) -> (str, str):
+    """
+    カスタムヘッダからFiware-Service、Fiware-ServicePathを取得する
+
+    Args:
+        options_dict: データ提供IFが使用するカスタムヘッダー
+
+    Returns:
+        str: Fiware-Service
+        str: Fiware-ServicePath
+
+    Raises:
+    """
+    ngsi_tenant = ''
+    ngsi_service_path = ''
+
+    for key in options_dict:
+       if 'fiware-service' == key.lower():
+           ngsi_tenant = options_dict[key].strip()
+       if 'fiware-servicepath' == key.lower():
+           ngsi_service_path = options_dict[key].strip()
+
+    return ngsi_tenant, ngsi_service_path
+
 

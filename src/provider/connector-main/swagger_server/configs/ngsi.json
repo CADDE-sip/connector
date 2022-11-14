@@ -7,21 +7,29 @@
     ],
     "authorization": [
         {
-            "url" : "https://example.com:8080/auth/",
+            "url" : "https://example.com:8080/v2/entities?type=auth",
+            "tenant" : "auth",
+            "servicepath" : "/auth",
             "enable" : true
         }, 
         {
             "url": "https://example.com:8080/open",
+            "tenant" : "open",
+            "servicepath" : "/open",
             "enable" : false
         }
     ],
     "contract_management_service": [
         {
-            "url" : "https://example.com:8080/auth/",
+            "url" : "https://example.com:8080/v2/entities?type=auth",
+            "tenant" : "auth",
+            "servicepath" : "/auth",
             "enable" : true
         }, 
         {
-            "url": "https://example.com:8080/open",
+            "url": "https://example.com:8080/v2/entities?type=open",
+            "tenant" : "open",
+            "servicepath" : "/open",
             "enable" : false
         }
     ]

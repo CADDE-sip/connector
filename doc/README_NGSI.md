@@ -13,7 +13,8 @@
 ### 1.  x-cadde-resource-url ヘッダ
 
 NGSIデータを取得するためのAPIのリソースURLを指定します。<br>
-CADDEコネクタを使用してデータを取得する場合、以下の2種類のURLが指定可能です。
+認可が必要なNGSIデータの場合は、クエリパラメータを含めたリソースのURL（カタログ項目：配信のダウンロードURL）に一致するデータのみ指定可能です。<br>
+認可が不要なNGSIデータの場合は、リソースURL（カタログ項目：配信のダウンロードURL）の範囲のデータの取得条件であれば、以下の2種類のURL、クエリパラメータが指定可能です。
 
   | NGSIで指定可能URL | 概要 |
   | :------------- | :-------------------------- |
@@ -21,7 +22,7 @@ CADDEコネクタを使用してデータを取得する場合、以下の2種�
   | {NGSI取得先URL}/entities/{entityId}?type={entityType} | **任意のエンティティを取得するURL**<br>{entityId}で指定したエンティティの情報を取得する。{entityType}には{entityID}が属するentityTypeを指定する。<br> 例）https://{ドメイン名}/v2/entities/Bcn_Welt?type=Room|
 
 <br>
-また、NGSIデータを取得するAPIにクエリパラメータを指定する場合は本ヘッダに指定するURLにクエリパラメータをしてください。<br>
+NGSIデータを取得するAPIにクエリパラメータを指定する場合は本ヘッダに指定するURLにクエリパラメータをしてください。<br>
 <br>
 　例）{NGSI取得先URL}/entities?type=CareService&limit=10 
 <br>
@@ -46,28 +47,17 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 
 <br>
 
-### 4. x-idp-url
-
-利用するidpのURLを指定します。
-
-  | x-idp-url | 概要 |
-  | :------------- | :-------------------------- |
-  | IdPのURL  | トークンを発行したIdPのURLを設定します。   |
-
-
-<br>
-
-### 5. Authorization
+### 4. Authorization
 
 利用者トークンを示すヘッダです。
 
   | Authorization | 概要 |
   | :------------- | :-------------------------- |
-  | トークンの値 | IdPが発行したアクセストークンを設定します。|
+  | トークンの値 | 利用者トークンを設定します。|
 <br>
 <br>
 
-### 6. x-cadde-options
+### 5. x-cadde-options
 
 API固有のヘッダを本ヘッダに指定することができます。<br>
 例として、NGSIデータを提供するデータ管理サーバに Orionを使用している場合、Orionでは、リクエストヘッダとしてFiware-ServiceおよびFiware-ServicePathを指定することで、マルチテナントおよびマルチサービスの機能を提供していますが、Fiware-Serviceおよび Fiware-ServicePathを本ヘッダに指定することができます。
@@ -79,11 +69,11 @@ API固有のヘッダを本ヘッダに指定することができます。<br>
 
 ## カタログ項目とAPIの関係
 ### 1. x-cadde-resource-urlヘッダ
-x-cadde-resource-urlヘッダの値はデータカタログ項目の「配信のアクセスURL」と「NGSIデータ種別」の値で決定します。
+x-cadde-resource-urlヘッダの値はデータカタログ項目の「配信のダウンロードURL」です。
 
   | APIリクエストヘッダ | カタログ項目 | カタログパラメータ |
   | :------------------ | :-------------------------- | :---------- |
-  | x-cadde-resource-url | 配信のアクセスURL<br>NGSIデータ種別 | resources:access_url<br>resources:ngsi_data_type |
+  | x-cadde-resource-url | 配信のダウンロードURL | resources:url |
 <br>
 <br>
 
@@ -121,13 +111,12 @@ Fiware-ServiceおよびFiware-ServicePathの値はデータカタログ項目の
 ### curlコマンド実行イメージ
 
 ```
-$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/v2/entities"
-　-H “x-cadde-resource-url: {配信のアクセスURL}?type={NGSIデータ種別}" 
+$ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/entities"
+　-H "x-cadde-resource-url: {配信のダウンロードURL}" 
 　-H "x-cadde-resource-api-type: {リソース提供手段の識別子}" 
-　-H "x-cadde-provider: {提供者ID}“ 
-　-H "Authorization: Bearer {契約トークン}“
-　-H "x-idp-url: {トークンを払い出したIDPのURL}“
-　-H “x-cadde-options: Fiware-Service: {NGSIテナント}, Fiware-ServicePath: {NGSIサービスパス}” 
+　-H "x-cadde-provider: {提供者ID}"
+　-H "Authorization: Bearer {利用者トークン}"
+　-H "x-cadde-options: Fiware-Service: {NGSIテナント}, Fiware-ServicePath: {NGSIサービスパス}"
 ```
 <br>
 
@@ -136,8 +125,8 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/v2/ent
 
   | カタログ項目 | カタログパラメータ | 項目の値
   | :------------------ | :-------------------------- | :---------- |
-  | 配信のアクセスURL | resources:access_url | https://closed.XX.go.jo/v2/entities |
-  | NGSIデータ種別 | resources:ngsi_data_type | PublicFacility |
+  | 配信のダウンロードURL | resources:url | https://closed.XX.go.jo/v2/entities?type=PublicFacility |
+  | NGSIデータ種別 | resources:ngsi_entity_type | PublicFacility |
   | リソース提供手段の識別子 | resources:caddec_resource_type | api/ngsi |
   | 提供者ID | extras:caddec_provider_id | provider1@dataex.jp |
   | NGSIテナント | resources:ngsi_tenant | shinnihon |
@@ -146,27 +135,25 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/v2/ent
 
 #### 上記のデータカタログ項目を利用したcurlコマンド実行例
 ```
-$ curl -v -X GET "http://CADDE.Y.co.jp:888/v2/entities"
+$ curl -v -X GET "http://CADDE.Y.co.jp:888/cadde/api/v4/entities"
 　-H "x-cadde-resource-url: https://closed.XX.go.jo/v2/entities?type=PublicFacility" 
 　-H "x-cadde-resource-api-type: api/ngsi" 
 　-H "x-cadde-provider: provider1@dataex.jp" 
-　-H "Authorization: Bearer XXXX“
-  -H "x-idp-url: https://idp.example.jp:12345/auth/relms/idp"
-　-H “x-cadde-options: Fiware-Service: shinnihon, Fiware-ServicePath: /shisetsu”  
+　-H "Authorization: Bearer XXXX"
+　-H "x-cadde-options: Fiware-Service: shinnihon, Fiware-ServicePath: /shisetsu"
 ```
 
 <br>
 
 ### 任意のエンティティを指定してデータを取得する場合
-#### 上記のデータ一覧から、「entity1」というエンティティデータのみを取得する例
+#### 上記のデータ一覧から、「entity1」というエンティティデータのみを取得する例。認可が不要なデータの場合。
 ```
-$ curl -v -X GET "http://CADDE.Y.co.jp:888/v2/entities"
+$ curl -v -X GET "http://CADDE.Y.co.jp:888/cadde/api/v4/entities"
 　-H "x-cadde-resource-url: https://closed.XX.go.jo/v2/entities/entity1?type=PublicFacility" 
 　-H "x-cadde-resource-api-type: api/ngsi" 
 　-H "x-cadde-provider: provider1@dataex.jp" 
-　-H "Authorization: Bearer XXXX“
-  -H "x-idp-url: https://idp.example.jp:12345/auth/relms/idp"
-　-H “x-cadde-options: Fiware-Service: shinnihon, Fiware-ServicePath: /shisetsu”  
+　-H "Authorization: Bearer XXXX"
+　-H "x-cadde-options: Fiware-Service: shinnihon, Fiware-ServicePath: /shisetsu"
 ```
 <br>
 
@@ -174,7 +161,7 @@ $ curl -v -X GET "http://CADDE.Y.co.jp:888/v2/entities"
 
 ## NGSIデータモデル
 NGSIデータの取得APIでは、x-cadde-resource-urlに指定するURLにクエリパラメータを指定することで、データの取得条件を指定することができます。<br>
-データカタログ項目の「NGSIデータモデル」を参照することで、データの取得条件を利用者自身が決定することができます。
+認可が不要なデータの場合、データカタログ項目の「NGSIデータモデル」を参照することで、データの取得条件を利用者自身が決定することができます。
 
 ### 取得データの絞り込みを可能とするデータモデルと取得条件を指定した例
 
@@ -182,8 +169,8 @@ NGSIデータの取得APIでは、x-cadde-resource-urlに指定するURLにク�
 
   | カタログ項目 | カタログパラメータ | 項目の値
   | :------------------ | :-------------------------- | :---------- |
-  | 配信のアクセスURL | resources:access_url | https://closed.XX.go.jo/v2/entities |
-  | NGSIデータ種別 | resources:ngsi_data_type | PublicFacility |
+  | 配信のダウンロードURL | resources:url | https://closed.XX.go.jo/v2/entities?type=PublicFacility |
+  | NGSIデータ種別 | resources:ngsi_entity_type | PublicFacility |
   | リソース提供手段の識別子 | resources:caddec_resource_type | api/ngsi |
   | 提供者ID | extras:caddec_provider_id | provider1@dataex.jp |
   | NGSIテナント | resources:ngsi_tenant | shinnihon |
@@ -199,11 +186,10 @@ NGSIデータの取得APIでは、x-cadde-resource-urlに指定するURLにク�
 
 #### 全体のデータから「入場料金」が800円より安いデータだけを抽出する curlコマンド例
 ```
-$ curl -v -X GET "http://CADDE.Y.co.jp:888/v2/entities"
+$ curl -v -X GET "http://CADDE.Y.co.jp:888/cadde/api/v4/entities"
 　　-H "x-cadde-resource-url: https://closed.XX.go.jo/v2/entities?type=Event_2021&q=fee<800" 
 　　-H “x-cadde-resource-api-type:api/ngsi”
 　　-H "x-cadde-provider: provider1@dataex.jp" 
 　　-H "Authorization: Bearer XXXX“
-　  -H "x-idp-url: https://idp.example.jp:12345/auth/relms/idp"
 　　-H “x-cadde-options: Fiware-Service: shinnihon, Fiware-ServicePath: /event” 
 ```
