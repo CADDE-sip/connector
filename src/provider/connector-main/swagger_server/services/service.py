@@ -979,7 +979,7 @@ def __single_ckan_result_molding(ckan_results_list, resource_url, resource_api_t
 
         if resource_api_type == 'api/ngsi':
 
-             ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
+            ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
 
             # NGSIテナント、サービスパスの確認。指定しないケースを考慮する。
             ckan_ngsi_tenant = ''
