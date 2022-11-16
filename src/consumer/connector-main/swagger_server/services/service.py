@@ -311,20 +311,19 @@ def fetch_data(authorization: str,
                     response.text])
 
         response_bytes = BytesIO(response.content)
-        get_headers = {}
-        get_headers = dict(response.headers)
+        response_headers = dict(response.headers)
         response_data = response_bytes.read()
         response_bytes.seek(0)
 
         # レスポンスヘッダからデータを取得
         contract_url = ''
-        contract_url = get_headers['x-cadde-contract-management-service-url']
+        contract_url = response_headers['x-cadde-contract-management-service-url']
         contract_id = ''
-        contract_id = get_headers['x-cadde-contract-id']
+        contract_id = response_headers['x-cadde-contract-id']
         provenance_id = ''
-        provenance_id = get_headers['x-cadde-provenance']
+        provenance_id = response_headers['x-cadde-provenance']
         provenance_url = ''
-        provenance_url = get_headers['x-cadde-provenance-management-service-url']
+        provenance_url = response_headers['x-cadde-provenance-management-service-url']
 
         # 来歴管理：データ証憑通知(受信)
         # 契約している場合（戻り値に取引ID、契約管理サービスURLが設定されている場合）に行う
