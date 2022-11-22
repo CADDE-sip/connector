@@ -149,7 +149,7 @@ paths:
                     title: ""
                     type: ""
         "403":
-          description: ベーシック認証に失敗した場合のエラーメッセージ
+          description: 認可情報不正の場合のエラーメッセージ
           content:
             application/json:
               schema:

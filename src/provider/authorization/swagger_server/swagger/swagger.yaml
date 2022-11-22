@@ -137,14 +137,14 @@ paths:
             application/json:
               example: ""
         "403":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: 認証情報不正の場合のエラーメッセージ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
-                  summary: 認可I/F 認証トークン検証処理で認可サーバへのトークンイントロスペクションを行い、対象トークンが使用できなかった場合
+                  summary: 認可I/F 認可トークン検証処理で認可サーバへのトークンイントロスペクションを行い、対象トークンが使用できなかった場合
                   value:
                     detail: 認証処理を行いましたが、対象のトークンは使用できません。CADDE管理者に問い合わせてください。
                     status: 403
@@ -244,7 +244,7 @@ paths:
             application/json:
               example: ""
         "403":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: 認証情報不正の場合のエラーメッセージ
           content:
             application/json:
               schema:

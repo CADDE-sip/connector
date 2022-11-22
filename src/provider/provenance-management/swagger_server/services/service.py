@@ -19,7 +19,7 @@ __CONFIG_PROVENANCE_FILE_PATH = '/usr/src/app/swagger_server/configs/provenance.
 __CONFIG_PROVENANCE_MANAGEMENT_URL = 'provenance_management_api_url'
 
 # データ証憑通知(送信)URL
-__ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT = '/api/cadde/v1/voucher/sent'
+__ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT = '/cadde/api/v4/voucher/sent'
 
 def sent_history_registration(
         provider_id: str,

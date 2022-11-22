@@ -30,7 +30,7 @@ __DIRECTION_NORMALITY_VALUES = ['BACKWARD', 'FORWARD', 'BOTH']
 __DEPTH_MIN_VALUE = -1
 
 # データ証憑通知(受信)URL
-__ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_RECEIVED = '/api/cadde/v1/voucher/received'
+__ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_RECEIVED = '/cadde/api/v4/voucher/received'
 
 def received_history_registration(
         provider_id: str,

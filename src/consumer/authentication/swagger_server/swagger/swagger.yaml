@@ -69,7 +69,7 @@ paths:
                     title: Bad Request
                     type: about:blank
         "403":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: 認証情報不正の場合のエラーメッセージ
           content:
             application/json:
               schema:
@@ -161,7 +161,7 @@ paths:
                     title: Bad Request
                     type: about:blank
         "403":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: 認証情報不正の場合のエラーメッセージ
           content:
             application/json:
               schema:
