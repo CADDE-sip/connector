@@ -14,8 +14,8 @@
 - TLS相互認証に必要な証明書、秘密鍵(pem形式)はユーザーにて事前に準備済みであることを前提とする。
   - 各環境で必要なファイルは以下の通り
     - 利用者側：クライアント証明書、秘密鍵(暗号化なし)
-    - 提供者側：サーバー証明書、秘密鍵、クライアント認証設定用CA証明書
-
+    - 提供者側：サーバー証明書(※)、秘密鍵、クライアント認証設定用CA証明書
+      - (※)サーバー証明書のCN(Common Name)についてはIPアドレスでの指定が不可となるため、サブドメインまでを含んだドメインを指定ください。 
 - Linux 上での動作を前提とする。
   - Docker、Docker Compose が事前インストールされていることを前提とする。
   - 対応する Docker Version は以下の通りとする。
@@ -57,12 +57,17 @@ connector/misc/squid/volumes/ssl/
   | http_port | ssl_bumpを設定。 |
   | tls_outgoing_options | サーバー接続時に使用するクライアント証明書、秘密鍵を設定 |
 
- - 設定例
+ - 設定箇所(デフォルト：73行目)
 ```
-http_port 3128 ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=4MB cert=/etc/squid/ssl/squidCA.pem
 tls_outgoing_options cert=/etc/squid/ssl/{クライアント証明書} key=/etc/squid/ssl/{クライアント秘密鍵}
 ```
 クライアント証明書、秘密鍵はユーザーで準備したファイル名に置き換える。
+
+ - (参考)証明書エラー回避用設定箇所(デフォルト：70行目)
+```
+# sslproxy_cert_error allow all
+```
+接続先がオレオレ証明書等で証明書エラーを回避する必要がある場合は、上記行のコメントアウトを解除する。
 
 3. 初回プロキシ(Squid)起動
 

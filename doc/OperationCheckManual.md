@@ -34,7 +34,7 @@ docker-compose -p consumer up -d
 ### 1. アクセストークン取得
 
 ```
-curl -v -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{ "consumer_id": "cadde:verify_user01.aa", "password": "uVa1BvnKas_5odW" }' https://key-authen.test.data-linkage.jp/cadde/api/v1/consumer/token
+curl -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{ "consumer_id": "cadde:verify_user01.aa", "password": "uVa1BvnKas_5odW" }' https://key-authen.test.data-linkage.jp/cadde/api/v1/consumer/token
 ```
 以下の結果が出力されていればアクセストークンの取得完了です。
 
@@ -100,7 +100,7 @@ curlコマンドを実行可能なコンソールより動作確認環境の利�
 ### 1. アクセストークン取得
 
 ```
-curl -v -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{ "consumer_id": "cadde:verify_user01.aa", "password": "uVa1BvnKas_5odW" }' https://key-authen.test.data-linkage.jp/cadde/api/v1/consumer/token
+curl -X POST -H "Cache-Control: no-cache" -H "Content-Type: application/json" -d '{ "consumer_id": "cadde:verify_user01.aa", "password": "uVa1BvnKas_5odW" }' https://key-authen.test.data-linkage.jp/cadde/api/v1/consumer/token
 ```
 以下の結果が出力されていればアクセストークンの取得完了です。
 
