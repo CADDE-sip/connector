@@ -1,5 +1,6 @@
 {
     "release_ckan_url" : "https://example.com",
     "detail_ckan_url" : "https://example.com",
-    "authorization" : true
+    "authorization" : true,
+    "packages_search_for_data_exchange" : true
 }

@@ -1,4 +1,3 @@
-
 import logging
 
 from flask import Response
@@ -46,7 +45,7 @@ def token_federation(authorization=None, cadde_provider=None, provider_connector
             '010401001N', [
                 authorization, cadde_provider, provider_connector_id, provider_connector_secret]))
 
-    auth_token = token_federation_execute(
+    auth_token, consumer_id = token_federation_execute(
         authorization,
         cadde_provider,
         provider_connector_id,
@@ -56,4 +55,6 @@ def token_federation(authorization=None, cadde_provider=None, provider_connector
 
     return_response = Response(response='', status=200)
     return_response.headers['x-cadde-auth-token'] = auth_token
+    return_response.headers['x-cadde-consumer-id'] = consumer_id
+
     return return_response

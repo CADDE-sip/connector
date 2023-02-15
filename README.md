@@ -89,13 +89,6 @@ sh setup.sh
   | domain                             | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載         |
   | auth                               | NGSI へ API アクセスするためのアクセストークンを設定                           |
 
-- authentication.json
-  <br>connector/src/consumer/authentication/swagger_server/configs/に配置<br>認証時の接続先を記載
-
-  | 設定パラメータ                     | 概要                                                            |
-  | :--------------------------------- | :-------------------------------------------------------------- |
-  | authentication_server_url          | 認証サーバのアクセスURL                                         |
-
 - public_ckan.json
   <br>connector/src/consumer/catalog-search/swagger_server/configs/に配置<br>CKAN の横断検索時の接続先の設定を記載
 
@@ -114,25 +107,6 @@ sh setup.sh
   | :--------------------------------- | :-------------------------------------------------------------- |
   | provenance_management_api_url      | 来歴管理サーバのアクセスURL                                     | 
 
-4. 利用者環境情報の設定
-
-connector/src/consumer/.envファイルを下記の通り修正する。<br>
-
-(1) 利用者プロキシ情報の設定<br>
- HTTPS_PROXY_CADDE=XXX
- <br>XXX部分を利用者サーバのIPアドレス:プロキシ(Squid)構築手順で設定したポート番号に修正<br>
-
-(2) 利用者プロキシの証明書情報の設定<br>
-  REQUESTS_CA_BUNDLE=/etc/docker/certs.d/{自己署名SSL証明書ファイル名}
-  {証明書ファイル名}は、XXX部分を分野間データ連携基盤: TLS相互認証設定例、プロキシ(Squid)構築手順、SSL Bump設定用自己署名SSL証明書を作成 の手順で出力したファイルを指定
-
-
-5. 証明書ファイル配置<br>
-REQUESTS_CA_BUNDLE で指定したディレクトリに自己署名SSL証明書ファイルを配置
-
-```
-cp -p (自己署名SSL証明書ファイル名) /etc/docker/certs.d/(自己署名SSL証明書ファイル名)
-```
 
 ## 利用者コネクタ起動手順
 1. 利用者コネクタ起動
@@ -145,14 +119,15 @@ docker compose -p consumer up -d
 2. 利用者コネクタ起動確認
 StateがすべてUpとなっていることを確認
 ```
-docker compose -p consumer ps
-NAME                             COMMAND                  SERVICE                   STATUS              PORTS
-consumer_authentication          "python3 -m swagger_…"   authentication            running             8080/tcp
-consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-search   running             8080/tcp
-consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main   running             0.0.0.0:80->8080/tcp, :::80->8080/tcp
-consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange    running             8080/tcp
-consumer_provenance_management   "python3 -m swagger_…"   provenance-management     running             8080/tcp
-forward-proxy                    "/usr/sbin/squid '-N…"   squid                     running             0.0.0.0:3128->3128/tcp, :::3128->3128/tcp
+docker compose ps
+NAME                             COMMAND                  SERVICE                          STATUS              PORTS
+consumer_authentication          "python3 -m swagger_…"   consumer-authentication          running             8080/tcp
+consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-search          running             8080/tcp
+consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
+consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
+consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
+forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
+reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
 ```
 ## 利用者コネクタ停止手順
 ```
@@ -175,13 +150,24 @@ docker compose -p consumer down
 ### コネクタを利用した NGSIデータの取得方法
 [CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照
 
+### リバースプロキシを使用しない場合
+docker-compose.ymlのリバースプロキシコンテナを利用しない場合は、reverse-proxyコンテナをコメントアウトし、
+consumer-connector-mainにポートフォワードの指定をしてください。
+
+### フォワードプロキシを使用しない場合
+docker-compose.ymlのフォワードプロキシコンテナを利用しない場合は、squidコンテナをコメントアウトしてください。
+
+### 利用者コネクタへのアクセス制限について
+利用者コネクタへアクセス制限を行う場合は、利用者コネクタにSSL/TSL認証でアクセス制限をかけてください。
+[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TSLManual.md "利用者環境および提供者環境リバースプロキシ設定")  参照。
+
 <br>
 <br>
 
 # 提供者コネクタ
 
 ## 提供者コネクタ環境準備
-[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TSLManual.md "提供者環境リバースプロキシ設定")  参照。
+[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TSLManual.md "利用者環境および提供者環境リバースプロキシ設定")  参照。
 
 [提供者環境構築ガイド](doc/ProviderManual.md "提供者環境構築ガイド")
 
@@ -209,6 +195,9 @@ sh setup.sh
   | release_ckan_url                   | カタログサイト(公開)のアクセスURL                               |
   | detail_ckan_url                    | カタログサイト(詳細)のアクセスURL                               |
   | authorization                      | カタログサイト(詳細)アクセス時に認可確認を行うか否かを設定      |
+  | packages_search_for_data_exchange  | データ取得時に交換実績記録用リソースID検索を行うか否かを設定    |
+
+
 
 (2) データ管理サーバ(HTTPサーバ)を提供者コネクタ経由で公開する場合<br>
 (2-1) 認証ありHTTPサーバに接続の場合
@@ -227,6 +216,9 @@ sh setup.sh
   | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する         |
   | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用         |
   | enable                             | 取引市場利用有無 (取引市場を利用する場合True,取引市場を利用しない場合Falseを設定)                                                                      |
+  | register_provenance                | 来歴登録設定情報 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する来歴登録設定情報が存在しない場合、来歴登録設定情報はTrueで動作する         |
+  | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用         |
+  | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                  |
 
 (2-2) 認証なしHTTPサーバに接続の場合<br>
  http.jsonファイルのbasic_auth編集不要。
@@ -248,6 +240,9 @@ sh setup.sh
   | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する         |
   | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用         |
   | enable                             | 取引市場利用有無 (取引市場を利用する場合True,取引市場を利用しない場合Falseを設定)                                                                      |
+  | register_provenance                | 来歴登録設定情報 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する来歴登録設定情報が存在しない場合、来歴登録設定情報はTrueで動作する         |
+  | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用         |
+  | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                      |
 
 (3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
  ftp.jsonファイルのftp_auth編集不要。
@@ -256,27 +251,29 @@ sh setup.sh
 - ngsi.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
 
-  | 設定パラメータ                     | 概要                                                                                                                                                   |
-  | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | ngsi_auth                          | 以下、ドメイン毎の設定を配列で保持                                                                                                                     |
-  | domain                             | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                                                                 |
-  | auth                               | NGSI へ API アクセスするためのアクセストークンを設定                                                                                                   |
-  | authorization                      | リソースの認可確認設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当するリソースの認可確認設定が存在しない場合、認可確認有無はTrueで動作する |
-  | url                                | 認可確認有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、認可確認設定を適用                 |
-  | url                                | 認可確認有無の対象となるリソースのURL（カタログ項目：配信のダウンロードURL）を記載する データ取得時に指定されたリソースURLに本設定のURLが含まれていた場合、認可確認設定を適用                 |
-  | tenant                             | 認可確認有無の対象となるNGSIテナント（カタログ項目：NGSIテナント）を記載する データ取得時に指定されたNGSIテナントと本設定のNGSIテナントが一致した場合、認可確認設定を適用                 |
-  | servicepath                        | 認可確認有無の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、認可確認設定を適用                 |
-  | enable                             | 認可確認有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                               |
-  | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する         |
-  | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用         |
-<<<<<<< HEAD
-  | enable                             | 取引市場利用有無 (取引市場を利用する場合True,取引市場を利用しない場合Falseを設定)                                                                      |
-=======
-  | url                                | 取引市場利用有無の対象となるリソースのURL（カタログ項目：配信のダウンロードURL）を記載する データ取得時に指定されたリソースURLに本設定のURLが含まれていた場合、取引市場利用設定を適用         |
+  | 設定パラメータ                     | 概要                                                                                                                                                                                              |
+  | :--------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+  | ngsi_auth                          | 以下、ドメイン毎の設定を配列で保持                                                                                                                                                                |
+  | domain                             | ドメイン名を記載する ポート指定を行う場合は":ポート番号"を合わせて記載                                                                                                                            |
+  | auth                               | NGSI へ API アクセスするためのアクセストークンを設定                                                                                                                                              |
+  | authorization                      | リソースの認可確認設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当するリソースの認可確認設定が存在しない場合、認可確認有無はTrueで動作する                                            |
+  | url                                | 認可確認有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、認可確認設定を適用                                                            |
+  | url                                | 認可確認有無の対象となるリソースのURL（カタログ項目：配信のダウンロードURL）を記載する データ取得時に指定されたリソースURLに本設定のURLが含まれていた場合、認可確認設定を適用                     |
+  | tenant                             | 認可確認有無の対象となるNGSIテナント（カタログ項目：NGSIテナント）を記載する データ取得時に指定されたNGSIテナントと本設定のNGSIテナントが一致した場合、認可確認設定を適用                         |
+  | servicepath                        | 認可確認有無の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、認可確認設定を適用         |
+  | enable                             | 認可確認有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                                                                          |
+  | contract_management_service        | 取引市場利用設定 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する取引市場利用設定が存在しない場合、取引市場利用有無はTrueで動作する                                                    |
+  | url                                | 取引市場利用有無の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、取引市場利用設定を適用                                                    |
+  | enable                             | 取引市場利用有無 (取引市場を利用する場合True,取引市場を利用しない場合Falseを設定)                                                                                                                 |
+  | url                                | 取引市場利用有無の対象となるリソースのURL（カタログ項目：配信のダウンロードURL）を記載する データ取得時に指定されたリソースURLに本設定のURLが含まれていた場合、取引市場利用設定を適用             |
   | tenant                             | 取引市場利用有無の対象となるNGSIテナント（カタログ項目：NGSIテナント）を記載する データ取得時に指定されたNGSIテナントと本設定のNGSIテナントが一致した場合、取引市場利用設定を適用                 |
-  | servicepath                        | 取引市場利用有無の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、取引市場利用設定を適用                 |
-  | enable                             | 取引市場利用有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                           |
->>>>>>> 265b79146bb9e65bc8759cfd7b64848bac6b5f88
+  | servicepath                        | 取引市場利用有無の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、取引市場利用設定を適用 |
+  | enable                             | 取引市場利用有無 (認可確認を行う場合True, 認可確認を行わない場合Falseを設定)                                                                                                                      |
+  | register_provenance                | 来歴登録設定情報 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する来歴登録設定情報が存在しない場合、来歴登録設定情報はTrueで動作する                                                    |
+  | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用                                                    |
+  | tenant                             | 来歴登録設定情報の対象となるNGSIテナント（カタログ項目：NGSIテナント）を記載する データ取得時に指定されたNGSIテナントと本設定のNGSIテナントが一致した場合、来歴登録設定を適用                     |
+  | servicepath                        | 来歴登録設定情報の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、来歴登録設定を適用     |
+  | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                                                             |
 
 (5) 認証および認可をおこなう場合
 - authorization.json
@@ -377,4 +374,5 @@ docker compose -p provider down
 ⑨関連する過去の問い合わせ番号 <br>
 **********<br><br>
 ⑤～⑨について、構築中の不具合や動作不良に関する問い合わせの場合、可能な範囲でご記載ください。<br>
+
 

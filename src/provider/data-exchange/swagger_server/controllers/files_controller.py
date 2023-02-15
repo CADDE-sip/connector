@@ -1,8 +1,7 @@
 import connexion
 
-from flask import send_file, Response
+from flask import Response
 import logging
-from io import BytesIO
 
 from swagger_server.utilities.message_map import get_message
 from swagger_server.services.service import data_exchange
@@ -57,65 +56,33 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
                                   authorization),
                               log_message_none_parameter_replace(options)]))
 
-    response = data_exchange(
+    data = data_exchange(
         resource_url,
         resource_api_type,
         authorization,
         options,
         external_interface)
 
-    if resource_api_type == 'api/ngsi':
-        ngsi_headers = dict(response.headers)
-        return_response = Response(
-            response=response.content,
-            headers=ngsi_headers,
-            status=200,
-            mimetype="application/json")
+    response = Response(
+        response=data.content,
+        headers=dict(data.headers),
+        status=200,
+        mimetype='application/json')
 
-    else:
-        cadde_headers = dict(response.headers)
-        fileName = get_url_file_name(resource_url)
-        return_response = send_file(
-            BytesIO(
-                response.content),
-            as_attachment=True,
-            download_name=fileName)
-        return_response.headers = cadde_headers
+    response.headers[
+        'Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'none';"
 
-    check_headers = dict(response.headers)
+    if 'Server' in response.headers:
+        del response.headers['Server']
 
-    if 'x-cadde-provenance' in check_headers:
-        return_response.headers['x-cadde-provenance'] = check_headers['x-cadde-provenance']
-    else:
-        return_response.headers['x-cadde-provenance'] = ''
+    if 'Date' in response.headers:
+        del response.headers['Date']
 
-    if 'x-cadde-provenance-management-service-url' in check_headers:
-        return_response.headers[
-            'x-cadde-provenance-management-service-url'
-        ] = check_headers['x-cadde-provenance-management-service-url']
-    else:
-        return_response.headers['x-cadde-provenance-management-service-url'] = ''
+    if 'Transfer-Encoding' in response.headers:
+        del response.headers['Transfer-Encoding']
 
-    if 'x-cadde-contract-id' in check_headers:
-        return_response.headers['x-cadde-contract-id'] = check_headers['x-cadde-contract-id']
-    else:
-        return_response.headers['x-cadde-contract-id'] = ''
+    if 'Content-Disposition' not in response.headers:
+        response.headers[
+            'Content-Disposition'] = 'attachment; filename=' + get_url_file_name(resource_url)
 
-    if 'x-cadde-contract-type' in check_headers:
-        return_response.headers['x-cadde-contract-type'] = check_headers['x-cadde-contract-type']
-    else:
-        return_response.headers['x-cadde-contract-type'] = ''
-
-    if 'x-cadde-contract-management-service-url' in check_headers:
-        return_response.headers[
-            'x-cadde-contract-management-service-url'
-        ] = check_headers['x-cadde-contract-management-service-url']
-    else:
-        return_response.headers['x-cadde-contract-management-service-url'] = ''
-
-    return_response.headers['X-Content-Type-Options'] = 'nosniff'
-    return_response.headers['X-XSS-Protection'] = '1; mode=block'
-    return_response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
-    return_response.headers['Referrer-Policy'] = "no-referrer always"
-
-    return return_response
+    return response

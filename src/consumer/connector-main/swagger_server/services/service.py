@@ -33,22 +33,10 @@ __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL = 'provider_connector_url'
 
 __ACCESS_POINT_URL_SEARCH = 'http://consumer_catalog_search:8080/cadde/api/v4/catalog'
 __ACCESS_POINT_URL_FILE = 'http://consumer_data_exchange:8080/cadde/api/v4/file'
-__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_LINEAGE = ('http://consumer_provenance_management:8080/'
-                                                         'cadde/api/v4/history/lineage/')
-__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_SEARCHEVENTS = ('http://consumer_provenance_management:8080/'
-                                                              'cadde/api/v4/history/searchevents')
-__ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION = 'http://consumer_authentication:8080/token_federation'
 __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_INTROSPECT = 'http://consumer_authentication:8080/token_introspect'
+__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_VOUCHER = 'http://consumer_provenance_management:8080/voucher/received'
 __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_RECEIVED = ('http://consumer_provenance_management:8080/'
                                                           'eventwithhash/received')
-__ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_VOUCHER = 'http://consumer_provenance_management:8080/voucher/received'
-
-
-# 履歴取得方向の正常値リスト
-__DIRECTION_NORMALITY_VALUES = ['BACKWARD', 'FORWARD', 'BOTH']
-
-# 検索深度の最低値
-__DEPTH_MIN_VALUE = -1
 
 
 def catalog_search(
@@ -72,10 +60,9 @@ def catalog_search(
 
     Raises:
         Cadde_excption: 検索種別確認時に不正な値が設定されている場合                エラーコード: 020001002E
-        Cadde_excption: 認証I/F 認証トークン取得処理でエラーが発生した場合          エラーコード: 020001003E
-        Cadde_excption: 認証I/F 認証トークン検証処理でエラーが発生した場合          エラーコード: 020001004E
-        Cadde_excption: 提供者コネクタURLの取得に失敗した場合                       エラーコード: 020001005E
-        Cadde_excption: カタログ検索I/Fのカタログ検索処理の呼び出しに失敗した場合   エラーコード: 020001006E
+        Cadde_excption: 認証I/F 認証トークン検証処理でエラーが発生した場合          エラーコード: 020001003E
+        Cadde_excption: 提供者コネクタURLの取得に失敗した場合                       エラーコード: 020001004E
+        Cadde_excption: カタログ検索I/Fのカタログ検索処理でエラーが発生した場合      エラーコード: 020001005E
 
     """
 
@@ -84,33 +71,12 @@ def catalog_search(
 
     consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable = __get_connector_config()
 
-    auth_token = None
     consumer_id = None
 
     if authorization:
-
-        # トークン交換(認証トークン取得)
-        token_federation_headers = {
-            'Authorization': authorization,
-            'x-cadde-consumer-connector-id': consumer_connector_id,
-            'x-cadde-consumer-connector-secret': consumer_connector_secret
-        }
-        token_federation_response = external_interface.http_get(
-            __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION, token_federation_headers)
-
-        if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
-            raise CaddeException(
-                message_id='020001003E',
-                status_code=token_federation_response.status_code,
-                replace_str_list=[
-                    token_federation_response.text])
-
-        get_token = token_federation_response.headers['x-cadde-auth-token']
-        auth_token = f'Bearer {get_token}'
-
         # 認証トークン検証
         token_introspect_headers = {
-            'Authorization': auth_token,
+            'Authorization': authorization,
             'x-cadde-consumer-connector-id': consumer_connector_id,
             'x-cadde-consumer-connector-secret': consumer_connector_secret
         }
@@ -119,7 +85,7 @@ def catalog_search(
 
         if token_introspect_response.status_code < 200 or 300 <= token_introspect_response.status_code:
             raise CaddeException(
-                message_id='020001004E',
+                message_id='020001003E',
                 status_code=token_introspect_response.status_code,
                 replace_str_list=[
                     token_introspect_response.text])
@@ -134,12 +100,12 @@ def catalog_search(
         provider_connector_url = __get_location_info(
             provider, location_service_url, external_interface)
         if not provider_connector_url:
-            raise CaddeException('020001005E')
+            raise CaddeException('020001004E')
 
     headers_dict = {
         'x-cadde-search': search,
         'x-cadde-provider-connector-url': provider_connector_url,
-        'Authorization': auth_token,
+        'Authorization': authorization,
     }
 
     target_url = __ACCESS_POINT_URL_SEARCH + query_string
@@ -147,7 +113,7 @@ def catalog_search(
     response = external_interface.http_get(target_url, headers_dict)
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            '020001006E',
+            '020001005E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])
@@ -197,15 +163,14 @@ def fetch_data(authorization: str,
 
     Raises:
         Cadde_excption: リソース提供手段識別子確認時に不正な値が設定されている場合           エラーコード: 020004001E
-        Cadde_excption: 認証I/F 認証トークン取得処理でエラーが発生した場合                   エラーコード: 020004002E
-        Cadde_excption: 認証I/F 認証トークン検証処理でエラーが発生した場合                   エラーコード: 020004003E
-        Cadde_excption: 提供者コネクタURLの取得に失敗した場合                                エラーコード: 020004004E
-        Cadde_excption: データ提供IFが使用するカスタムヘッダーの変換に失敗した場合           エラーコード: 020004005E
-        Cadde_excption: データ交換I/Fのデータ交換の呼び出し時に、エラーが発生した場合        エラーコード: 020004006E
-        Cadde_excption: データ証憑通知(受信)時にCADDEユーザID（利用者）が空の場合            エラーコード: 020004007E
-        Cadde_excption: 来歴管理I/F データ証憑通知(受信)API呼び出し時にエラーが発生した場合  エラーコード: 020004008E
-        Cadde_excption: 受信履歴登録時にCADDEユーザID（利用者）が空の場合                    エラーコード: 020004009E
-        Cadde_excption: 来歴管理I/F 受信履歴登録（来歴）API呼び出し時にエラーが発生した場合  エラーコード: 020004010E
+        Cadde_excption: 認証I/F 認証トークン検証処理でエラーが発生した場合                   エラーコード: 020004002E
+        Cadde_excption: 提供者コネクタURLの取得に失敗した場合                                エラーコード: 020004003E
+        Cadde_excption: データ提供IFが使用するカスタムヘッダーの変換に失敗した場合           エラーコード: 020004004E
+        Cadde_excption: データ交換I/Fのデータ交換の呼び出し時に、エラーが発生した場合        エラーコード: 020004005E
+        Cadde_excption: データ証憑通知(受信)時にCADDEユーザID（利用者）が空の場合            エラーコード: 020004006E
+        Cadde_excption: 来歴管理I/F データ証憑通知(受信)API呼び出し時にエラーが発生した場合  エラーコード: 020004007E
+        Cadde_excption: 受信履歴登録時にCADDEユーザID（利用者）が空の場合                    エラーコード: 020004008E
+        Cadde_excption: 来歴管理I/F 受信履歴登録（来歴）API呼び出し時にエラーが発生した場合  エラーコード: 020004009E
 
     """
 
@@ -214,33 +179,12 @@ def fetch_data(authorization: str,
 
     consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable = __get_connector_config()
 
-    auth_token = None
     consumer_id = None
 
     if authorization:
-
-        # トークン連携(認証トークン取得)
-        token_federation_headers = {
-            'Authorization': authorization,
-            'x-cadde-consumer-connector-id': consumer_connector_id,
-            'x-cadde-consumer-connector-secret': consumer_connector_secret
-        }
-        token_federation_response = external_interface.http_get(
-            __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION, token_federation_headers)
-
-        if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
-            raise CaddeException(
-                message_id='020004002E',
-                status_code=token_federation_response.status_code,
-                replace_str_list=[
-                    token_federation_response.text])
-
-        get_token = token_federation_response.headers['x-cadde-auth-token']
-        auth_token = f'Bearer {get_token}'
-
         # 認証トークン検証
         token_introspect_headers = {
-            'Authorization': auth_token,
+            'Authorization': authorization,
             'x-cadde-consumer-connector-id': consumer_connector_id,
             'x-cadde-consumer-connector-secret': consumer_connector_secret
         }
@@ -249,7 +193,7 @@ def fetch_data(authorization: str,
 
         if token_introspect_response.status_code < 200 or 300 <= token_introspect_response.status_code:
             raise CaddeException(
-                message_id='020004003E',
+                message_id='020004002E',
                 status_code=token_introspect_response.status_code,
                 replace_str_list=[
                     token_introspect_response.text])
@@ -257,15 +201,22 @@ def fetch_data(authorization: str,
         consumer_id = token_introspect_response.headers['x-cadde-consumer-id']
 
     response_bytes = None
-    response_headers = {'x-cadde-provenance': '', 'x-cadde-contract-id': ''}
+    response_headers = {
+        'x-cadde-provenance': '',
+        'x-cadde-contract-id': '',
+        'x-cadde-contract-type': '',
+        'x-cadde-provenance-management-service-url': '',
+        'x-cadde-contract-management-service-url': ''
+    }
 
     # CADDEユーザID（提供者）なし
     if not provider:
         if resource_api_type == 'api/ngsi':
-            response_bytes, response_headers = provide_data_ngsi(
+            response_bytes, ngsi_response_headers = provide_data_ngsi(
                 resource_url, options)
-            response_headers['x-cadde-provenance'] = ''
-
+            header_arry = ngsi_response_headers.keys()
+            for key_data in header_arry:
+                response_headers[key_data] = ngsi_response_headers[key_data]
         elif resource_api_type == 'file/ftp':
             response_bytes = provide_data_ftp(
                 resource_url, external_interface, internal_interface)
@@ -282,21 +233,21 @@ def fetch_data(authorization: str,
         provider_connector_url = __get_location_info(
             provider, location_service_url, external_interface)
         if not provider_connector_url:
-            raise CaddeException('020004004E')
+            raise CaddeException('020004003E')
 
         options_str = ''
         if resource_api_type == 'api/ngsi':
             try:
                 options_str = __exchange_options_str(options)
             except Exception:
-                raise CaddeException('020004005E')
+                raise CaddeException('020004004E')
 
         # データ取得用ヘッダーを生成
         headers_dict = {
             'x-cadde-resource-url': resource_url,
             'x-cadde-resource-api-type': resource_api_type,
             'x-cadde-provider-connector-url': provider_connector_url,
-            'Authorization': auth_token,
+            'Authorization': authorization,
             'x-cadde-options': options_str
         }
 
@@ -305,7 +256,7 @@ def fetch_data(authorization: str,
             __ACCESS_POINT_URL_FILE, headers_dict)
         if response.status_code < 200 or 300 <= response.status_code:
             raise CaddeException(
-                '020004006E',
+                '020004005E',
                 status_code=response.status_code,
                 replace_str_list=[
                     response.text])
@@ -316,21 +267,21 @@ def fetch_data(authorization: str,
         response_bytes.seek(0)
 
         # レスポンスヘッダからデータを取得
-        contract_url = ''
-        contract_url = response_headers['x-cadde-contract-management-service-url']
-        contract_id = ''
-        contract_id = response_headers['x-cadde-contract-id']
         provenance_id = ''
         provenance_id = response_headers['x-cadde-provenance']
         provenance_url = ''
         provenance_url = response_headers['x-cadde-provenance-management-service-url']
+        contract_id = ''
+        contract_id = response_headers['x-cadde-contract-id']
+        contract_url = ''
+        contract_url = response_headers['x-cadde-contract-management-service-url']
 
         # 来歴管理：データ証憑通知(受信)
         # 契約している場合（戻り値に取引ID、契約管理サービスURLが設定されている場合）に行う
         if contract_id and contract_url:
             # 認証あり（consumer_id有効）の場合に行う
             if consumer_id is None:
-                raise CaddeException('020004007E')
+                raise CaddeException('020004006E')
             # ハッシュ値算出
             hash_value = hashlib.sha512(response_data).hexdigest()
 
@@ -348,26 +299,23 @@ def fetch_data(authorization: str,
 
             if sent_response.status_code < 200 or 300 <= sent_response.status_code:
                 raise CaddeException(
-                    message_id='020004008E',
+                    message_id='020004007E',
                     status_code=sent_response.status_code,
                     replace_str_list=[
                         sent_response.text])
-
-            # レスポンスヘッダ：契約IDを更新
-            response_headers['x-cadde-contract-id'] = contract_id
 
         # 来歴管理：受信履歴登録
         # 交換実績記録用リソースIDあり、かつ、認証あり（consumer_id有効）
         if provenance_id != '':
             if consumer_id is None:
-                raise CaddeException('020004009E')
+                raise CaddeException('020004008E')
 
             received_headers = {
                 'x-cadde-provider': provider,
                 'x-cadde-consumer': consumer_id,
                 'x-cadde-resource-id-for-provenance': provenance_id,
                 'x-cadde-provenance-management-service-url': provenance_url,
-                'Authorization': auth_token,
+                'Authorization': authorization,
             }
 
             received_response = external_interface.http_post(
@@ -375,7 +323,7 @@ def fetch_data(authorization: str,
 
             if received_response.status_code < 200 or 300 <= received_response.status_code:
                 raise CaddeException(
-                    message_id='020004010E',
+                    message_id='020004009E',
                     status_code=received_response.status_code,
                     replace_str_list=[
                         received_response.text])
@@ -404,149 +352,6 @@ def fetch_data(authorization: str,
         logger.info(json.dumps(log_message, ensure_ascii=False))
 
     return response_bytes, response_headers
-
-
-def history_confirmation_call(
-        authorization: str,
-        cadde_resource_id_for_provenance: str,
-        direction: str,
-        depth: int,
-        external_interface: ExternalInterface) -> Response:
-    """
-    来歴管理I/Fに来歴確認処理を依頼する
-
-    Args:
-        cadde_resource_id_for_provenance str: 交換実績記録用リソースID
-        direction str: 履歴取得方向
-        depth str: 検索深度
-        external_interface ExternalInterface : 外部にリクエストを行うインタフェース
-
-    Returns:
-        Response : 来歴管理I/Fのレスポンス
-
-    Raises:
-        Cadde_excption : 各機能でパラメータ確認時に必須パラメータが設定されていなかった場合
-        （履歴取得方向）                                                              エラーコード :020005002E
-        Cadde_excption : 各機能でパラメータ確認時に必須パラメータが設定されていなかった場合
-        （検索深度）                                                                  エラーコード :020005003E
-        Cadde_excption : 認証I/F 認証トークン取得処理でエラーが発生した場合           エラーコード :020005004E
-        Cadde_excption : 来歴確認処理でエラーが発生した場合                           エラーコード :020005005E
-        Cadde_excption : 来歴登録に成功したがレスポンスを正常に取得できなかった場合   エラーコード :020005006E
-
-    """
-
-    consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable = __get_connector_config()
-
-    if direction is not None and direction not in __DIRECTION_NORMALITY_VALUES:
-        raise CaddeException(message_id='020005002E')
-
-    if depth is not None and bool(int(depth) < __DEPTH_MIN_VALUE):
-        raise CaddeException(message_id='020005003E')
-
-    # トークン連携(認証トークン取得)
-    token_federation_headers = {
-        'Authorization': authorization,
-        'x-cadde-consumer-connector-id': consumer_connector_id,
-        'x-cadde-consumer-connector-secret': consumer_connector_secret
-    }
-    token_federation_response = external_interface.http_get(
-        __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION, token_federation_headers)
-
-    if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
-        raise CaddeException(
-            message_id='020005004E',
-            status_code=token_federation_response.status_code,
-            replace_str_list=[
-                token_federation_response.text])
-
-    get_token = token_federation_response.headers['x-cadde-auth-token']
-    auth_token = f'Bearer {get_token}'
-
-    send_url = __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_LINEAGE + \
-        cadde_resource_id_for_provenance
-
-    headers = {
-        'Authorization': auth_token,
-        'x-cadde-direction': direction,
-        'x-cadde-depth': depth
-    }
-
-    response = external_interface.http_get(send_url, headers)
-
-    if response.status_code < 200 or 300 <= response.status_code:
-        raise CaddeException(
-            message_id='020005005E',
-            status_code=response.status_code,
-            replace_str_list=[
-                response.text])
-
-    if not hasattr(response, 'text') or not response.text:
-        raise CaddeException(message_id='020005006E')
-
-    return response
-
-
-def history_id_search_call(
-        authorization: str,
-        body: dict,
-        external_interface: ExternalInterface) -> Response:
-    """
-    来歴管理I/Fに履歴ID検索処理を依頼する
-
-    Args:
-        body dict: 履歴ID検索用文字列
-        external_interface ExternalInterface : 外部にリクエストを行うインタフェース
-
-    Returns:
-        Response : 来歴管理I/Fのレスポンス
-
-    Raises:
-        Cadde_excption : 認証I/F 認証トークン取得処理でエラーが発生した場合       エラーコード :020006002E
-        Cadde_excption : ステータスコード2xxでない場合 エラーコード               エラーコード :020006003E
-        Cadde_excption : レスポンスを正常に取得できなかった場合 エラーコード      エラーコード :020006004E
-
-    """
-
-    consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable = __get_connector_config()
-
-    # トークン連携(認証トークン取得)
-    token_federation_headers = {
-        'Authorization': authorization,
-        'x-cadde-consumer-connector-id': consumer_connector_id,
-        'x-cadde-consumer-connector-secret': consumer_connector_secret
-    }
-    token_federation_response = external_interface.http_get(
-        __ACCESS_POINT_URL_AUTHENTICATION_AUTHORIZATION_FEDERATION, token_federation_headers)
-
-    if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
-        raise CaddeException(
-            message_id='020006002E',
-            status_code=token_federation_response.status_code,
-            replace_str_list=[
-                token_federation_response.text])
-
-    get_token = token_federation_response.headers['x-cadde-auth-token']
-    auth_token = f'Bearer {get_token}'
-
-    header_dict = {
-        'Authorization': auth_token,
-        'content-type': 'application/json'
-    }
-
-    response = external_interface.http_post(
-        __ACCESS_POINT_URL_PROVENANCE_MANAGEMENT_CALL_SEARCHEVENTS, header_dict, body)
-
-    if response.status_code < 200 or 300 <= response.status_code:
-        raise CaddeException(
-            message_id='020006003E',
-            status_code=response.status_code,
-            replace_str_list=[
-                response.text])
-
-    if not hasattr(response, 'text') or not response.text:
-        raise CaddeException(message_id='020006004E')
-
-    return response
 
 
 def __exchange_options_str(options_dict: dict) -> str:
@@ -599,14 +404,10 @@ def __get_location_info(provider, location_service_url, external_interface) -> (
     """
 
     if location_service_url is None:
-        raise CaddeException(
-            message_id='020000001E',
-            replace_str_list=['location_service_url'])
+        raise CaddeException(message_id='020000001E')
 
     if provider is None:
-        raise CaddeException(
-            message_id='020000002E',
-            replace_str_list=['provider_id'])
+        raise CaddeException(message_id='020000002E')
 
     provider_connector_url = ''
 
@@ -623,9 +424,7 @@ def __get_location_info(provider, location_service_url, external_interface) -> (
     try:
         config = internal_interface.config_read(__CONFIG_LOCATION_FILE_PATH)
     except Exception:  # pathミス
-        raise CaddeException(
-            message_id='020000003E',
-            replace_str_list=[__CONFIG_LOCATION_FILE_PATH])
+        raise CaddeException(message_id='020000003E')
     try:
         connector_location = config[__CONFIG_CONNECTOR_LOCATION]
     except Exception:  # オブジェクトなし
@@ -671,7 +470,6 @@ def __get_location_from_location_service(provider, location_service_url, externa
         response_text_dict = json.loads(response.text)
         if __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL in response_text_dict:
             provider_connector_url = response_text_dict[__LOCATION_SERVICE_PROVIDER_CONNECTOR_URL]
-
     except Exception:
         pass
 
@@ -706,9 +504,7 @@ def __get_connector_config() -> (str, str, str, str):
         connector = internal_interface.config_read(
             __CONFIG_CONNECTOR_FILE_PATH)
     except Exception:
-        raise CaddeException(
-            message_id='020000005E',
-            replace_str_list=[__CONFIG_CONNECTOR_FILE_PATH])
+        raise CaddeException(message_id='020000005E')
 
     try:
         consumer_connector_id = connector[__CONFIG_CONSUMER_CONNECTOR_ID]
@@ -739,4 +535,3 @@ def __get_connector_config() -> (str, str, str, str):
             replace_str_list=[__CONFIG_TRACE_LOG_ENABLE])
 
     return consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable
-

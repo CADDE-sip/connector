@@ -1,6 +1,5 @@
 import connexion
-
-from flask import send_file
+from flask import make_response
 import logging
 
 from swagger_server.utilities.message_map import get_message
@@ -52,7 +51,7 @@ def files(authorization=None, resource_url=None, resource_api_type=None, provide
                               log_message_none_parameter_replace(provider),
                               log_message_none_parameter_replace(authorization)]))
 
-    response_bytes, headers_dict = fetch_data(
+    data, headers = fetch_data(
         authorization,
         resource_url,
         resource_api_type,
@@ -60,17 +59,23 @@ def files(authorization=None, resource_url=None, resource_api_type=None, provide
         None,
         external_interface)
 
-    fileName = get_url_file_name(resource_url)
-
-    response = send_file(
-        response_bytes,
-        as_attachment=True,
-        download_name=fileName
-    )
+    response = make_response(data.read(), 200)
+    response.headers = headers
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
     response.headers['Referrer-Policy'] = "no-referrer always"
-    response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
+    response.headers['Content-Disposition'] = 'attachment; filename=' + \
+        get_url_file_name(resource_url)
+    response.headers[
+        'Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'none';"
 
-    return response, 200
+    if 'Server' in response.headers:
+        del response.headers['Server']
+
+    if 'Date' in response.headers:
+        del response.headers['Date']
+
+    if 'Transfer-Encoding' in response.headers:
+        del response.headers['Transfer-Encoding']
+
+    return response

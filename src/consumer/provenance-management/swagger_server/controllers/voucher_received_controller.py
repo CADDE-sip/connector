@@ -48,7 +48,7 @@ def voucher_received(cadde_provider=None, cadde_consumer=None, cadde_contract_id
 
     logger.debug(
         get_message(
-            '020303001N', [
+            '020302001N', [
                 cadde_provider, cadde_consumer, cadde_contract_id, hash_get_data,
                 contract_management_service_url, authorization]))
 

@@ -25,5 +25,15 @@
             "url": "https://example.com:8080/open",
             "enable" : false
         }
+    ],
+    "register_provenance": [
+        {
+            "url" : "https://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/open",
+            "enable" : false
+        }
     ]
 }

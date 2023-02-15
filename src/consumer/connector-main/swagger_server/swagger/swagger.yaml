@@ -30,7 +30,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 認証方式：Bearer。利用者トークン
+        description: 認証方式：Bearer。認証トークン
         required: false
         style: simple
         explode: false
@@ -94,7 +94,7 @@ paths:
                 response:
                   summary: 認証I/F 認証トークン取得処理で認証サーバへのトークンフェデレーションを行い、対象トークンが不正の場合
                   value:
-                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の利用者トークンは使用できません。リクエストパラメータに設定した利用者トークンを確認してください。
+                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の認証トークンは使用できません。リクエストパラメータに設定した認証トークンを確認してください。
                     status: 403
                     title: ""
                     type: ""
@@ -128,7 +128,7 @@ paths:
       parameters:
       - name: Authorization
         in: header
-        description: 認証方式：Bearer。利用者トークン
+        description: 認証方式：Bearer。認証トークン
         required: false
         style: simple
         explode: false
@@ -136,7 +136,9 @@ paths:
           type: string
       - name: x-cadde-resource-url
         in: header
-        description: リソースURL
+        description: |-
+          リソースURL
+          （認可ありの限定データの場合、文字長は255文字以内となる）
         required: true
         style: simple
         explode: false
@@ -172,6 +174,30 @@ paths:
               explode: false
               schema:
                 type: string
+            x-cadde-provenance-management-service-url:
+              description: 来歴管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-id:
+              description: 取引ID
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-type:
+              description: 契約形態
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-management-service-url:
+              description: 契約管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -201,7 +227,7 @@ paths:
                 response:
                   summary: 認証I/F 認証トークン取得処理で認証サーバへのトークンフェデレーションを行い、対象トークンが不正の場合
                   value:
-                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の利用者トークンは使用できません。リクエストパラメータに設定した利用者トークンを確認してください。
+                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の認証トークンは使用できません。リクエストパラメータに設定した認証トークンを確認してください。
                     status: 403
                     title: ""
                     type: ""
@@ -234,7 +260,7 @@ paths:
       parameters:
       - name: Authorization
         in: header
-        description: 認証方式：Bearer。利用者トークン
+        description: 認証方式：Bearer。認証トークン
         required: false
         style: simple
         explode: false
@@ -244,6 +270,7 @@ paths:
         in: header
         description: |-
          リソースURL
+         （認可ありの限定データの場合、文字長は255文字以内となる）
          指定可能なリソースURLは以下とする
          * http://{ドメイン名}/v2/entities?type={entityType}
            entityTypeで指定したtypeを持つエンティティの一覧を取得する。entityTypeを指定しない場合はエラーを返す。
@@ -292,6 +319,30 @@ paths:
           headers:
             x-cadde-provenance:
               description: 来歴管理I/Fから受領した識別情報
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-provenance-management-service-url:
+              description: 来歴管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-id:
+              description: 取引ID
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-type:
+              description: 契約形態
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-management-service-url:
+              description: 契約管理サービスURL
               style: simple
               explode: false
               schema:
@@ -356,7 +407,7 @@ paths:
                 response:
                   summary: 認証I/F 認証トークン取得処理で認証サーバへのトークンフェデレーションを行い、対象トークンが不正の場合
                   value:
-                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の利用者トークンは使用できません。リクエストパラメータに設定した利用者トークンを確認してください。
+                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の認証トークンは使用できません。リクエストパラメータに設定した認証トークンを確認してください。
                     status: 403
                     title: ""
                     type: ""

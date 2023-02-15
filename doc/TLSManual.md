@@ -92,11 +92,11 @@ docker compose -f docker-compose_initial.yml down
 [分野間データ連携基盤](README.md "利用者コネクタ停止手順")  参照。
 
 
-# 提供者環境リバースプロキシ設定
+# 利用者環境および提供者環境リバースプロキシ設定
 
 ## リバースプロキシ(nginx)構築手順
 
-1. コンフィグファイルの設定、ファイル配置
+### SSL/TSL認証を行う場合
 
 サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置
 ```
@@ -138,3 +138,4 @@ connector/src/provider/nginx/volumes/ssl/
 
 ## リバースプロキシ(nginx)停止手順
 [分野間データ連携基盤](README.md "提供者コネクタ停止手順 ")  参照。
+

@@ -63,7 +63,18 @@ def search(q=None, x_cadde_search=None, x_cadde_provider_connector_url=None, Aut
             authorization,
             external_interface)
 
-    return Response(
+    response = Response(
         response=data.text,
         status=200,
         mimetype="application/json")
+
+    if 'Server' in response.headers:
+        del response.headers['Server']
+
+    if 'Date' in response.headers:
+        del response.headers['Date']
+
+    if 'Transfer-Encoding' in response.headers:
+        del response.headers['Transfer-Encoding']
+
+    return response

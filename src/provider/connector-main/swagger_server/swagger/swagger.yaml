@@ -67,7 +67,9 @@ paths:
       parameters:
       - name: x-cadde-resource-url
         in: header
-        description: リソースURL
+        description: |-
+          リソースURL
+          （認可ありの限定データの場合、文字長は255文字以内となる）
         required: true
         style: simple
         explode: false

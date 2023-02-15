@@ -56,10 +56,13 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
             response=response_bytes.read(),
             status=200,
             headers=headers_dict,
-            mimetype="application/json")
+            mimetype='application/json')
+
+        if 'Content-Disposition' not in return_response.headers:
+            return_response.headers[
+                'Content-Disposition'] = 'attachment; filename=' + get_url_file_name(resource_url)
 
         return return_response
-
     else:
         fileName = get_url_file_name(resource_url)
         send_file_response = send_file(
@@ -68,4 +71,9 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
             download_name=fileName)
 
         send_file_response.headers = headers_dict
+
+        if 'Content-Disposition' not in send_file_response.headers:
+            send_file_response.headers[
+                'Content-Disposition'] = 'attachment; filename=' + get_url_file_name(resource_url)
+
         return send_file_response, 200

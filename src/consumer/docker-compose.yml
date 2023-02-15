@@ -14,7 +14,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
@@ -30,12 +30,10 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
-    ports:
-      - "80:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
@@ -54,7 +52,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
@@ -73,7 +71,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./authentication/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
@@ -92,7 +90,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./provenance-management/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
@@ -100,10 +98,20 @@ services:
   squid:
     container_name: forward-proxy
     image: cadde-squid:4.0.0
-    ports:
-      - "3128:3128"
+    hostname: forward_proxy
     volumes:
       - ./squid/volumes/squid.conf:/etc/squid/conf.d/default.conf
       - ./squid/volumes/ssl:/etc/squid/ssl
       - ./squid/volumes/ssl_db:/var/lib/squid/ssl_db
+    restart: always
+  reverse-proxy:
+    container_name: reverse-proxy
+    image: nginx:1.23.1
+    volumes:
+      - ./nginx/volumes/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/volumes/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/volumes/ssl:/etc/nginx/ssl
+    ports:
+#      - 443:443
+      - 80:80
     restart: always

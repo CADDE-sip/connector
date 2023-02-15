@@ -52,10 +52,16 @@ paths:
           type: string
       responses:
         "200":
-          description: ヘッダ情報に認可トークンを設定
+          description: ヘッダ情報に認可トークンとCADDEユーザID(利用者)を設定
           headers:
             x-cadde-auth-token:
               description: 認可トークン
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-consumer-id:
+              description: CADDEユーザID(利用者)
               style: simple
               explode: false
               schema:
@@ -78,93 +84,6 @@ paths:
                     title: ""
                     type: ""
       x-openapi-router-controller: swagger_server.controllers.token_federation_controller
-  /token_introspect:
-    get:
-      tags:
-      - TokenIntrospect
-      summary: API. 認可トークン検証
-      description: |-
-        認可サーバに対して、トークンイントロスペクションをリクエストし、CADDEユーザID（利用者）を取得する。
-
-        Response:
-        * 処理が成功した場合は200を返す。
-        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
-      operationId: token_introspect
-      parameters:
-      - name: Authorization
-        in: header
-        description: 認証方式：Bearer。認可トークン
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-cadde-provider
-        in: header
-        description: CADDEユーザID（提供者）
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-cadde-provider-connector-id
-        in: header
-        description: 提供者コネクタID
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-cadde-provider-connector-secret
-        in: header
-        description: 提供者コネクタのシークレット
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      responses:
-        "200":
-          description: ヘッダ情報にCADDEユーザID(利用者)を設定
-          headers:
-            x-cadde-consumer-id:
-              description: CADDEユーザID(利用者)
-              style: simple
-              explode: false
-              schema:
-                type: string
-          content:
-            application/json:
-              example: ""
-        "403":
-          description: 認証情報不正の場合のエラーメッセージ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  summary: 認可I/F 認可トークン検証処理で認可サーバへのトークンイントロスペクションを行い、対象トークンが使用できなかった場合
-                  value:
-                    detail: 認証処理を行いましたが、対象のトークンは使用できません。CADDE管理者に問い合わせてください。
-                    status: 403
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  summary: コンフィグファイルに必須パラメータが設定されていなかった場合
-                  value:
-                    detail: コンフィグファイルに(取得パラメータ)が設定されていません。CADDE管理者に問い合わせください。
-                    status: 500
-                    title: ""
-                    type: ""
-      x-openapi-router-controller: swagger_server.controllers.token_introspect_controller
   /token_contract:
     get:
       tags:
@@ -212,7 +131,9 @@ paths:
           type: string
       - name: x-cadde-resource-url
         in: header
-        description: リソースURL
+        description: |-
+          リソースURL
+          （認可ありの限定データの場合、文字長は255文字以内となる）
         required: true
         style: simple
         explode: false

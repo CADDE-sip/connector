@@ -8,7 +8,7 @@ from logging import getLogger
 from swagger_server.services.service import fetch_data
 from swagger_server.utilities.message_map import get_message
 from swagger_server.utilities.cadde_exception import CaddeException
-from swagger_server.utilities.utilities import log_message_none_parameter_replace
+from swagger_server.utilities.utilities import log_message_none_parameter_replace, get_url_file_name
 
 logger = getLogger(__name__)
 
@@ -146,6 +146,19 @@ def retrieve_entity():
     response.headers = headers
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
+    response.headers[
+        'Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'none';"
     response.headers['Referrer-Policy'] = "no-referrer always"
+    response.headers['Content-Disposition'] = 'attachment; filename=' + \
+        get_url_file_name(resource_url)
+
+    if 'Server' in response.headers:
+        del response.headers['Server']
+
+    if 'Date' in response.headers:
+        del response.headers['Date']
+
+    if 'Transfer-Encoding' in response.headers:
+        del response.headers['Transfer-Encoding']
+
     return response

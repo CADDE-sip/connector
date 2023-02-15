@@ -19,6 +19,7 @@ __CONFIG_CKAN_URL_FILE_PATH = '/usr/src/app/swagger_server/configs/provider_ckan
 __CONFIG_RELEASE_CKAN_URL = 'release_ckan_url'
 __CONFIG_DETAIL_CKAN_URL = 'detail_ckan_url'
 __CONFIG_CKAN_AUTHORIZATION = 'authorization'
+__PACKAGES_SEARCK_FOR_DATA_EXCHANGE = 'packages_search_for_data_exchange'
 
 # ngsi/ftp/httpコンフィグ情報
 __CONFIG_HTTP_FILE_PATH = '/usr/src/app/swagger_server/configs/http.json'
@@ -47,13 +48,19 @@ __COMMON_KEY_CONTRACT_TENANT = 'tenant'
 __COMMON_KEY_CONTRACT_SERVICEPATH = 'servicepath'
 __COMMON_KEY_CONTRACT_ENABLE = 'enable'
 
+# コンフィグ：来歴登録設定情報
+__COMMON_KEY_PROVENANCE_TARGET = 'register_provenance'
+__COMMON_KEY_PROVENANCE_URL = 'url'
+__COMMON_KEY_PROVENANCE_TENANT = 'tenant'
+__COMMON_KEY_PROVENANCE_SERVICEPATH = 'servicepath'
+__COMMON_KEY_PROVENANCE_ENABLE = 'enable'
+
 # CKAN検索用情報
 __CKAN_API_PATH = '/api/3/action/package_search'
 __CKAN_RESOURCE_SEARCH_PATH = '/api/3/action/resource_search?'
 __CKAN_RESOURCE_SEARCH_PROPATY = 'query=url:'
 
 # 接続先URL情報
-__ACCESS_POINT_TOKEN_INTROSPECT_URL = 'http://provider_authorization:8080/token_introspect'
 __ACCESS_POINT_TOKEN_FEDERATION_URL = 'http://provider_authorization:8080/token_federation'
 __ACCESS_POINT_TOKEN_CONTRACT_URL = 'http://provider_authorization:8080/token_contract'
 __ACCESS_POINT_SENT_URL = 'http://provider_provenance_management:8080/eventwithhash/sent'
@@ -94,7 +101,7 @@ def detail_search(
 
     """
 
-    release_ckan_url, detail_ckan_url, ckan_authorization = __get_ckan_config(
+    release_ckan_url, detail_ckan_url, ckan_authorization, packages_search_for_data_exchange = __get_ckan_config(
         internal_interface)
     provider_id, provider_connector_id, provider_connector_secret, trace_log_enable = __get_connector_config(
         internal_interface)
@@ -123,34 +130,13 @@ def detail_search(
         get_token = token_federation_response.headers['x-cadde-auth-token']
         auth_token = f'Bearer {get_token}'
 
-        # 認可トークン検証
-        token_introspect_headers = {
-            'Authorization': auth_token,
-            'x-cadde-provider': provider_id,
-            'x-cadde-provider-connector-id': provider_connector_id,
-            'x-cadde-provider-connector-secret': provider_connector_secret
-        }
-        token_introspect_response = external_interface.http_get(
-            __ACCESS_POINT_TOKEN_INTROSPECT_URL, token_introspect_headers)
-
-        if token_introspect_response.status_code < 200 or 300 <= token_introspect_response.status_code:
-            raise CaddeException(message_id='010001003E',
-                                 status_code=token_introspect_response.status_code,
-                                 replace_str_list=[token_introspect_response.text])
-
-        consumer_id = token_introspect_response.headers['x-cadde-consumer-id']
-
-        if consumer_id == '':
-            raise CaddeException(
-                message_id='010001004E',
-                replace_str_list=[
-                    token_introspect_response.text])
+        consumer_id = token_federation_response.headers['x-cadde-consumer-id']
 
     # 対象のリソースURLが認可確認有ならば、認可確認を行う
     if ckan_authorization:
         # 設定値との整合性確認
         if not authorization:
-            raise CaddeException('010001005E')
+            raise CaddeException('010001003E')
 
         # 認可確認
         token_contract_headers = {
@@ -166,7 +152,7 @@ def detail_search(
 
         if token_contract_response.status_code < 200 or 300 <= token_contract_response.status_code:
             raise CaddeException(
-                message_id='010001006E',
+                message_id='010001004E',
                 status_code=token_contract_response.status_code,
                 replace_str_list=[
                     token_contract_response.text])
@@ -239,7 +225,7 @@ def fetch_data(
     """
 
     # ckanコンフィグ情報取得
-    release_ckan_url, detail_ckan_url, ckan_authorization = __get_ckan_config(
+    release_ckan_url, detail_ckan_url, ckan_authorization, packages_search_for_data_exchange = __get_ckan_config(
         internal_interface)
 
     # connectorコンフィグ情報取得
@@ -253,15 +239,23 @@ def fetch_data(
     except Exception:
         raise CaddeException('010002002E')
 
-    # 認証設定情報取得
-    auth_check_enable = __get_auth_check_enable(
-        resource_url, resource_api_type, options_dict, internal_interface)
-    print('auth_check_enable', auth_check_enable)
+    if (resource_api_type == 'file/http') or (resource_api_type == 'file/ftp') or (resource_api_type == 'api/ngsi'):
+        # 認証設定情報取得
+        auth_check_enable = __get_auth_check_enable(
+            resource_url, resource_api_type, options_dict, internal_interface)
+        print('auth_check_enable', auth_check_enable)
 
-    # 取引市場利用設定情報取得
-    contract_check_enable = __get_contract_check_enable(
-        resource_url, resource_api_type, options_dict, internal_interface)
-    print('contract_check_enable', contract_check_enable)
+        # 取引市場利用設定情報取得
+        contract_check_enable = __get_contract_check_enable(
+            resource_url, resource_api_type, options_dict, internal_interface)
+        print('contract_check_enable', contract_check_enable)
+
+        # 来歴登録設定情報取得
+        provenance_check_enable = __get_provenance_check_enable(
+            resource_url, resource_api_type, options_dict, internal_interface)
+        print('provenance_check_enable', provenance_check_enable)
+    else:
+        raise CaddeException('010002003E')
 
     # 変数設置
     consumer_id = ''
@@ -269,7 +263,7 @@ def fetch_data(
     contract_type = ''
     contract_url = ''
 
-    # 認可処理
+    # 認可情報処理
     if authorization:
         # トークン連携(認可トークン取得)
         token_federation_headers = {
@@ -283,7 +277,7 @@ def fetch_data(
 
         if token_federation_response.status_code < 200 or 300 <= token_federation_response.status_code:
             raise CaddeException(
-                message_id='010002003E',
+                message_id='010002004E',
                 status_code=token_federation_response.status_code,
                 replace_str_list=[
                     token_federation_response.text])
@@ -291,36 +285,13 @@ def fetch_data(
         get_token = token_federation_response.headers['x-cadde-auth-token']
         auth_token = f'Bearer {get_token}'
 
-        # 認可トークン検証
-        token_introspect_headers = {
-            'Authorization': auth_token,
-            'x-cadde-provider': provider_id,
-            'x-cadde-provider-connector-id': provider_connector_id,
-            'x-cadde-provider-connector-secret': provider_connector_secret
-        }
+        consumer_id = token_federation_response.headers['x-cadde-consumer-id']
 
-        token_introspect_response = external_interface.http_get(
-            __ACCESS_POINT_TOKEN_INTROSPECT_URL, token_introspect_headers)
-
-        if token_introspect_response.status_code < 200 or 300 <= token_introspect_response.status_code:
-            raise CaddeException(
-                message_id='010002004E',
-                status_code=token_introspect_response.status_code,
-                replace_str_list=[
-                    token_introspect_response.text])
-
-        consumer_id = token_introspect_response.headers['x-cadde-consumer-id']
-        if not consumer_id:
-            raise CaddeException(
-                message_id='010002005E',
-                replace_str_list=[
-                    token_introspect_response.text])
-
-    # 対象のリソースURLが認可確認有ならば、認可確認を行う
+    # 認可確認：対象のリソースURLが認可確認有の場合
     if auth_check_enable:
         # 設定値との整合性確認
         if not authorization:
-            raise CaddeException('010002006E')
+            raise CaddeException('010002005E')
 
         # リソースURLを識別子に合わせて補正する
         convert_resource_url = __convert_resource_url(
@@ -340,7 +311,7 @@ def fetch_data(
 
         if token_contract_response.status_code < 200 or 300 <= token_contract_response.status_code:
             raise CaddeException(
-                message_id='010002007E',
+                message_id='010002006E',
                 status_code=token_contract_response.status_code,
                 replace_str_list=[
                     token_contract_response.text])
@@ -351,11 +322,15 @@ def fetch_data(
 
     response_bytes = None
     response_headers = {}
+    resource_id_for_provenance = ''
 
-    # リソースURLから、CKANを逆引き検索して、交換実績記録用リソースIDを取得
-    resource_id_for_provenance = __ckan_search_execute(
-        release_ckan_url, detail_ckan_url, resource_url, resource_api_type,
-        options_dict, auth_check_enable, external_interface)
+    # CKANからの交換実績記録用リソースID取得
+    # データ交換時のリソース検索設定がTrueの場合確認する
+    if packages_search_for_data_exchange:
+        # リソースURLからCKANを逆引き検索して、交換実績記録用リソースIDを取得
+        resource_id_for_provenance = __ckan_search_execute(
+            release_ckan_url, detail_ckan_url, resource_url, resource_api_type,
+            options_dict, auth_check_enable, external_interface)
 
     # 識別子ごとにデータ取得
     if (resource_api_type == 'api/ngsi'):
@@ -370,29 +345,19 @@ def fetch_data(
         response_bytes = provide_data_http(
             resource_url, options_dict, external_interface, internal_interface)
 
-    else:
-        raise CaddeException('010002008E')
-
     response_data = response_bytes.read()
     response_bytes.seek(0)
 
     # リソースURLのドメインが認可確認有の場合、データ証憑通知（送信）
     if contract_check_enable:
-
         # ハッシュ値算出
         hash_value = hashlib.sha512(response_data).hexdigest()
-
         # 取引IDを確認する
         if not contract_id:
-            raise CaddeException(
-                message_id='010002009E',
-                replace_str_list=['contract_id'])
-
+            raise CaddeException('010002007E')
         # 取引市場URLを取得できていることを確認する
         if not contract_url:
-            raise CaddeException(
-                message_id='010002010E',
-                replace_str_list=['contract_url'])
+            raise CaddeException('010002008E')
 
         # 取引IDと契約管理サービスURLに値がある場合、データ証憑通知（送信）を行う
         sent_headers = {
@@ -408,7 +373,7 @@ def fetch_data(
 
         if sent_response.status_code < 200 or 300 <= sent_response.status_code:
             raise CaddeException(
-                message_id='010002011E',
+                message_id='010002009E',
                 status_code=sent_response.status_code,
                 replace_str_list=[
                     sent_response.text])
@@ -417,13 +382,14 @@ def fetch_data(
     provenance_url = ''
 
     # 来歴管理:送信履歴登録
-    # 交換実績記録用IDが有効値
-    # CADDEユーザID（利用者）が有効値
-    if resource_id_for_provenance:
+    # 来歴登録設定情報がTrueである場合に実施
+    if provenance_check_enable:   
+    # 交換実績記録用IDが有効値であるか確認
+        if not resource_id_for_provenance:
+            raise CaddeException('010002010E')
+        # CADDEユーザID（利用者）が有効値（認証あり）であるか確認
         if not consumer_id:
-            raise CaddeException(
-                message_id='010002012E',
-                replace_str_list=['contract_url'])
+            raise CaddeException('010002011E')
 
         sent_headers = {
             'x-cadde-provider': provider_id,
@@ -436,7 +402,7 @@ def fetch_data(
 
         if sent_response.status_code < 200 or 300 <= sent_response.status_code:
             raise CaddeException(
-                message_id='010002013E',
+                message_id='010002012E',
                 status_code=sent_response.status_code,
                 replace_str_list=[
                     sent_response.text])
@@ -511,13 +477,18 @@ def __get_ckan_config(internal_interface) -> (str, str):
         str: カタログサイト(公開)アクセスURL
         str: カタログサイト(詳細)アクセスURL
         str: 認可設定
+        str: データ交換時のリソース検索設定
+
 
 
     Raises:
-        Cadde_excption: コンフィグファイルの読み込みに失敗した場合                  エラーコード: 010000001E
-        Cadde_excption: 必須パラメータが設定されていなかった場合（詳細CKANのURL）   エラーコード: 010000002E
-        Cadde_excption: 必須パラメータが設定されていなかった場合（公開CKANのURL）   エラーコード: 010000003E
-        Cadde_excption: 必須パラメータが設定されていなかった場合（認可設定）        エラーコード: 010000004E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合               エラーコード: 010000001E
+        Cadde_excption: 必須パラメータが設定されていなかった場合（詳細CKANのURL）エラーコード: 010000002E
+        Cadde_excption: 必須パラメータが設定されていなかった場合（公開CKANのURL）エラーコード: 010000003E
+        Cadde_excption: 必須パラメータが設定されていなかった場合（認可設定）     エラーコード: 010000004E
+        Cadde_excption: 必須パラメータが設定されていなかった場合（認可設定）     エラーコード: 010000005E
+        Cadde_excption: 必須パラメータが設定されていなかった場合
+                        （データ交換時のリソース検索設定）                      エラーコード: 010000006E
 
     """
 
@@ -525,7 +496,7 @@ def __get_ckan_config(internal_interface) -> (str, str):
         ckan_config = internal_interface.config_read(
             __CONFIG_CKAN_URL_FILE_PATH)
     except Exception:
-        raise CaddeException(message_id='010000001E')
+        raise CaddeException('010000001E')
 
     try:
         detail_ckan_url = ckan_config[__CONFIG_DETAIL_CKAN_URL]
@@ -546,13 +517,19 @@ def __get_ckan_config(internal_interface) -> (str, str):
         raise CaddeException(message_id='010000004E',
                              replace_str_list=[__CONFIG_CKAN_AUTHORIZATION])
 
+    try:
+        packages_search_for_data_exchange = ckan_config[__PACKAGES_SEARCK_FOR_DATA_EXCHANGE]
+    except Exception:
+        raise CaddeException(message_id='010000005E',
+                             replace_str_list=[__PACKAGES_SEARCK_FOR_DATA_EXCHANGE])
+
     if release_ckan_url == '':
         release_ckan_url = None
 
     if detail_ckan_url == '':
         detail_ckan_url = None
 
-    return release_ckan_url, detail_ckan_url, ckan_authorization
+    return release_ckan_url, detail_ckan_url, ckan_authorization, packages_search_for_data_exchange
 
 
 def __get_connector_config(internal_interface) -> (str, str, str, str):
@@ -568,7 +545,7 @@ def __get_connector_config(internal_interface) -> (str, str, str, str):
         str: 提供者側コネクタのシークレット
 
     Raises:
-        Cadde_excption: コンフィグファイルの読み込みに失敗した場合                                     エラーコード: 010000005E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合                                     エラーコード: 010000006E
         Cadde_excption: 必須パラメータが設定されていなかった場合（提供者ID）                           エラーコード: 010000006E
         Cadde_excption: 必須パラメータが設定されていなかった場合（提供者コネクタID）                   エラーコード: 010000007E
         Cadde_excption: 必須パラメータが設定されていなかった場合（提供者側コネクタのシークレット）     エラーコード: 010000008E
@@ -584,32 +561,32 @@ def __get_connector_config(internal_interface) -> (str, str, str, str):
         connector_config = internal_interface.config_read(
             __CONFIG_CONNECTOR_FILE_PATH)
     except Exception:
-        raise CaddeException(message_id='010000005E')
+        raise CaddeException(message_id='010000006E')
 
     try:
         provider_id = connector_config[__CONFIG_PROVIDER_ID]
     except Exception:
         raise CaddeException(
-            message_id='010000006E',
+            message_id='010000007E',
             replace_str_list=[__CONFIG_PROVIDER_ID])
 
     try:
         provider_connector_id = connector_config[__CONFIG_PROVIDER_CONNECTOR_ID]
     except Exception:
-        raise CaddeException(message_id='010000007E',
+        raise CaddeException(message_id='010000008E',
                              replace_str_list=[__CONFIG_PROVIDER_CONNECTOR_ID])
 
     try:
         provider_connector_secret = connector_config[__CONFIG_PROVIDER_CONNECTOR_SECRET]
     except Exception:
-        raise CaddeException(message_id='010000008E', replace_str_list=[
-                             __CONFIG_PROVIDER_CONNECTOR_SECRET])
+        raise CaddeException(message_id='010000009E',
+                             replace_str_list=[__CONFIG_PROVIDER_CONNECTOR_SECRET])
 
     try:
         trace_log_enable = connector_config[__CONFIG_TRACE_LOG_ENABLE]
     except Exception:
-        raise CaddeException(message_id='010000009E', replace_str_list=[
-                             __CONFIG_TRACE_LOG_ENABLE])
+        raise CaddeException(message_id='010000010E',
+                             replace_str_list=[__CONFIG_TRACE_LOG_ENABLE])
 
     return provider_id, provider_connector_id, provider_connector_secret, trace_log_enable
 
@@ -630,10 +607,9 @@ def __get_auth_check_enable(resource_url,
         enable: 認可確認有無(True or False)
 
     Raises:
-        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ngsi.json)       エラーコード: 010000010E
-        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ftp.json)        エラーコード: 010000011E
-        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(http.json)       エラーコード: 010000012E
-        Cadde_excption: リソース提供手段識別子確認時に不正な値が設定されている場合  エラーコード: 010000013E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ngsi.json)       エラーコード: 010000011E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ftp.json)        エラーコード: 010000012E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(http.json)       エラーコード: 010000013E
         Cadde_excption: 必須パラメータが設定されていなかった場合(リソースURL)       エラーコード: 010000014E
 
     """
@@ -646,41 +622,34 @@ def __get_auth_check_enable(resource_url,
             config_data = internal_interface.config_read(
                 __CONFIG_NGSI_FILE_PATH)
         except Exception:
-            raise CaddeException(
-                message_id='010000010E',
-                replace_str_list=[__CONFIG_NGSI_FILE_PATH])
+            raise CaddeException('010000011E')
 
     elif (resource_api_type == 'file/ftp'):
         try:
             config_data = internal_interface.config_read(
                 __CONFIG_FTP_FILE_PATH)
         except Exception:
-            raise CaddeException(
-                message_id='010000011E',
-                replace_str_list=[__CONFIG_FTP_FILE_PATH])
+            raise CaddeException('010000012E')
 
     elif (resource_api_type == 'file/http'):
         try:
             config_data = internal_interface.config_read(
                 __CONFIG_HTTP_FILE_PATH)
         except Exception:
-            raise CaddeException(
-                message_id='010000012E',
-                replace_str_list=[__CONFIG_HTTP_FILE_PATH])
-
-    else:
-        raise CaddeException('010000013E')
+            raise CaddeException('010000013E')
 
     try:
         if (resource_api_type == 'api/ngsi'):
-            for e in config_data[__COMMON_KEY_AUTH_TARGET]: 
-                ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
+            for e in config_data[__COMMON_KEY_AUTH_TARGET]:
+                ngsi_tenant, ngsi_service_path = __get_ngsi_option(
+                    options_dict)
 
                 if __COMMON_KEY_AUTH_URL not in e:
                     continue
 
                 access_url, ngsi_type = ___parse_ngsi_url(resource_url)
-                auth_access_url, auth_ngsi_type = ___parse_ngsi_url(e[__COMMON_KEY_AUTH_URL])
+                auth_access_url, auth_ngsi_type = ___parse_ngsi_url(
+                    e[__COMMON_KEY_AUTH_URL])
 
                 if auth_access_url != access_url or auth_ngsi_type != ngsi_type:
                     continue
@@ -736,8 +705,7 @@ def __get_contract_check_enable(resource_url,
         Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ngsi.json)       エラーコード: 010000015E
         Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ftp.json)        エラーコード: 010000016E
         Cadde_excption: コンフィグファイルの読み込みに失敗した場合(http.json)       エラーコード: 010000017E
-        Cadde_excption: リソース提供手段識別子確認時に不正な値が設定されている場合  エラーコード: 010000018E
-        Cadde_excption: 必須パラメータが設定されていなかった場合(リソースURL)       エラーコード: 010000019E
+        Cadde_excption: 必須パラメータが設定されていなかった場合(リソースURL)       エラーコード: 010000018E
 
     """
 
@@ -749,41 +717,34 @@ def __get_contract_check_enable(resource_url,
             config_data = internal_interface.config_read(
                 __CONFIG_NGSI_FILE_PATH)
         except Exception:
-            raise CaddeException(
-                message_id='010000015E',
-                replace_str_list=[__CONFIG_NGSI_FILE_PATH])
+            raise CaddeException('010000015E')
 
     elif (resource_api_type == 'file/ftp'):
         try:
             config_data = internal_interface.config_read(
                 __CONFIG_FTP_FILE_PATH)
         except Exception:
-            raise CaddeException(
-                message_id='010000016E',
-                replace_str_list=[__CONFIG_FTP_FILE_PATH])
+            raise CaddeException('010000016E')
 
     elif (resource_api_type == 'file/http'):
         try:
             config_data = internal_interface.config_read(
                 __CONFIG_HTTP_FILE_PATH)
         except Exception:
-            raise CaddeException(
-                message_id='010000017E',
-                replace_str_list=[__CONFIG_HTTP_FILE_PATH])
-
-    else:
-        raise CaddeException('010000018E')
+            raise CaddeException('010000017E')
 
     try:
         if (resource_api_type == 'api/ngsi'):
-            for e in config_data[__COMMON_KEY_CONTRACT_TARGET]: 
-                ngsi_tenant, ngsi_service_path = __get_ngsi_option(options_dict)
+            for e in config_data[__COMMON_KEY_CONTRACT_TARGET]:
+                ngsi_tenant, ngsi_service_path = __get_ngsi_option(
+                    options_dict)
 
                 if __COMMON_KEY_CONTRACT_URL not in e:
                     continue
 
                 access_url, ngsi_type = ___parse_ngsi_url(resource_url)
-                contract_access_url, contract_ngsi_type = ___parse_ngsi_url(e[__COMMON_KEY_CONTRACT_URL])
+                contract_access_url, contract_ngsi_type = ___parse_ngsi_url(
+                    e[__COMMON_KEY_CONTRACT_URL])
 
                 if contract_access_url != access_url or contract_ngsi_type != ngsi_type:
                     continue
@@ -812,10 +773,106 @@ def __get_contract_check_enable(resource_url,
     if target_contract_data:
         if __COMMON_KEY_CONTRACT_ENABLE not in target_contract_data[0]:
             raise CaddeException(
-                '010000019E',
+                message_id='010000018E',
                 replace_str_list=[__COMMON_KEY_CONTRACT_ENABLE])
 
         enable = target_contract_data[0][__COMMON_KEY_CONTRACT_ENABLE]
+
+    return enable
+
+
+def __get_provenance_check_enable(resource_url,
+                                  resource_api_type,
+                                  options_dict,
+                                  internal_interface) -> str:
+    """
+    リソースURLのドメインからhttp.json、ftp.json、ngsi.jsonを検索して、来歴登録設定情報の有無を返却
+    Args:
+        resource_url str : リソースURL
+        resource_api_type str : リソース提供手段識別子
+        options_dict str : データ提供IFが使用するカスタムヘッダー
+        internal_interface : 内部リクエストを行うインタフェース
+
+    Returns:
+        enable: 来歴登録設定情報(True or False)
+
+    Raises:
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ngsi.json)       エラーコード: 010000019E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(ftp.json)        エラーコード: 010000020E
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合(http.json)       エラーコード: 010000021E
+        Cadde_excption: 必須パラメータが設定されていなかった場合(リソースURL)       エラーコード: 010000022E
+
+    """
+
+    target_provenance_data = []
+    enable = True
+
+    if (resource_api_type == 'api/ngsi'):
+        try:
+            config_data = internal_interface.config_read(
+                __CONFIG_NGSI_FILE_PATH)
+        except Exception:
+            raise CaddeException('010000019E')
+
+    elif (resource_api_type == 'file/ftp'):
+        try:
+            config_data = internal_interface.config_read(
+                __CONFIG_FTP_FILE_PATH)
+        except Exception:
+            raise CaddeException('010000020E')
+
+    elif (resource_api_type == 'file/http'):
+        try:
+            config_data = internal_interface.config_read(
+                __CONFIG_HTTP_FILE_PATH)
+        except Exception:
+            raise CaddeException('010000021E')
+
+    try:
+        if (resource_api_type == 'api/ngsi'):
+            for e in config_data[__COMMON_KEY_PROVENANCE_TARGET]:
+                ngsi_tenant, ngsi_service_path = __get_ngsi_option(
+                    options_dict)
+
+                if __COMMON_KEY_PROVENANCE_URL not in e:
+                    continue
+
+                access_url, ngsi_type = ___parse_ngsi_url(resource_url)
+                provenance_access_url, provenance_ngsi_type = ___parse_ngsi_url(
+                    e[__COMMON_KEY_PROVENANCE_URL])
+
+                if provenance_access_url != access_url or provenance_ngsi_type != ngsi_type:
+                    continue
+
+                if __COMMON_KEY_PROVENANCE_TENANT in e and ngsi_tenant != e[__COMMON_KEY_PROVENANCE_TENANT]:
+                    continue
+
+                if __COMMON_KEY_PROVENANCE_TENANT not in e and '' != ngsi_tenant:
+                    continue
+
+                if __COMMON_KEY_PROVENANCE_SERVICEPATH in e and ngsi_service_path != e[
+                        __COMMON_KEY_PROVENANCE_SERVICEPATH]:
+                    continue
+
+                if __COMMON_KEY_PROVENANCE_SERVICEPATH not in e and '' != ngsi_service_path:
+                    continue
+
+                target_provenance_data.append(e)
+
+        else:
+            target_provenance_data = [e for e in config_data[__COMMON_KEY_PROVENANCE_TARGET]
+                                      if e[__COMMON_KEY_PROVENANCE_URL] in resource_url]
+
+    except Exception:
+        # コンフィグファイルから指定したURLの情報が取得できない場合は何もしない
+        pass
+    if target_provenance_data:
+        if __COMMON_KEY_PROVENANCE_ENABLE not in target_provenance_data[0]:
+            raise CaddeException(
+                '010000022E',
+                replace_str_list=[__COMMON_KEY_PROVENANCE_ENABLE])
+
+        enable = target_provenance_data[0][__COMMON_KEY_PROVENANCE_ENABLE]
 
     return enable
 
@@ -844,18 +901,18 @@ def __ckan_search_execute(release_ckan_url,
         dashboard_log_info: トレースログを出力するための情報
 
     Raises:
-        Cadde_excption: 交換実績記録用リソースIDに登録されている値が混在している場合      エラーコード: 010000020E
+        Cadde_excption: 交換実績記録用リソースIDに登録されている値が混在している場合      エラーコード: 010000023E
 
     """
 
     # 公開CKANURL、詳細CKANURLの末尾に検索用文字列を設定
-    if release_ckan_url is not None:
+    if release_ckan_url:
         if release_ckan_url[-1:] == '/':
             release_ckan_url = release_ckan_url.rstrip('/')
 
         release_ckan_url = release_ckan_url + __CKAN_RESOURCE_SEARCH_PATH
 
-    if detail_ckan_url is not None:
+    if detail_ckan_url:
         if detail_ckan_url[-1:] == '/':
             detail_ckan_url = detail_ckan_url.rstrip('/')
 
@@ -868,7 +925,7 @@ def __ckan_search_execute(release_ckan_url,
         else:
             # 認可が不要なNGSIデータ
             access_url, ngsi_type = ___parse_ngsi_url(resource_url)
-            
+
             # 認可が不要なNGSIデータの場合、
             # カタログURLがhttps://NGSIサーバのURL/v2.../entities?type=<データ種別>形式であるため、
             # カタログ検索結果の成型時に比較で使用するresource_urlも同形式に変更する
@@ -877,7 +934,8 @@ def __ckan_search_execute(release_ckan_url,
 
         query_string = __CKAN_RESOURCE_SEARCH_PROPATY + query_url
     else:
-        query_string = __CKAN_RESOURCE_SEARCH_PROPATY + resource_url
+        query_url = urllib.parse.quote(resource_url)
+        query_string = __CKAN_RESOURCE_SEARCH_PROPATY + query_url
 
     release_search_results_list = []
 
@@ -910,7 +968,7 @@ def __ckan_search_execute(release_ckan_url,
 
         if (one_data[__RESOURCE_ID_FOR_PROVENANCE] != ''
                 and resource_id_for_provenance != one_data[__RESOURCE_ID_FOR_PROVENANCE]):
-            raise CaddeException(message_id='010000020E')
+            raise CaddeException('010000023E')
 
     return resource_id_for_provenance
 
@@ -936,7 +994,7 @@ def __ckan_result_check(
         交換実績記録用ID検索結果のリスト [{'resource_id_for_provenance': 交換実績記録用ID}.... ]
 
     Raises:
-        Cadde_excption: 検索結果が取得できなかった場合      エラーコード: 010000021E
+        Cadde_excption: 検索結果が取得できなかった場合      エラーコード: 010000024E
 
     """
 
@@ -952,7 +1010,7 @@ def __ckan_result_check(
 
     # 検索結果が1件もない場合はエラー
     if len(return_list) == 0:
-        raise CaddeException(message_id='010000021E')
+        raise CaddeException('010000024E')
 
     return release_list, detail_list, return_list
 
@@ -1057,11 +1115,9 @@ def __get_ngsi_option(options_dict) -> (str, str):
     ngsi_service_path = ''
 
     for key in options_dict:
-       if 'fiware-service' == key.lower():
-           ngsi_tenant = options_dict[key].strip()
-       if 'fiware-servicepath' == key.lower():
-           ngsi_service_path = options_dict[key].strip()
+        if 'fiware-service' == key.lower():
+            ngsi_tenant = options_dict[key].strip()
+        if 'fiware-servicepath' == key.lower():
+            ngsi_service_path = options_dict[key].strip()
 
     return ngsi_tenant, ngsi_service_path
-
-

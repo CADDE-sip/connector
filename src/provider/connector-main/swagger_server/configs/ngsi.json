@@ -32,5 +32,19 @@
             "servicepath" : "/open",
             "enable" : false
         }
+    ],
+    "register_provenance": [
+        {
+            "url" : "https://example.com:8080/v2/entities?type=auth",
+            "tenant" : "auth",
+            "servicepath" : "/auth",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/v2/entities?type=open",
+            "tenant" : "open",
+            "servicepath" : "/open",
+            "enable" : false
+        }
     ]
 }

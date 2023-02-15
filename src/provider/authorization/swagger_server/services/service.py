@@ -10,7 +10,6 @@ __CONFIG_AUTHORIZATION_FILE_PATH = '/usr/src/app/swagger_server/configs/authoriz
 __CONFIG_AUTHORIZATION_SERVER_URL = 'authorization_server_url'
 
 __CADDE_FEDERATION = '/cadde/api/v4/token/federate'
-__CADDE_INTROSPECT = '/cadde/api/v4/token/introspect'
 __CADDE_AUTHZ = '/cadde/api/v4/authz/confirm'
 
 
@@ -42,6 +41,9 @@ def token_federation_execute(
 
     # コンフィグファイルから認可サーバのURL取得
     authorization_server_url = __get_authorization_config(internal_interface)
+
+    if not authorization_server_url:
+        authorization_server_url = __get_authorization_url(authorization[7:])
 
     # authorizationからtokenを抜き出す
     if not authorization.startswith('Bearer'):
@@ -77,73 +79,18 @@ def token_federation_execute(
                 response.text])
 
     response_text_dict = json.loads(response.text)
+
+    if 'access_token' not in response_text_dict or not response_text_dict['access_token']:
+        raise CaddeException(
+            message_id='010400004E'
+        )
+
     auth_token = response_text_dict['access_token']
 
-    return auth_token
+    # authorizationからtokenを抜き出す
+    consumer_id = __get_authorization_consumer_id(authorization[7:])
 
-
-def token_introspect_execute(
-        authorization: str,
-        cadde_provider: str,
-        provider_connector_id: str,
-        provider_connector_secret: str,
-        internal_interface: InternalInterface = InternalInterface(),
-        external_interface: ExternalInterface = ExternalInterface()) -> str:
-    """
-    認可トークン検証を行い、CADDEユーザID(利用者)を返す。
-
-    Args:
-        authorization str : 認可トークン
-        cadde_provider : CADDEユーザID（提供者）
-        provider_connector_id str : 提供者コネクタID
-        provider_connector_secret str : 提供者コネクタシークレットのID
-        internal_interface InternalInterface : コンフィグ情報取得処理を行うインタフェース
-        external_interface ExternalInterface : GETリクエストを行うインタフェース
-
-    Returns:
-        str : CADDEユーザID(利用者)
-
-    Raises:
-        Cadde_excption : 認可サーバへのトークンイントロスペクションにてエラーが発生した場合   エラーコード :010402002E
-
-    """
-
-    # コンフィグファイルから認可サーバのURL取得
-    authorization_server_url = __get_authorization_config(internal_interface)
-
-    # Authorizationにセットする情報をBase64エンコードする
-    credential = f'{provider_connector_id}:{provider_connector_secret}'
-    bearer = base64.b64encode(credential.encode()).decode()
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Basic {bearer}'
-    }
-
-    # 引数からpost通信のbody部に指定する情報をdict型で作成
-    post_body = {
-        'access_token': authorization[7:],
-        'provider_id': cadde_provider
-    }
-
-    # アクセスURLの生成
-    access_url = authorization_server_url + __CADDE_INTROSPECT
-
-    # リクエスト実行
-    response = external_interface.http_post(
-        access_url, headers, post_body)
-
-    if response.status_code < 200 or 300 <= response.status_code:
-        raise CaddeException(
-            message_id='010402002E',
-            status_code=response.status_code,
-            replace_str_list=[
-                response.text])
-
-    response_text_dict = json.loads(response.text)
-    consumer_id = response_text_dict['consumer_id']
-
-    return consumer_id
+    return auth_token, consumer_id
 
 
 def token_contract_execute(
@@ -178,6 +125,9 @@ def token_contract_execute(
 
     # コンフィグファイルから認可サーバのURL取得
     authorization_server_url = __get_authorization_config(internal_interface)
+
+    if not authorization_server_url:
+        authorization_server_url = __get_authorization_url(authorization[7:])
 
     # Authorizationにセットする情報をBase64エンコードする
     credential = f'{provider_connector_id}:{provider_connector_secret}'
@@ -229,7 +179,6 @@ def __get_authorization_config(internal_interface) -> (str):
 
     Raises:
         Cadde_excption: コンフィグファイルの読み込みに失敗した場合 エラーコード: 010400001E
-        Cadde_excption: コンフィグファイルに必須パラメータが設定されていなかった場合 エラーコード: 010400002E
 
     """
 
@@ -245,8 +194,86 @@ def __get_authorization_config(internal_interface) -> (str):
     try:
         authorization_server_url = connector_config[__CONFIG_AUTHORIZATION_SERVER_URL]
     except Exception:
-        raise CaddeException(
-            message_id='010400002E',
-            replace_str_list=[__CONFIG_AUTHORIZATION_SERVER_URL])
+        pass
 
     return authorization_server_url
+
+
+def __get_authorization_decode(target_token) -> (str):
+    """
+    リクエストパラメータのトークンをデコードする
+
+    Args:
+        target_token : 認証トークン
+
+    Returns:
+        str: トークンのデコード情報
+
+    Raises:
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合 エラーコード: 020400002E
+    """
+    target_arry = {}
+
+    # AuthorizationからURLを取得する
+    tmp = target_token.split('.')
+    try:
+        target_arry =  json.loads(base64.urlsafe_b64decode(
+            tmp[1] + '=' * (-len(target_token) % 4)).decode())
+    except Exception:
+        raise CaddeException(
+            message_id='010400002E'
+        )
+
+    return target_arry
+
+
+def __get_authorization_url(target_token) -> (str):
+    """
+    リクエストパラメータのトークンをデコードし、issを取得する
+
+    Args:
+        target_token : 認証トークン
+
+    Returns:
+        str: トークンのデコード情報
+
+    Raises:
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合 エラーコード: 020400003E
+    """
+    authentication_url = ''
+    target_arry = __get_authorization_decode(target_token)
+
+    if 'iss' not in target_arry:
+        raise CaddeException(
+            message_id='010400003E'
+        )
+    iss = target_arry['iss']
+    tmp = iss.split('/')
+    authentication_url = tmp[0] + '/' + tmp[1] + '/' + tmp[2]
+
+    return authentication_url
+
+
+def __get_authorization_consumer_id(target_token) -> (str):
+    """
+    リクエストパラメータのトークンをデコードし、preferred_usernameを取得する
+
+    Args:
+        target_token : 認証トークン
+
+    Returns:
+        str: CADDEユーザID（利用者）
+
+    Raises:
+        Cadde_excption: コンフィグファイルの読み込みに失敗した場合 エラーコード: 020400004E
+    """
+    consumer_id = ''
+    target_arry = __get_authorization_decode(target_token)
+
+    if 'preferred_username' not in target_arry:
+        raise CaddeException(
+            message_id='010400004E'
+        )
+    consumer_id = target_arry['preferred_username']
+
+    return consumer_id

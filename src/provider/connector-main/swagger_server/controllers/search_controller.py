@@ -49,7 +49,10 @@ def search(q=None, Authorization=None):  # noqa: E501
         authorization,
         external_interface,
         internal_interface)
-    return Response(
+
+    response = Response(
         response=data,
         status=200,
-        mimetype="application/json")
+        mimetype='application/json')
+
+    return response

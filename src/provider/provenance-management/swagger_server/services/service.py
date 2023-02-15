@@ -21,6 +21,7 @@ __CONFIG_PROVENANCE_MANAGEMENT_URL = 'provenance_management_api_url'
 # データ証憑通知(送信)URL
 __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT = '/cadde/api/v4/voucher/sent'
 
+
 def sent_history_registration(
         provider_id: str,
         consumer_id: str,
@@ -64,7 +65,7 @@ def sent_history_registration(
         'dataprovider': provider_id,
         'datauser': consumer_id,
         'cdlpreviousevents': [resource_id_for_provenance]
-        }
+    }
 
     body_data = json.dumps(body, indent=2).encode()
 
@@ -75,10 +76,10 @@ def sent_history_registration(
     if authorization is not None:
         headers['Authorization'] = authorization[7:]  # noqa: E501
 
-    upfile = { 'request': ('', body_data, 'application/json')}
+    upfile = {'request': ('', body_data, 'application/json')}
 
     response = requests.post(
-        server_url + __URL_HISTORY_EVENT_WITH_HASH,headers=headers,files=upfile)
+        server_url + __URL_HISTORY_EVENT_WITH_HASH, headers=headers, files=upfile)
 
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
@@ -89,7 +90,7 @@ def sent_history_registration(
 
     response_text_dict = json.loads(response.text)
 
-    if 'cdleventid' not in response_text_dict:
+    if 'cdleventid' not in response_text_dict or not response_text_dict['cdleventid']:
         raise CaddeException(message_id='010301004E')
 
     identification_information = response_text_dict['cdleventid']
@@ -134,7 +135,8 @@ def voucher_sent_call(
         'contract_id': contract_id,
         'hash': hash_get_data
     }
-    access_url = contract_management_service_url + __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT
+    access_url = contract_management_service_url + \
+        __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT
     response = external_interface.http_post(
         access_url, voucher_sent_headers, voucher_sent_body, False)
 
