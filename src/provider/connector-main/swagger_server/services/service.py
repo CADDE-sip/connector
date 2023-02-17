@@ -1121,3 +1121,27 @@ def __get_ngsi_option(options_dict) -> (str, str):
             ngsi_service_path = options_dict[key].strip()
 
     return ngsi_tenant, ngsi_service_path
+
+def ___parse_ngsi_url(resource_url) -> (str, str):
+    """
+    リソースURLからNGSI URL、NGSIデータ種別を取得する
+
+    Args:
+        resource_url: リソースURL
+
+    Returns:
+        str: NGSI URL
+        str: NGSIデータ種別
+
+    Raises:
+    """
+
+    access_url = resource_url.split('entities')[0] + 'entities'
+    parse_url = urllib.parse.urlparse(resource_url)
+    query = urllib.parse.parse_qs(parse_url.query)
+    ngsi_type = ''
+    if 'type' in query.keys() and query['type'][0]:
+        ngsi_type = query['type'][0]
+
+    return access_url, ngsi_type
+
