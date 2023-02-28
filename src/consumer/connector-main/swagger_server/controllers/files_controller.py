@@ -61,13 +61,8 @@ def files(authorization=None, resource_url=None, resource_api_type=None, provide
 
     response = make_response(data.read(), 200)
     response.headers = headers
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Referrer-Policy'] = "no-referrer always"
     response.headers['Content-Disposition'] = 'attachment; filename=' + \
         get_url_file_name(resource_url)
-    response.headers[
-        'Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'none';"
 
     if 'Server' in response.headers:
         del response.headers['Server']

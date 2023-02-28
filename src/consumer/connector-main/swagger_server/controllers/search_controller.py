@@ -66,11 +66,6 @@ def search(q=None, search=None, provider=None, authorization=None):  # noqa: E50
         response=data.text,
         status=200,
         mimetype="application/json")
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Referrer-Policy'] = "no-referrer always"
-    response.headers[
-        'Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'none'; style-src 'none'"
 
     if 'Server' in response.headers:
         del response.headers['Server']
