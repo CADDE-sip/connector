@@ -67,6 +67,9 @@ def received_history_registration(
         # 取得ができない場合はパラメータよりURLを設定
         server_url = provenance_management_service_url
 
+    if server_url.endswith('/'):
+        server_url = server_url[:-1]
+
     body = {
         'cdldatamodelversion': '2.0',
         'cdleventtype': __CDL_EVENT_TYPE_RECEIVED,
@@ -143,6 +146,10 @@ def voucher_received_call(
         'contract_id': contract_id,
         'hash': hash_get_data
     }
+
+    if contract_management_service_url.endswith('/'):
+        contract_management_service_url = contract_management_service_url[:-1]
+
     access_url = contract_management_service_url + \
         __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_RECEIVED
     response = external_interface.http_post(

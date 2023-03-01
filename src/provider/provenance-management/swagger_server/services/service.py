@@ -59,6 +59,9 @@ def sent_history_registration(
             message_id='010301002E',
             replace_str_list=[__CONFIG_PROVENANCE_MANAGEMENT_URL])
 
+    if server_url.endswith('/'):
+        server_url = server_url[:-1]
+
     body = {
         'cdldatamodelversion': '2.0',
         'cdleventtype': __CDL_EVENT_TYPE_SENT,
@@ -135,6 +138,10 @@ def voucher_sent_call(
         'contract_id': contract_id,
         'hash': hash_get_data
     }
+
+    if contract_management_service_url.endswith('/'):
+        contract_management_service_url = contract_management_service_url[:-1]
+
     access_url = contract_management_service_url + \
         __ACCESS_POINT_URL_CONTRACT_MANAGEMENT_SERVICET_CALL_VOUCHER_SENT
     response = external_interface.http_post(

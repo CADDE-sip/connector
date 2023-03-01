@@ -101,7 +101,7 @@ def __get_authentication_url(target_token) -> (str):
     # AuthorizationからURLを取得する
     tmp = target_token.split('.')
     try:
-        target_arry =  json.loads(base64.urlsafe_b64decode(
+        target_arry = json.loads(base64.urlsafe_b64decode(
             tmp[1] + '=' * (-len(target_token) % 4)).decode())
     except Exception:
         raise CaddeException(

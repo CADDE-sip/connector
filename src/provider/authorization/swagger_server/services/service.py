@@ -196,6 +196,9 @@ def __get_authorization_config(internal_interface) -> (str):
     except Exception:
         pass
 
+    if authorization_server_url.endswith('/'):
+        authorization_server_url = authorization_server_url[:-1]
+
     return authorization_server_url
 
 
@@ -217,7 +220,7 @@ def __get_authorization_decode(target_token) -> (str):
     # AuthorizationからURLを取得する
     tmp = target_token.split('.')
     try:
-        target_arry =  json.loads(base64.urlsafe_b64decode(
+        target_arry = json.loads(base64.urlsafe_b64decode(
             tmp[1] + '=' * (-len(target_token) % 4)).decode())
     except Exception:
         raise CaddeException(

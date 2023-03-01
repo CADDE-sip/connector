@@ -232,6 +232,9 @@ def fetch_data(
     provider_id, provider_connector_id, provider_connector_secret, trace_log_enable = __get_connector_config(
         internal_interface)
 
+    if resource_url.endswith('/'):
+        resource_url = resource_url[:-1]
+
     # カスタムヘッダー取得
     options_dict = None
     try:
@@ -383,8 +386,8 @@ def fetch_data(
 
     # 来歴管理:送信履歴登録
     # 来歴登録設定情報がTrueである場合に実施
-    if provenance_check_enable:   
-    # 交換実績記録用IDが有効値であるか確認
+    if provenance_check_enable:
+        # 交換実績記録用IDが有効値であるか確認
         if not resource_id_for_provenance:
             raise CaddeException('010002010E')
         # CADDEユーザID（利用者）が有効値（認証あり）であるか確認
@@ -528,6 +531,14 @@ def __get_ckan_config(internal_interface) -> (str, str):
 
     if detail_ckan_url == '':
         detail_ckan_url = None
+
+    if release_ckan_url:
+        if release_ckan_url.endswith('/'):
+            release_ckan_url = release_ckan_url[:-1]
+
+    if detail_ckan_url:
+        if detail_ckan_url.endswith('/'):
+            detail_ckan_url = detail_ckan_url[:-1]
 
     return release_ckan_url, detail_ckan_url, ckan_authorization, packages_search_for_data_exchange
 
@@ -1122,6 +1133,7 @@ def __get_ngsi_option(options_dict) -> (str, str):
 
     return ngsi_tenant, ngsi_service_path
 
+
 def ___parse_ngsi_url(resource_url) -> (str, str):
     """
     リソースURLからNGSI URL、NGSIデータ種別を取得する
@@ -1144,4 +1156,3 @@ def ___parse_ngsi_url(resource_url) -> (str, str):
         ngsi_type = query['type'][0]
 
     return access_url, ngsi_type
-

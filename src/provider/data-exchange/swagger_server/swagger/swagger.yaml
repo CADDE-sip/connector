@@ -22,7 +22,7 @@ paths:
         in: header
         description: |-
           リソースURL
-          （認可ありの限定データの場合、文字長は255文字以内となる）
+          （認可ありの限定データの場合、文字長は255文字以内。使用可能文字は半角英数、ハイフン、アンダーバーのみ）
         required: true
         style: simple
         explode: false

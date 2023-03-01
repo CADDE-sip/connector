@@ -138,7 +138,7 @@ paths:
         in: header
         description: |-
           リソースURL
-          （認可ありの限定データの場合、文字長は255文字以内となる）
+          （認可ありの限定データの場合、文字長は255文字以内。使用可能文字は半角英数、ハイフン、アンダーバーのみ）
         required: true
         style: simple
         explode: false
@@ -270,7 +270,7 @@ paths:
         in: header
         description: |-
          リソースURL
-         （認可ありの限定データの場合、文字長は255文字以内となる）
+         （認可ありの限定データの場合、文字長は255文字以内。使用可能文字は半角英数、ハイフン、アンダーバーのみ）
          指定可能なリソースURLは以下とする
          * http://{ドメイン名}/v2/entities?type={entityType}
            entityTypeで指定したtypeを持つエンティティの一覧を取得する。entityTypeを指定しない場合はエラーを返す。

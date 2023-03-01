@@ -416,7 +416,10 @@ def __get_location_info(provider, location_service_url, external_interface) -> (
         provider, location_service_url, external_interface)
 
     if response:
+        if response.endswith('/'):
+            response = response[:-1]
         provider_connector_url = response
+
         return provider_connector_url
 
     # コンフィグから再取得を試みる
@@ -436,6 +439,9 @@ def __get_location_info(provider, location_service_url, external_interface) -> (
         provider_connector_url = provider_info[__CONFIG_PROVIDER_CONNECTOR_URL]
     except Exception:  # コンフィグファイルから指定したURLの情報が取得できない場合は何もしない
         pass
+
+    if provider_connector_url.endswith('/'):
+        provider_connector_url = provider_connector_url[:-1]
 
     return provider_connector_url
 
@@ -470,6 +476,7 @@ def __get_location_from_location_service(provider, location_service_url, externa
         response_text_dict = json.loads(response.text)
         if __LOCATION_SERVICE_PROVIDER_CONNECTOR_URL in response_text_dict:
             provider_connector_url = response_text_dict[__LOCATION_SERVICE_PROVIDER_CONNECTOR_URL]
+
     except Exception:
         pass
 
@@ -533,5 +540,8 @@ def __get_connector_config() -> (str, str, str, str):
         raise CaddeException(
             message_id='020000009E',
             replace_str_list=[__CONFIG_TRACE_LOG_ENABLE])
+
+    if location_service_url.endswith('/'):
+        location_service_url = location_service_url[:-1]
 
     return consumer_connector_id, consumer_connector_secret, location_service_url, trace_log_enable

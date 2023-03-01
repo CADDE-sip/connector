@@ -57,7 +57,7 @@ services:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  authentication:
+  consumer-authentication:
     build: authentication
     image: consumer/authentication:4.0.0
     hostname: consumer_authentication
@@ -76,7 +76,7 @@ services:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  provenance-management:
+  consumer-provenance-management:
     build: provenance-management
     image: consumer/provenance-management:4.0.0
     hostname: consumer_provenance_management
