@@ -1,0 +1,65 @@
+version: '3'
+
+networks:
+  provider_default:
+    external: true
+
+volumes:
+  keycloak_volume:
+
+services:
+  nginx:
+    image: nginx:1.23.1
+    container_name: authz_nginx
+    ports:
+      - "80:80" # must change
+    volumes:
+      - "./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro"
+      - "./nginx/public:/var/www/public"
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: always
+
+  fastapi:
+    image: fastapi:latest
+    build: ./fastapi
+    container_name: authz_fastapi
+    working_dir: /app/
+    volumes:
+      - "./fastapi/app/:/app/"
+      - "./settings.json/:/settings/settings.json"
+      - "./settings_provider_setup.json/:/settings/settings_provider_setup.json"
+      - "./docker-compose.yaml:/settings/docker-compose.yaml"
+    command: 'python -m uvicorn main:app --reload --host 0.0.0.0'
+    restart: always
+
+  keycloak:
+    image: prebuilt_keycloak:19.0.2
+    build: ./keycloak
+    container_name: authz_keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN} # must change
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD} # must change
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      KC_DB_USERNAME: ${KC_DB_USERNAME} # must change
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD} # must change
+      KC_HTTP_RELATIVE_PATH: "/keycloak"
+      KC_FEATURES_DISABLED: admin2
+      KC_PROXY: "edge"
+      JAVA_OPTS_APPEND: "-Dkeycloak.profile=preview -Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.profile.feature.token_exchange=enabled -Dkeycloak.profile.feature.authz_drools_policy=enabled -Dkeycloak.profile.feature.admin_fine_grained_authz=enabled"
+    depends_on:
+      - postgres
+    command: start-dev
+    restart: always
+
+  postgres:
+    image: postgres:14.4
+    container_name: authz_postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${POSTGRES_USER} # must change
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # must change
+    volumes:
+      - keycloak_volume:/var/lib/postgresql/data
+    restart: always

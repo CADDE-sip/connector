@@ -1,0 +1,10 @@
+{
+  "provider_connector_id": "",
+  "client_id": "",
+  "client_secret": "",
+  "authz_keycloak_url": "",
+  "authn_url": "",
+  "authn_keycloak_url": "",
+  "authn_realm_name": "",
+  "subject_issuer": ""
+}
