@@ -196,7 +196,8 @@ sh setup.sh
   | detail_ckan_url                    | カタログサイト(詳細)のアクセスURL                               |
   | authorization                      | カタログサイト(詳細)アクセス時に認可確認を行うか否かを設定      |
   | packages_search_for_data_exchange  | データ取得時に交換実績記録用リソースID検索を行うか否かを設定    |
-
+  
+  ※release_ckan_url、detail_ckan_urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）
 
 
 (2) データ管理サーバ(HTTPサーバ)を提供者コネクタ経由で公開する場合<br>
@@ -219,6 +220,8 @@ sh setup.sh
   | register_provenance                | 来歴登録設定情報 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する来歴登録設定情報が存在しない場合、来歴登録設定情報はTrueで動作する         |
   | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用         |
   | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                  |
+ 
+  ※urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）、最大文字数は255字
 
 (2-2) 認証なしHTTPサーバに接続の場合<br>
  http.jsonファイルのbasic_auth編集不要。
@@ -243,6 +246,8 @@ sh setup.sh
   | register_provenance                | 来歴登録設定情報 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する来歴登録設定情報が存在しない場合、来歴登録設定情報はTrueで動作する         |
   | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用         |
   | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                      |
+
+  ※urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）、最大文字数は255字
 
 (3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
  ftp.jsonファイルのftp_auth編集不要。
@@ -271,6 +276,8 @@ sh setup.sh
   | tenant                             | 来歴登録設定情報の対象となるNGSIテナント（カタログ項目：NGSIテナント）を記載する データ取得時に指定されたNGSIテナントと本設定のNGSIテナントが一致した場合、来歴登録設定を適用                     |
   | servicepath                        | 来歴登録設定情報の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、来歴登録設定を適用     |
   | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                                                             |
+
+  ※urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）、最大文字数は255字
 
 (5) 認証および認可をおこなう場合
 - authorization.json
@@ -304,13 +311,13 @@ sh setup.sh
 ### 提供者コネクタ起動手順 
 ```
 cd connector/src/provider/
-docker compose -p provider up -d
+docker compose up -d
 ```
 
 ### 提供者コネクタ起動確認
 StateがすべてUpとなっていることを確認
 ```
-docker compose -p provider ps
+docker compose ps
 NAME                             COMMAND                  SERVICE                          STATUS              PORTS
 provider_authorization           "python3 -m swagger_…"   provider-authorization           running             8080/tcp
 provider_catalog_search          "python3 -m swagger_…"   provider-catalog-search          running             8080/tcp
@@ -341,7 +348,7 @@ curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resourc
 
 ### 提供者コネクタ停止手順 
 ```
-docker compose -p provider down
+docker compose down
 ```
 
 ### 提供者コネクタAPI
