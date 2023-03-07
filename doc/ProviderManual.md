@@ -2,15 +2,15 @@
 # 提供者環境構築ガイド
 提供者サーバ環境として事前に準備する必要がある項目について下記に記載します。
 
-### 1. 提供者用データ管理サーバ(FTPサーバ or HTTPサーバ or NGSIサーバ)
+## 1. 提供者用データ管理サーバ(FTPサーバ or HTTPサーバ or NGSIサーバ)
 事前にFTPサーバ or HTTPサーバ or NGSIサーバが起動していること。
 各サーバにデータが登録されていることが前提。
 
-### 2. 詳細検索用カタログサイト(CKAN)
+## 2. 詳細検索用カタログサイト(CKAN)
  詳細検索用カタログサイトには、提供者コネクタ経由で取得可能なすべてのカタログ詳細情報を登録します。
  各カタログ設定項目についての詳細については、(参考1) SIPデータカタログ項目仕様参照のこと。
 
-### 3. 横断検索用カタログサイト(CKAN)
+## 3. 横断検索用カタログサイト(CKAN)
  横断検索用カタログサイトには、横断検索サーバに公開可能なカタログ情報を登録します。
  各提供者の横断検索用カタログサイトのカタログ情報は、横断検索サーバに横断検索用カタログサイトアクセスURLを設定することにより、定期的に収集されます。<br>
  
@@ -28,31 +28,103 @@
 - リソース提供手段の識別子 (resources:caddec_resource_type): カタログ項目を設定しない。
 - コネクタ利用の要否 (resources:caddec_contract_required): notRequired または requiredを設定
 
-### 4. リソース認可設定
+## 4. リソース認可設定
 　提供者環境内のリソースに対して、アクセス許可を与える場合は、認可サーバに対して認可設定を設定する必要があります。
 　(1)アクセストークン取得APIを使用し、トークン取得後、（2-1)認可設定APIにより、指定したリソースに対する認可設定、(2-2)認可削除APIにより、指定したリソースに対する認可削除を行えます。
  
 　※CADDEユーザIDを申請時に、アクセストークン取得時に必要な提供者クライアントID、シークレットを提供いたします。
 
-#### (1) アクセストークン取得
+### (1) アクセストークン取得
 ```
-curl -v -X POST -H "Content-Type: application/json" -d '{ "provider_id": "{提供者ID}", "client_secret": "{提供者のシークレット}" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/token
-```
-
-#### (2-1) 認可設定
-```
-curl -v -X POST -H "Content-Type: application/json" -d '{ "access_token": "{アクセストークン}", "provider_id": "{提供者ID}", "consumer_id": ["{利用者ID}"], "resource_url": "{リソースURL}" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/provider
+curl -v -X POST https://key-authen.test.data-linkage.jp/cadde/api/v4/token -H "Cache-Control: no-cache" -H "Content-Type: application/json" -H "Authorization:Basic {クライアントID:シークレットをBase64エンコードした文字列}" -d '{ "consumer_id": "{CADDEユーザID(提供者)}", "password": "{提供者のパスワード}" }'
 ```
 
-#### (2-2) 認可削除
+### (2-1) 認可設定
 ```
-curl -v -X DELETE -H "Content-Type: application/json" -d '{ "access_token": "{アクセストークン}", "provider_id": "{提供者ID}", "consumer_id": ["{利用者ID}"], "resource_url": "{リソースURL}" }' https://key-author.test.data-linkage.jp/cadde/api/v1/authorization/provider
+curl -v -X POST https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" \
+ -d '{
+  "permission": {
+    "target": "{リソースURL}",
+    "assigner": "{CADDEユーザID(提供者)}",
+    "assignee": {
+      "user": "{CADDEユーザID(利用者) [オプション]}",
+      "org": "{組織のCADDEユーザID [オプション]}",
+      "aal": 2,
+      "extras": "{その他の属性 [オプション]}"
+    }
+  },
+  "contract": {
+    "trade_id": "string",
+    "contract_url": "string",
+    "contract_type": "string"
+  }
+}' 
 ```
 
-# (参考1) SIPデータカタログ項目仕様
+### (2-2) 認可削除
+```
+curl -v -X DELETE https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" \
+ -d '{
+  "permission": {
+    "target": "{リソースURL}",
+    "assigner": "{CADDEユーザID(提供者)}",
+    "assignee": {
+      "user": "{CADDEユーザID(利用者) [オプション]}",
+      "org": "{組織のCADDEユーザID [オプション]}",
+      "aal": 2,
+      "extras": "{その他の属性 [オプション]}"
+    }
+  },
+  "contract": {
+    "trade_id": "string"
+  }
+}' 
+```
+
+### (2-3) 認可一覧取得
+```
+curl -v -X GET https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization_list -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" -d '{ "assigner": "{CADDEユーザID(提供者)}" }' 
+```
+
+### (2-4) 認可取得
+```
+curl -v -X GET https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" -d '{ "assigner": "{CADDEユーザID(提供者)}",  "target": "{リソースURL}" }' 
+```
+
+# (参考1) 認可設定のパラメータ
+
+### 1. Authorization ヘッダ
+
+認証トークンを示すヘッダです。
+
+  | Authorization | 概要                                |
+  | :------------ | :---------------------------------- |
+  | トークンの値  | 認証機能が発行するトークンを設定します。（Bearer指定） |
+
+
+### 2. ボディ
+
+認可設定時に指定するパラメータです。
+
+  | パラメータ     | 概要                                            |
+  | :------------- | :---------------------------------------------- |
+  | permission     | 認可情報                                        |
+  | target         | 認可の対象とするリソースURL                     |
+  | assigner       | 認可される対象となるCADDEユーザID(提供者)       |
+  | assignee       | 認可の判定対象（いずれか1つ以上を指定する）     |
+  | user           | 認可の対象となるCADDEユーザID(利用者)           |
+  | org            | 認可の対象となるCADDEユーザが所属する組織のID   |
+  | aal            | 認可の対象となるCADDEユーザのAAL                |
+  | extras         | 認可の対象となるCADDEユーザの属性情報           |
+  | contract       | 認可に紐づく契約情報                            |
+  | trade_id       | 対象の認可に紐づく取引ID                        |
+  | contract_url   | 対象の認可に紐づく契約管理サービスのアクセスURL |
+  | contract_type  | 対象の認可に紐づく契約形態                      |
+
+
+# (参考2) SIPデータカタログ項目仕様
 横断検索用カタログサイト、詳細検索用カタログサイトに登録するカタログ仕様の詳細については、下記を参照してください。
 - [SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx](catalog/SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx)
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pdf](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pdf)
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx)
-
 
