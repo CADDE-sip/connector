@@ -16,14 +16,14 @@
  
 (1) CADDE内限定データのカタログ項目<br>
 　提供者コネクタ経由で詳細カタログ検索、データ取得可能とするために、横断検索用カタログサイトのカタログに下記項目設定が必須です。
-- 提供者ID (extras:caddec_provider_id) 事前に払い出された提供者IDを設定。
+- CADDEユーザID(提供者) (extras:caddec_provider_id) 事前に払い出されたCADDEユーザID(提供者)を設定。
 - 詳細検索用データセットID (extras:caddec_dataset_id_for_detail) 横断検索用カタログと対になる詳細検索用カタログのデータセットIDを設定。
 - リソース提供手段の識別子 (resources:caddec_resource_type): HTTPサーバの場合:file/http, FTPサーバの場合:file/ftp, NGSIサーバの場合:api/ngsi を設定。
 - コネクタ利用の要否 (resources:caddec_contract_required): requiredを設定
 
 (2) オープンデータのカタログ項目<br>
 　提供者コネクタ経由で詳細カタログ検索、データ取得しないオープンデータの場合、横断カタログサイトのカタログに下記項目設定は不要です。
-- 提供者ID (extras:caddec_provider_id) : カタログ項目を設定しない。
+- CADDEユーザID(提供者) (extras:caddec_provider_id) : カタログ項目を設定しない。
 - 詳細検索用データセットID (extras:caddec_dataset_id_for_detail) : カタログ項目を設定しない。
 - リソース提供手段の識別子 (resources:caddec_resource_type): カタログ項目を設定しない。
 - コネクタ利用の要否 (resources:caddec_contract_required): notRequired または requiredを設定
@@ -127,4 +127,5 @@ curl -v -X GET https://{提供者コネクタのFQDN}:{ポート番号}/cadde/ap
 - [SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx](catalog/SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx)
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pdf](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pdf)
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx)
+
 

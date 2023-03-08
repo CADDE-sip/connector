@@ -43,7 +43,7 @@ CADDE利用者コネクタがデータ提供者を特定するために用いる
 
   | x-cadde-provider | 概要 |
   | :------------- | :-------------------------- |
-  | {提供者ID} | NGSI情報提供先の提供者IDを指定します。|
+  | {CADDEユーザID(提供者)} | NGSI情報提供先のCADDEユーザID(提供者)を指定します。|
 
 <br>
 
@@ -87,11 +87,11 @@ x-cadde-resource-api-typeヘッダの値はデータカタログ項目の「リ�
 <br>
 
 ### 3. x-cadde-providerヘッダ
-x-cadde-providerヘッダの値はデータカタログ項目の「提供者ID」が対応します。
+x-cadde-providerヘッダの値はデータカタログ項目の「CADDEユーザID(提供者)」が対応します。
 
   | APIリクエストヘッダ | カタログ項目 | カタログパラメータ |
   | :------------------ | :-------------------------- | :---------- |
-  | x-cadde-provider | 提供者ID | extras:caddec_provider_id |
+  | x-cadde-provider | CADDEユーザID(提供者) | extras:caddec_provider_id |
 <br>
 <br>
 
@@ -114,7 +114,7 @@ Fiware-ServiceおよびFiware-ServicePathの値はデータカタログ項目の
 $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/api/v4/entities"
 　-H "x-cadde-resource-url: {配信のダウンロードURL}" 
 　-H "x-cadde-resource-api-type: {リソース提供手段の識別子}" 
-　-H "x-cadde-provider: {提供者ID}"
+　-H "x-cadde-provider: {CADDEユーザID(提供者)}"
 　-H "Authorization: Bearer {利用者トークン}"
 　-H "x-cadde-options: Fiware-Service: {NGSIテナント}, Fiware-ServicePath: {NGSIサービスパス}"
 ```
@@ -128,7 +128,7 @@ $ curl -v -X GET "http://{利用者コネクタのFQDN}:{ポート番号}/cadde/
   | 配信のダウンロードURL | resources:url | https://closed.XX.go.jo/v2/entities?type=PublicFacility |
   | NGSIデータ種別 | resources:ngsi_entity_type | PublicFacility |
   | リソース提供手段の識別子 | resources:caddec_resource_type | api/ngsi |
-  | 提供者ID | extras:caddec_provider_id | provider1@dataex.jp |
+  | CADDEユーザID(提供者) | extras:caddec_provider_id | provider1@dataex.jp |
   | NGSIテナント | resources:ngsi_tenant | shinnihon |
   | NGSIテナントNGSIサービスパス | resources:ngsi_service_path | /shisetsu |
 
@@ -172,7 +172,7 @@ NGSIデータの取得APIでは、x-cadde-resource-urlに指定するURLにク�
   | 配信のダウンロードURL | resources:url | https://closed.XX.go.jo/v2/entities?type=PublicFacility |
   | NGSIデータ種別 | resources:ngsi_entity_type | PublicFacility |
   | リソース提供手段の識別子 | resources:caddec_resource_type | api/ngsi |
-  | 提供者ID | extras:caddec_provider_id | provider1@dataex.jp |
+  | CADDEユーザID(提供者) | extras:caddec_provider_id | provider1@dataex.jp |
   | NGSIテナント | resources:ngsi_tenant | shinnihon |
   | NGSIテナントNGSIサービスパス | resources:ngsi_service_path | /shisetsu |
   | NGSIデータモデル | resources:ngsi_data_model |  { <br> 　attrs:{<br> 　　name: { <br> 　　　description: イベント名称,<br> 　　　types: Text,<br> 　　},<br> 　　fee: { <br> 　　　description: 入場料金,<br> 　　　types: Number,<br> 　　　metadata: {<br> 　　　　unit: {<br> 　　　　　description:単位<br> 　　　　}<br> 　　　}<br> 　　},<br> 　：<br> 　}<br> } |

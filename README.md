@@ -20,7 +20,7 @@
   - コネクタは、カタログ検索、データ交換、認証、認可、来歴、契約の機能を具備します。認可、契約を利用する場合の詳細な設定方法は、別途お問い合わせください。
   - 利用者側システム(WebApp)、提供者側の CKAN カタログサイト、データ提供用のデータ管理(FTP サーバ,NGSI サーバ,HTTP サーバ)は、コネクタ設置前に事前に準備されていることを前提とします。
   - 利用者システム(WebApp)-利用者コネクタ間および、利用者コネクタ、提供者コネクタ間の通信路のセキュリティ（TLS 認証、IDS、IPS、ファイアウォール等)においては、OSS ソフトウェア、アプライアンス装置を用いて、コネクタ外で、利用者および提供者が準備するものとします。
-  - CADDEユーザIDは、コネクタ外で事前に採番されていることを前提とします。※CADDEユーザIDは、本READEME上では、利用者ID、提供者IDと記載しています。
+  - CADDEユーザIDは、コネクタ外で事前に採番されていることを前提とします。※CADDEユーザIDは、本READEME上では、CADDEユーザID(利用者)、CADDEユーザID(提供者)と記載しています。
   
 - Linux 上での動作を前提とします。
 
@@ -79,7 +79,7 @@ sh setup.sh
   | trace_log_enable                   | トレース用ログ出力有無                                          |
 
 - ngsi.json
-  <br>利用者コネクタから提供者コネクタを介さずNGSIサーバに直接アクセスする場合の利用者ID、アクセストークンを設定
+  <br>利用者コネクタから提供者コネクタを介さずNGSIサーバに直接アクセスする場合のCADDEユーザID(利用者)、アクセストークンを設定
   <br>connector/src/consumer/connector-main/swagger_server/configs/に配置
   <br>NGSI の情報を取得する際に利用するアクセストークンの設定を記載<br>
 
@@ -99,9 +99,9 @@ sh setup.sh
 - provenance.json
   <br>connector/src/consumer/provenance-management/swagger_server/configs/に配置
   <br>来歴管理サーバのURLの設定を記載
-  <br>※来歴の検索時に使用する
-  <br>※来歴管理を行う場合は認証認可が必須のためconnector.jsonの設定も必要となる
-  <br>※データ取得時は提供者側の来歴管理サーバのアクセスURL宛に履歴登録を行うため、本設定は使用しない
+  <br>※提供者を介したデータ取得時に、カタログに来歴のID(交換実績記録用リソースID)が登録されていた場合、来歴管理サーバに対する受信履歴登録時に使用する
+  <br>※来歴管理を行う場合は認証が必須のためconnector.jsonの設定も必要となる
+  <br>※未設定の場合、提供者側の来歴管理サーバのアクセスURL宛に履歴登録を行う
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
@@ -113,7 +113,7 @@ sh setup.sh
 
 ```
 cd connector/src/consumer
-docker compose -p consumer up -d
+docker compose up -d
 ```
 
 2. 利用者コネクタ起動確認
@@ -131,7 +131,7 @@ reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy       
 ```
 ## 利用者コネクタ停止手順
 ```
-docker compose -p consumer down
+docker compose down
 ```
 
 ## 利用者コネクタ利用ガイド
@@ -139,7 +139,7 @@ docker compose -p consumer down
 [利用者コネクタ利用ガイド](doc/ConsumerManual.md "利用者コネクタ利用ガイド")
 
 ### 利用者コネクタAPI
-利用者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
+利用者コネクタのREST-API詳細仕様は、下記からダウンロードし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
 - 利用者_カタログ検索IF.html
 - 利用者_コネクタメイン.html
@@ -154,12 +154,60 @@ docker compose -p consumer down
 docker-compose.ymlのリバースプロキシコンテナを利用しない場合は、reverse-proxyコンテナをコメントアウトし、
 consumer-connector-mainにポートフォワードの指定をしてください。
 
+```
+  consumer-connector-main:
+    build: connector-main
+    image: consumer/connector-main:4.0.0
+    hostname: consumer_connector_main
+    container_name: consumer_connector_main
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
+    ports:
+      - 80:8080
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+～～～
+#  reverse-proxy:
+#    container_name: reverse-proxy
+#    image: nginx:1.23.1
+#    volumes:
+#      - ./nginx/volumes/nginx.conf:/etc/nginx/nginx.conf
+#      - ./nginx/volumes/default.conf:/etc/nginx/conf.d/default.conf
+#      - ./nginx/volumes/ssl:/etc/nginx/ssl
+#    ports:
+#      - 443:443
+#      - 80:80
+#    restart: always
+```
+
 ### フォワードプロキシを使用しない場合
 docker-compose.ymlのフォワードプロキシコンテナを利用しない場合は、squidコンテナをコメントアウトしてください。
 
+```
+#  squid:
+#    container_name: forward-proxy
+#    image: cadde-squid:4.0.0
+#    hostname: forward_proxy
+#    volumes:
+#      - ./squid/volumes/squid.conf:/etc/squid/conf.d/default.conf
+#      - ./squid/volumes/ssl:/etc/squid/ssl
+#      - ./squid/volumes/ssl_db:/var/lib/squid/ssl_db
+#    restart: always
+```
+
 ### 利用者コネクタへのアクセス制限について
 利用者コネクタへアクセス制限を行う場合は、利用者コネクタにSSL/TLS認証でアクセス制限をかけてください。
-[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TLSManual.md "利用者環境および提供者環境リバースプロキシ設定")  参照。
+[分野間データ連携基盤: TLS相互認証設定例 利用者環境リバースプロキシ設定](doc/TLSManual.md "利用者環境および提供者環境リバースプロキシ設定")  参照。
 
 <br>
 <br>
@@ -196,8 +244,6 @@ sh setup.sh
   | detail_ckan_url                    | カタログサイト(詳細)のアクセスURL                               |
   | authorization                      | カタログサイト(詳細)アクセス時に認可確認を行うか否かを設定      |
   | packages_search_for_data_exchange  | データ取得時に交換実績記録用リソースID検索を行うか否かを設定    |
-  
-  ※release_ckan_url、detail_ckan_urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）
 
 
 (2) データ管理サーバ(HTTPサーバ)を提供者コネクタ経由で公開する場合<br>
@@ -220,13 +266,13 @@ sh setup.sh
   | register_provenance                | 来歴登録設定情報 以下、URLごとの設定を配列で保持<br>※データ取得時に該当する来歴登録設定情報が存在しない場合、来歴登録設定情報はTrueで動作する         |
   | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用         |
   | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                  |
- 
-  ※urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）、最大文字数は255字
+
+  ※urlの最大文字数は255字
 
 (2-2) 認証なしHTTPサーバに接続の場合<br>
  http.jsonファイルのbasic_auth編集不要。
   
-(3) データ管理サーバ(FTPサーバ)を提供者コネクタ経由で公開する場合
+(3) データ管理サーバ(FTPサーバ)を提供者コネクタ経由で公開する場合<br>
 (3-1) anonymous/anonymous以外をID/パスワードとするFTPサーバに接続の場合
 - ftp.json
   <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>ftp 接続時の設定を記載<br>
@@ -247,7 +293,7 @@ sh setup.sh
   | url                                | 来歴登録設定情報の対象となるリソースのURLを記載する データ取得時に指定されたリソースURLに設定上のURLが含まれていた場合、来歴登録設定情報を適用         |
   | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                      |
 
-  ※urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）、最大文字数は255字
+  ※urlの最大文字数は255字
 
 (3-2) anonymous/anonymousをID/パスワードとするFTPサーバに接続の場合
  ftp.jsonファイルのftp_auth編集不要。
@@ -277,7 +323,7 @@ sh setup.sh
   | servicepath                        | 来歴登録設定情報の対象となるNGSIサービスパス（カタログ項目：NGSIサービスパス）を記載する データ取得時に指定されたNGSIサービスパスと本設定のNGSIサービスパスが一致した場合、来歴登録設定を適用     |
   | enable                             | 来歴登録設定情報 (来歴登録を利用する場合True,来歴登録設定を利用しない場合Falseを設定)                                                                                                             |
 
-  ※urlの使用可能文字は半角英数、一部URLとして使用可能な記号（ハイフン、アンダーバーなど）、最大文字数は255字
+  ※urlの最大文字数は255字
 
 (5) 認証および認可をおこなう場合
 - authorization.json
@@ -292,7 +338,7 @@ sh setup.sh
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
-  | provider_id                        | 来歴管理登録するときに提供者を特定するためのID                  |
+  | provider_id                        | CADDEユーザID(提供者)                                           |
   | provider_connector_id              | 認可サーバに設定した提供者コネクタのID                          |
   | provider_connector_secret          | 認可サーバが発行した提供者コネクタのシークレット                |
   | trace_log_enable                   | トレース用ログ出力有無                                          |
@@ -301,12 +347,13 @@ sh setup.sh
 - provenance.json
   <br>connector/src/provider/provenance-management/swagger_server/configs/に配置
   <br>来歴管理サーバのURLの設定を記載
-  <br>※来歴管理を行う場合は認証認可が必須のため(5)の設定も必要となる
+  <br>※データ取得時に、カタログに来歴のID(交換実績記録用リソースID)が登録されていた場合、来歴管理サーバに対する受信履歴登録時に使用する
+  <br>※来歴管理を行う場合は認証が必須のため(5)の設定も必要となる
   <br>※データ取得時は提供者側の来歴管理サーバのアクセスURLを利用者側に返却する
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
-  | provenance_management_api_url      | 来歴管理サーバのアクセスURL                                     | 
+  | provenance_management_api_url      | 来歴管理サーバのアクセスURL                                     |
 
 ### 提供者コネクタ起動手順 
 ```
@@ -329,9 +376,52 @@ reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy       
 
 ### 提供者コネクタ動作確認
 提供者コネクタの外部API経由で、データ管理サーバ(HTTP or FTP or NGSI)からデータを取得できることを確認。<br>
-{リソースURL}には、詳細検索用CKAN登録済みで提供者コネクタからアクセス可能なデータ管理サーバのデータアクセス先を指定
+{リソースURL}には、詳細検索用CKAN登録済みで提供者コネクタからアクセス可能なデータ管理サーバのデータアクセス先を指定<br>
+提供者コネクタのデータ管理サーバコンフィグ(http.json、ftp.json、ngsi.json)の認可設定、取引市場使用有無設定、来歴登録設定に該当のリソースURLを記載し、enableをfalseに指定
 - 例1: `ftp://192.168.0.1/xxx.pdf`
+```
+ftp.json
+    "authorization": [
+        {
+            "url": "ftp://192.168.0.1/",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url": "ftp://192.168.0.1/",
+            "enable" : false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url": "ftp://192.168.0.1/",
+            "enable" : false
+        }
+    ]
+```
 - 例2: `http://192.168.0.1/auth/xxx.csv`
+```
+http.json
+    "authorization": [
+        {
+            "url": "`http://192.168.0.1/auth/",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url": "`http://192.168.0.1/auth/",
+            "enable" : false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url": "`http://192.168.0.1/auth/",
+            "enable" : false
+        }
+    ]
+```
 
 (1) データ管理サーバ(HTTPサーバ)を提供者コネクタAPI経由で取得する場合
 ```
@@ -352,7 +442,7 @@ docker compose down
 ```
 
 ### 提供者コネクタAPI
-提供者コネクタのREST-API詳細仕様は、下記からDownloadし参照してください。<br>
+提供者コネクタのREST-API詳細仕様は、下記からダウンロードし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
 - 提供者_カタログ検索IF.html
 - 提供者_コネクタメイン.html
@@ -378,4 +468,3 @@ docker compose down
 ⑨関連する過去の問い合わせ番号 <br>
 **********<br><br>
 ⑤～⑨について、構築中の不具合や動作不良に関する問い合わせの場合、可能な範囲でご記載ください。<br>
-
