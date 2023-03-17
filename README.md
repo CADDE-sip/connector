@@ -103,12 +103,13 @@ sh setup.sh
 
 4. フォワードプロキシの設定
 <br>
+提供者コネクタがアクセス制限を行っている場合は、下記を参考に利用者コネクタのフォワードプロキシにSSL/TLS設定を行います。
 [分野間データ連携基盤: TLS相互認証設定例 フォワードプロキシ(Squid)構築手順](doc/TLSManual.md "利用者環境プロキシ") 参照。<br>
 ※フォワードプロシキを使用しない場合、本設定は不要です。<br>
 
 5. リバースプロキシの設定
 <br>
-利用者コネクタへアクセス制限を行う場合は、下記を参考に利用者コネクタのリバースプロキシにSSL/TLS設定を行います。<br>
+利用者コネクタへアクセス制限を行う場合は、下記を参考に利用者コネクタのリバースプロキシにSSL/TLS設定を行います。
 [分野間データ連携基盤: TLS相互認証設定例 リバースプロキシ(nginx)構築手順](doc/TLSManual.md "利用者環境プロキシ") 参照。<br>
 ※利用者コネクタへアクセス制限を行わず、リバースプロシキを使用しない場合、本設定は不要です。<br>
 
@@ -127,6 +128,7 @@ sh start.sh
 2. 利用者コネクタ起動確認
 <br>
 コネクタ起動時にStateがすべてUpとなっていることを確認してください。<br>
+
 ```
 NAME                             COMMAND                  SERVICE                          STATUS              PORTS
 consumer_authentication          "python3 -m swagger_…"   consumer-authentication          running             8080/tcp
@@ -211,8 +213,7 @@ sh stop.sh
 - 利用者_来歴管理IF.html
 
 ### コネクタを利用した NGSIデータの取得方法
-<br>
-[CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照 <br>
+<br>[CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照 <br>
 
 
 <br>
@@ -399,7 +400,7 @@ sh setup.sh
 ```
 
 4. リバースプロキシの設定
-[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TLSManual.md "提供者環境プロキシ")  参照。<br>
+<br>[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TLSManual.md "提供者環境プロキシ")  参照。<br>
 ※リバースプロシキを使用しない場合、本設定は不要です。<br>
 
 ## 提供者コネクタ起動手順
@@ -521,7 +522,7 @@ curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resourc
 <br>※認可機能を使用する場合、認証は必須となります。
 
 1. 認可サーバ構築
-<br>認可サーバの構築については、[別紙参照](misc/authorization/README.md)<br>
+<br>認可サーバの構築については、[認可サーバのドキュメントを参照](misc/authorization/README.md)<br>
 
 2. 認可設定
 <br>構築した認可サーバ画面、または、[CLI](doc/ProviderManual.md)にて認可設定を行う。<br>
@@ -617,3 +618,4 @@ ngsi.json
 ⑨関連する過去の問い合わせ番号 <br>
 **********<br><br>
 ⑤～⑨について、構築中の不具合や動作不良に関する問い合わせの場合、可能な範囲でご記載ください。<br>
+
