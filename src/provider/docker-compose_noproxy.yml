@@ -11,6 +11,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    ports:
+      - "28080:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
@@ -43,6 +45,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    ports:
+      - "38080:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"

@@ -1,8 +1,8 @@
 # 分野間データ連携基盤: TLS相互認証設定例
 - 利用者コネクタ-提供者コネクタ間の通信においてはTLSによる相互認証を行うことが前提となり、  
 利用者及び提供者にて準備するものとなる。
-- 本ページではサンプルとして利用者コネクタ-提供者コネクタ間におけるTLS相互認証を実現するための設定例を記載する。
-- TLS相互認証は下図のプロキシ及びリバースプロキシにて実現する。
+- 本ページでは利用者システム(WebApp)―利用者コネクタ間および、利用者コネクタ―提供者コネクタ間におけるTLS相互認証を実現するための設定例を記載する。
+- 利用者コネクタ―提供者コネクタ間におけるTLS相互認証は下図のプロキシ及びリバースプロキシにて実現する。
 ![Alt text](../doc/png/conf_example.png?raw=true "Title")
 
 ## 前提条件
@@ -29,9 +29,9 @@
 - 本ページではTLS相互認証に必要な設定値のみの記載となる。
   - TLS認証以外の動作に関わる設定については必要に応じてユーザー側で考慮すること。
 
-# 利用者環境プロキシ設定
+# 利用者環境プロキシ
 
-## プロキシ(Squid)構築手順
+## フォワードプロキシ(Squid)構築手順
 
 1. コンフィグファイルの設定、ファイル配置
 
@@ -85,27 +85,99 @@ docker exec -it forward-proxy /usr/lib/squid/security_file_certgen -c -s /var/li
 docker cp forward-proxy:/var/lib/squid/ssl_db ./volumes/
 docker compose -f docker-compose_initial.yml down
 ```
-## プロキシ(Squid)起動手順
-[分野間データ連携基盤](README.md "利用者コネクタ起動手順")  参照。
-
-## プロキシ(Squid)停止手順
-[分野間データ連携基盤](README.md "利用者コネクタ停止手順")  参照。
-
-
-# 利用者環境および提供者環境リバースプロキシ設定
 
 ## リバースプロキシ(nginx)構築手順
 
-### SSL/TSL認証を行う場合
+### 利用者コネクタに対するアクセス制限を行う場合
+利用者コネクタに対するアクセス制限を行う場合は、SSL/TLS認証を行う。<br>
 
-サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置
+1. サーバー証明書、秘密鍵、クライアント認証用CA証明書準備
+サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置する。<br>
+```
+connector/src/consumer/nginx/volumes/ssl/
+```
+
+2.  コンフィグファイルの設定
+- default.conf
+  connector/src/consumer/nginx/volumes/に配置<br>
+  ssl用サーバ設定を有効にし、配置したサーバー証明書、秘密鍵、クライアント認証用CA証明書を設定してください。
+
+  | 設定パラメータ | 概要 |
+  | :------------- | :-------------------------- |
+  | ssl_certificate | サーバー証明書を設定 |
+  | ssl_certificate_key | 秘密鍵ファイルを設定 |
+  | ssl_verify_client | クライアント認証使用時に設定(設定値:on) |
+  | ssl_client_certificate | クライアント認証に使用するCA証明書を設定 |
+  | location /cadde/api/v1/file | proxy_passに提供者コネクタのカタログ検索IFを指定 |
+  | location /api/3/action/package_search | proxy_passに提供者コネクタのデータ交換IFを指定 |
+
+ - 設定例
+```
+server{
+    listen 443 ssl;
+    server_name  localhost;
+
+    ssl_certificate /etc/nginx/ssl/{サーバー証明書};
+    ssl_certificate_key /etc/nginx/ssl/{サーバー秘密鍵};
+    ssl_verify_client on;
+    ssl_client_certificate /etc/nginx/ssl/{CA証明書};
+
+    # データ取得(CADDE)
+    location /cadde/api/v4/file {
+        proxy_pass http://consumer_connector_main:8080/cadde/api/v4/file;
+        add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'self'; object-src 'self'; script-src 'none'; style-src 'none'";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000";
+        add_header Cache-Control no-store;
+        add_header Pragma no-cache;
+    }
+
+    # データ取得(NGSI)
+    location /cadde/api/v4/file {
+        proxy_pass http://consumer_connector_main:8080/cadde/api/v4/entities;
+        add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'self'; object-src 'self'; script-src 'none'; style-src 'none'";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000";
+        add_header Cache-Control no-store;
+        add_header Pragma no-cache;
+    }
+
+    # カタログ検索
+    location /cadde/api/v4/catalog {
+        proxy_pass http://consumer_connector_main:8080/cadde/api/v4/catalog;
+        add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'self'; object-src 'self'; script-src 'none'; style-src 'none'";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000";
+        add_header Cache-Control no-store;
+        add_header Pragma no-cache;
+    }
+```
+  ※サーバー証明書,サーバー秘密鍵,CA証明書はユーザーで用意したファイル名に置き換える。
+
+
+# 提供者環境プロキシ
+
+## リバースプロキシ(nginx)構築手順
+
+### 提供者コネクタに対するアクセス制限を行う場合
+提供者コネクタに対するアクセス制限を行う場合は、SSL/TLS認証を行う。<br>
+
+1. サーバー証明書、秘密鍵、クライアント認証用CA証明書準備
+サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置する。<br>
 ```
 connector/src/provider/nginx/volumes/ssl/
 ```
 
-
+2.  コンフィグファイルの設定
 - default.conf
-  <br>connector/src/provider/nginx/volumes/に配置<br>
+  connector/src/provider/nginx/volumes/に配置<br>
+  ssl用サーバ設定配置したサーバー証明書、秘密鍵、クライアント認証用CA証明書を設定してください。<br>
 
   | 設定パラメータ | 概要 |
   | :------------- | :-------------------------- |
@@ -123,15 +195,43 @@ connector/src/provider/nginx/volumes/ssl/
     ssl_verify_client on;
     ssl_client_certificate /etc/nginx/ssl/{CA証明書};
 
-    location /cadde/api/v4/file {
-        proxy_pass http://provider_data_exchange:8080/cadde/api/v4/file;
+    # 認可機能
+    location /cadde/api/v4/authorization {
+        proxy_pass http://authz_nginx/cadde/api/v4/authorization;
+        add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'self'; object-src 'self'; script-src 'none'; style-src 'none'";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000";
+        add_header Cache-Control no-store;
+        add_header Pragma no-cache;
     }
 
+    # データ交換
+    location /cadde/api/v4/file {
+        proxy_pass http://provider_data_exchange:8080/cadde/api/v4/file;
+        add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'self'; object-src 'self'; script-src 'none'; style-src 'none'";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000";
+        add_header Cache-Control no-store;
+        add_header Pragma no-cache;
+    }
+
+    # カタログ検索
     location /cadde/api/v4/catalog {
         proxy_pass http://provider_catalog_search:8080/cadde/api/v4/catalog;
+        add_header Content-Security-Policy "default-src 'self'; frame-ancestors 'self'; object-src 'self'; script-src 'none'; style-src 'none'";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy no-referrer always;
+        add_header Strict-Transport-Security "max-age=31536000";
+        add_header Cache-Control no-store;
+        add_header Pragma no-cache;
     }
 ```
-サーバー証明書,サーバー秘密鍵,CA証明書はユーザーで用意したファイル名に置き換える。
+  ※サーバー証明書,サーバー秘密鍵,CA証明書はユーザーで用意したファイル名に置き換える。
 
 ## リバースプロキシ(nginx)起動手順
 [分野間データ連携基盤](README.md "提供者コネクタ起動手順 ")  参照。
