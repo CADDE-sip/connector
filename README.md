@@ -530,7 +530,7 @@ curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resourc
 
 2. 認可設定
 <br>構築した認可サーバ画面、または、[CLI](doc/ProviderManual.md)にて認可設定を行う。<br>
-※カタログ検索(詳細検索)に対して認可を行う場合は、{リソースURL}に指定するURLをprovider_ckan.jsonのdetail_ckan_urlに指定しているCKANのURLを設定してください。<br>
+※カタログ検索(詳細検索)に対して認可を行う場合は、{リソースURL}に指定するURLにprovider_ckan.jsonのdetail_ckan_urlに指定しているCKANのURLを設定してください。<br>
 - CLIでの認可設定コマンド
 ```
 curl -v -X POST https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" \
