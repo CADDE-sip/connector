@@ -10,13 +10,13 @@ then
 elif [ "$start_type" == "noforwardproxy" ]
 then
     # フォワードプロキシを起動しない
-    docker compose -f docker-compose.yml up consumer-catalog-search consumer-data-exchange consumer-authentication consumer-provenance-management consumer-connector-main reverse-proxy -d
+    docker compose -f docker-compose.yml up consumer-catalog-search consumer-data-exchange consumer-authentication consumer-provenance-management consumer-connector-main consumer-reverse-proxy -d
     docker compose ps
 
 elif [ "$start_type" == "noreverseproxy" ]
 then
     # リバースプロキシを起動しない
-    docker compose -f docker-compose_noreverseproxy.yml up consumer-catalog-search consumer-data-exchange consumer-authentication consumer-provenance-management consumer-connector-main squid -d
+    docker compose -f docker-compose_noreverseproxy.yml up -d
     docker compose ps
 
 else

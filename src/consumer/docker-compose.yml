@@ -95,8 +95,8 @@ services:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  squid:
-    container_name: forward-proxy
+  consumer-forward-proxy:
+    container_name: consumer_forward-proxy
     image: cadde-squid:4.0.0
     hostname: forward_proxy
     volumes:
@@ -104,8 +104,8 @@ services:
       - ./squid/volumes/ssl:/etc/squid/ssl
       - ./squid/volumes/ssl_db:/var/lib/squid/ssl_db
     restart: always
-  reverse-proxy:
-    container_name: reverse-proxy
+  consumer-reverse-proxy:
+    container_name: consumer_reverse-proxy
     image: nginx:1.23.1
     volumes:
       - ./nginx/volumes/nginx.conf:/etc/nginx/nginx.conf

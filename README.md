@@ -139,9 +139,9 @@ consumer_authentication          "python3 -m swagger_…"   consumer-authenticat
 consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-search          running             8080/tcp
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
+consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-proxy           running             3128/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
-reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
+consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
 ```
 
 ### プロキシを使用しない場合
@@ -178,7 +178,7 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             0.0.0.0:80->8080/tcp, :::80->8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
+consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-proxy           running             3128/tcp
 ```
 
 #### フォワードプロキシを使用しない場合
@@ -195,7 +195,7 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
+consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
 ```
 
 ## 利用者コネクタ停止手順
@@ -428,7 +428,7 @@ provider_catalog_search          "python3 -m swagger_…"   provider-catalog-sea
 provider_connector_main          "python3 -m swagger_…"   provider-connector-main          running             8080/tcp
 provider_data_exchange           "python3 -m swagger_…"   provider-data-exchange           running             8080/tcp
 provider_provenance_management   "python3 -m swagger_…"   provider-provenance-management   running             8080/tcp
-reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:443->443/tcp, :::443->443/tcp
+provider_reverse-proxy           "/docker-entrypoint.…"   provider-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
 ```
 <br>
 
@@ -622,3 +622,4 @@ ngsi.json
 ⑨関連する過去の問い合わせ番号 <br>
 **********<br><br>
 ⑤～⑨について、構築中の不具合や動作不良に関する問い合わせの場合、可能な範囲でご記載ください。<br>
+
