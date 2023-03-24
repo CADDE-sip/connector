@@ -220,13 +220,15 @@ docker-compose -p consumer down
 <br>各コンフィグを任意のディレクトリへ退避してください。
 <br>.envの設定はV4.0から固定となります。利用者側で変更する場合は編集してください。
 
-| V3.0のコンフィグファイル    | V4.0のコンフィグファイル         | 更新内容         |
-| :--------------------------------- | :--------------------------------- |:--------------------------------- |
-| catalog-search/swagger_server/configs/ckan.json | catalog-search/swagger_server/configs/public_ckan.json | コンフィグファイル名およびフィールド名の変更            |
-| connector-main/swagger_server/configs/connector.json | connector-main/swagger_server/configs/connector.json | history_management_tokenの削除<br>location_service_urlおよびtrace_log_enableの追加            |
-| connector-main/swagger_server/configs/idp.json | － | コンフィグファイル削除            |
-| connector-main/swagger_server/configs/ngsi.json | connector-main/swagger_server/configs/ngsi.json | authorizationの削除            |
-| provenance-management/swagger_server/configs/provenance.json | provenance-management/swagger_server/configs/provenance.json | デフォルト値の削除            |
+| V3.0のコンフィグファイル                                     | V4.0のコンフィグファイル                                     | 更新内容                                     |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |:-------------------------------------------- |
+| .env                                                         | .env                                                         | 設定値を固定(編集不要)                       |
+| catalog-search/swagger_server/configs/ckan.json              | catalog-search/swagger_server/configs/public_ckan.json       | コンフィグファイル名およびフィールド名の変更 |
+| connector-main/swagger_server/configs/connector.json         | connector-main/swagger_server/configs/connector.json         | history_management_tokenの削除<br>location_service_urlおよびtrace_log_enableの追加            |
+| connector-main/swagger_server/configs/idp.json               | －                                                           | コンフィグファイル削除                       |
+| connector-main/swagger_server/configs/location.json          | connector-main/swagger_server/configs/location.json          | provider_connector_data_exchange_urlの削除<br>provider_connector_catalog_search_urlの削除<br>contract_management_service_urlの削除<br>contract_management_service_keyの削除 |
+| connector-main/swagger_server/configs/ngsi.json              | connector-main/swagger_server/configs/ngsi.json              | authorizationの削除                          |
+| provenance-management/swagger_server/configs/provenance.json | provenance-management/swagger_server/configs/provenance.json | デフォルト値の削除                           |
 ```
 cd src/consumer/
 cp .env {任意のディレクトリ}
@@ -249,16 +251,17 @@ git pull
 <br>更新のないファイルは退避したコンフィグを上書してください。
 ```
 # 更新のあるコンフィグ
+vim .env
 vim catalog-search/swagger_server/configs/public_ckan.json
 vim connector-main/swagger_server/configs/connector.json
+vim connector-main/swagger_server/configs/location.json
 vim connector-main/swagger_server/configs/ngsi.json
 vim provenance-management/swagger_server/configs/provenance.json
 ```
 ```
 # 更新のないコンフィグ
-cp {任意のディレクトリ} connector-main/swagger_server/configs/ftp.json
-cp {任意のディレクトリ} connector-main/swagger_server/configs/http.json
-cp {任意のディレクトリ} connector-main/swagger_server/configs/location.json
+cp {任意のディレクトリ}/ftp.json connector-main/swagger_server/configs/ftp.json
+cp {任意のディレクトリ}/http.json connector-main/swagger_server/configs/http.json
 ```
 
 5. 利用者コネクタ起動
@@ -530,14 +533,14 @@ docker-compose -p provider down
 <br>V3.0とV4.0で更新のあるコンフィグは以下となります。
 <br>各コンフィグを任意のディレクトリへ退避してください。
 
-| V3.0のコンフィグファイル    | V4.0のコンフィグファイル         | 更新内容         |
-| :--------------------------------- | :--------------------------------- |:--------------------------------- |
-| authentication-authorization/swagger_server/configs/authorization.json | authorization/swagger_server/configs/authorization.json | コンテナ名の変更<br>既存設定全削除<br>authorization_server_urlの追加      |
-| connector-main/swagger_server/configs/ckan.json | connector-main/swagger_server/configs/provider_ckan.json | コンフィグファイル名の変更<br>authorizationの追加<br>packages_search_for_data_exchangeの追加            |
-| connector-main/swagger_server/configs/connector.json | connector-main/swagger_server/configs/connector.json | contract_management_service_urlの削除<br>contract_management_service_keyの削除<br>history_management_tokenの削除<br>trace_log_enableの追加            |
-| connector-main/swagger_server/configs/ftp.json | connector-main/swagger_server/configs/ftp.json | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
-| connector-main/swagger_server/configs/http.json | connector-main/swagger_server/configs/http.json | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
-| connector-main/swagger_server/configs/ngsi.json | connector-main/swagger_server/configs/ngsi.json | ngsi_authからauthorizationフィールド削除<br>authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
+| V3.0のコンフィグファイル                                               | V4.0のコンフィグファイル                                 | 更新内容                                                                                      |
+| :--------------------------------------------------------------------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------------------- |
+| authentication-authorization/swagger_server/configs/authorization.json | authorization/swagger_server/configs/authorization.json  | コンテナ名の変更<br>既存設定全削除<br>authorization_server_urlの追加                          |
+| connector-main/swagger_server/configs/ckan.json                        | connector-main/swagger_server/configs/provider_ckan.json | コンフィグファイル名の変更<br>authorizationの追加<br>packages_search_for_data_exchangeの追加  |
+| connector-main/swagger_server/configs/connector.json                   | connector-main/swagger_server/configs/connector.json     | contract_management_service_urlの削除<br>contract_management_service_keyの削除<br>history_management_tokenの削除<br>trace_log_enableの追加            |
+| connector-main/swagger_server/configs/ftp.json                         | connector-main/swagger_server/configs/ftp.json           | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加         |
+| connector-main/swagger_server/configs/http.json                        | connector-main/swagger_server/configs/http.json          | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加         |
+| connector-main/swagger_server/configs/ngsi.json                        | connector-main/swagger_server/configs/ngsi.json          | ngsi_authからauthorizationフィールド削除<br>authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
 ```
 cd src/provider/
 cp authentication-authorization/swagger_server/configs/authorization.json	{任意のディレクトリ}
