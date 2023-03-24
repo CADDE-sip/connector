@@ -39,8 +39,8 @@ CADDEコネクタの導入範囲、構成については、下記ガイドを参
 - [CADDE4.0_導入ガイド【第2編】データ提供者環境導入編(2023年3月版)_1.docx](doc/guide/CADDE4.0_導入ガイド【第2編】データ提供者環境導入編(2023年3月版)_1.docx)
 - [CADDE4.0_導入ガイド【第3編】データ利用者環境導入編(2023年3月版)_2.docx](doc/guide/CADDE4.0_導入ガイド【第3編】データ利用者環境導入編(2023年3月版)_2.docx)
 
-
-<br><br>
+<br>
+<br>
 
 # 利用者コネクタ
 
@@ -108,14 +108,18 @@ sh setup.sh
   | public_ckan_url                    | 横断検索時の横断検索サーバのURLを記載                           |
 
 4. フォワードプロキシの設定
-<br>提供者コネクタがアクセス制限を行っている場合は、下記を参考に利用者コネクタのフォワードプロキシにSSL/TLS設定を行います。
-<br>[分野間データ連携基盤: TLS相互認証設定例 フォワードプロキシ(Squid)構築手順](doc/TLSManual.md "利用者環境プロキシ") 参照。<br>
+<br>
+[分野間データ連携基盤: TLS相互認証設定例 フォワードプロキシ(Squid)構築手順](doc/TLSManual.md "利用者環境プロキシ") 参照。<br>
 ※フォワードプロシキを使用しない場合、本設定は不要です。<br>
 
 5. リバースプロキシの設定
-<br>利用者コネクタへアクセス制限を行う場合は、下記を参考に利用者コネクタのリバースプロキシにSSL/TLS設定を行います。
-<br>[分野間データ連携基盤: TLS相互認証設定例 リバースプロキシ(nginx)構築手順](doc/TLSManual.md "利用者環境プロキシ") 参照。<br>
+<br>
+利用者コネクタへアクセス制限を行う場合は、下記を参考に利用者コネクタのリバースプロキシにSSL/TLS設定を行います。<br>
+[分野間データ連携基盤: TLS相互認証設定例 リバースプロキシ(nginx)構築手順](doc/TLSManual.md "利用者環境プロキシ") 参照。<br>
 ※利用者コネクタへアクセス制限を行わず、リバースプロシキを使用しない場合、本設定は不要です。<br>
+
+<br>
+<br>
 
 ## 利用者コネクタ起動手順
 
@@ -132,16 +136,15 @@ sh start.sh
 2. 利用者コネクタ起動確認
 <br>
 コネクタ起動時にStateがすべてUpとなっていることを確認してください。<br>
-
 ```
 NAME                             COMMAND                  SERVICE                          STATUS              PORTS
 consumer_authentication          "python3 -m swagger_…"   consumer-authentication          running             8080/tcp
 consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-search          running             8080/tcp
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
-consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-proxy           running             3128/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
+forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
+reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
 ```
 
 ### プロキシを使用しない場合
@@ -178,7 +181,7 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             0.0.0.0:80->8080/tcp, :::80->8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-proxy           running             3128/tcp
+forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
 ```
 
 #### フォワードプロキシを使用しない場合
@@ -195,13 +198,75 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
+reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
 ```
 
-## 利用者コネクタ停止手順
+### 利用者コネクタ停止手順
 ```
 sh stop.sh
 ```
+
+### V3.0からV4.0へのアップデート方法
+<br>利用者コネクタのアップデートは以下の手順で行ってください。<br>
+
+1. 利用者コネクタ停止
+```
+# V3.0の利用者コネクタ停止手順
+cd src/consumer/
+docker-compose -p consumer down
+```
+
+2. コンフィグ類の退避
+<br>V3.0とV4.0で更新のあるコンフィグは以下となります。
+<br>各コンフィグを任意のディレクトリへ退避してください。
+<br>.envの設定はV4.0から固定となります。利用者側で変更する場合は編集してください。
+
+| V3.0のコンフィグファイル    | V4.0のコンフィグファイル         | 更新内容         |
+| :--------------------------------- | :--------------------------------- |:--------------------------------- |
+| catalog-search/swagger_server/configs/ckan.json | catalog-search/swagger_server/configs/public_ckan.json | コンフィグファイル名およびフィールド名の変更            |
+| connector-main/swagger_server/configs/connector.json | connector-main/swagger_server/configs/connector.json | history_management_tokenの削除<br>location_service_urlおよびtrace_log_enableの追加            |
+| connector-main/swagger_server/configs/idp.json | － | コンフィグファイル削除            |
+| connector-main/swagger_server/configs/ngsi.json | connector-main/swagger_server/configs/ngsi.json | authorizationの削除            |
+| provenance-management/swagger_server/configs/provenance.json | provenance-management/swagger_server/configs/provenance.json | デフォルト値の削除            |
+```
+cd src/consumer/
+cp .env {任意のディレクトリ}
+cp catalog-search/swagger_server/configs/ckan.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/connector.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/ftp.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/http.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/location.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/ngsi.json {任意のディレクトリ}
+cp provenance-management/swagger_server/configs/provenance.json {任意のディレクトリ}
+```
+3. 利用者コネクタアップデート
+```
+git checkout .
+git pull
+```
+
+4. コンフィグ類のマージ
+<br>更新のあるファイルは退避したコンフィグを元に、[利用者コネクタ構築手順のコンフィグ設定](#利用者コネクタ構築手順) を参考に設定してください。
+<br>更新のないファイルは退避したコンフィグを上書してください。
+```
+# 更新のあるコンフィグ
+vim catalog-search/swagger_server/configs/public_ckan.json
+vim connector-main/swagger_server/configs/connector.json
+vim connector-main/swagger_server/configs/ngsi.json
+vim provenance-management/swagger_server/configs/provenance.json
+```
+```
+# 更新のないコンフィグ
+cp {任意のディレクトリ} connector-main/swagger_server/configs/ftp.json
+cp {任意のディレクトリ} connector-main/swagger_server/configs/http.json
+cp {任意のディレクトリ} connector-main/swagger_server/configs/location.json
+```
+
+5. 利用者コネクタ起動
+<br>[利用者コネクタ起動手順](#利用者コネクタ起動手順) 参照
+
+<br>
+<br>
 
 ## 利用者コネクタ利用ガイド
 <br>利用者コネクタの利用方法については下記参照。<br>
@@ -217,8 +282,7 @@ sh stop.sh
 - 利用者_来歴管理IF.html
 
 ### コネクタを利用した NGSIデータの取得方法
-<br>[CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照 <br>
-
+[CADDEコネクタを利用した NGSIデータの取得方法](doc/README_NGSI.md) 参照 <br>
 
 <br>
 <br>
@@ -404,7 +468,7 @@ sh setup.sh
 ```
 
 4. リバースプロキシの設定
-<br>[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TLSManual.md "提供者環境プロキシ")  参照。<br>
+[分野間データ連携基盤: TLS相互認証設定例 提供者環境リバースプロキシ設定](doc/TLSManual.md "提供者環境プロキシ")  参照。<br>
 ※リバースプロシキを使用しない場合、本設定は不要です。<br>
 
 ## 提供者コネクタ起動手順
@@ -428,7 +492,7 @@ provider_catalog_search          "python3 -m swagger_…"   provider-catalog-sea
 provider_connector_main          "python3 -m swagger_…"   provider-connector-main          running             8080/tcp
 provider_data_exchange           "python3 -m swagger_…"   provider-data-exchange           running             8080/tcp
 provider_provenance_management   "python3 -m swagger_…"   provider-provenance-management   running             8080/tcp
-provider_reverse-proxy           "/docker-entrypoint.…"   provider-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
+reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:443->443/tcp, :::443->443/tcp
 ```
 <br>
 
@@ -448,11 +512,67 @@ provider_data_exchange           "python3 -m swagger_…"   provider-data-exchan
 provider_provenance_management   "python3 -m swagger_…"   provider-provenance-management   running             8080/tcp
 ```
 
-
 ### 提供者コネクタ停止手順 
 ```
 sh stop.sh
 ```
+
+### V3.0からV4.0へのアップデート方法
+<br>提供者コネクタのアップデートは以下の手順で行ってください。<br>
+
+1. 提供者コネクタ停止
+```
+# V3.0の提供者コネクタ停止手順
+cd src/provider/
+docker-compose -p provider down
+```
+
+2. コンフィグ類の退避
+<br>V3.0とV4.0で更新のあるコンフィグは以下となります。
+<br>各コンフィグを任意のディレクトリへ退避してください。
+
+| V3.0のコンフィグファイル    | V4.0のコンフィグファイル         | 更新内容         |
+| :--------------------------------- | :--------------------------------- |:--------------------------------- |
+| authentication-authorization/swagger_server/configs/authorization.json | authorization/swagger_server/configs/authorization.json | コンテナ名の変更<br>既存設定全削除<br>authorization_server_urlの追加      |
+| connector-main/swagger_server/configs/ckan.json | connector-main/swagger_server/configs/provider_ckan.json | コンフィグファイル名の変更<br>authorizationの追加<br>packages_search_for_data_exchangeの追加            |
+| connector-main/swagger_server/configs/connector.json | connector-main/swagger_server/configs/connector.json | contract_management_service_urlの削除<br>contract_management_service_keyの削除<br>history_management_tokenの削除<br>trace_log_enableの追加            |
+| connector-main/swagger_server/configs/ftp.json | connector-main/swagger_server/configs/ftp.json | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
+| connector-main/swagger_server/configs/http.json | connector-main/swagger_server/configs/http.json | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
+| connector-main/swagger_server/configs/ngsi.json | connector-main/swagger_server/configs/ngsi.json | ngsi_authからauthorizationフィールド削除<br>authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
+```
+cd src/provider/
+cp authentication-authorization/swagger_server/configs/authorization.json	{任意のディレクトリ}
+cp connector-main/swagger_server/configs/ckan.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/connector.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/ftp.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/http.json {任意のディレクトリ}
+cp connector-main/swagger_server/configs/ngsi.json {任意のディレクトリ}
+cp provenance-management/swagger_server/configs/provenance.json {任意のディレクトリ}
+```
+3. 提供者コネクタアップデート
+```
+git checkout .
+git pull
+```
+
+4. コンフィグ類のマージ
+<br>退避したコンフィグを元に、[提供者コネクタ構築手順のコンフィグ設定](#提供者コネクタ構築手順) を参考に設定してください。
+```
+# 更新のあるコンフィグ
+vim authorization/swagger_server/configs/authorization.json
+vim connector-main/swagger_server/configs/provider_ckan.json
+vim connector-main/swagger_server/configs/connector.json
+vim connector-main/swagger_server/configs/ftp.json
+vim connector-main/swagger_server/configs/http.json
+vim connector-main/swagger_server/configs/ngsi.json
+vim provenance-management/swagger_server/configs/provenance.json
+```
+
+5. 提供者コネクタ起動
+<br>[提供者コネクタ起動手順](#提供者コネクタ起動手順) 参照
+
+<br>
+<br>
 
 ## 提供者コネクタ利用ガイド
 
@@ -526,11 +646,11 @@ curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resourc
 <br>※認可機能を使用する場合、認証は必須となります。
 
 1. 認可サーバ構築
-<br>認可サーバの構築については、[認可サーバのドキュメント](misc/authorization/README.md) 参照<br>
+<br>認可サーバの構築については、[別紙参照](misc/authorization/README.md)<br>
 
 2. 認可設定
 <br>構築した認可サーバ画面、または、[CLI](doc/ProviderManual.md)にて認可設定を行う。<br>
-※カタログ検索(詳細検索)に対して認可を行う場合は、{リソースURL}に指定するURLにprovider_ckan.jsonのdetail_ckan_urlに指定しているCKANのURLを設定してください。<br>
+※カタログ検索(詳細検索)に対して認可を行う場合は、{リソースURL}に指定するURLをprovider_ckan.jsonのdetail_ckan_urlに指定しているCKANのURLを設定してください。<br>
 - CLIでの認可設定コマンド
 ```
 curl -v -X POST https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" \
@@ -593,7 +713,7 @@ ngsi.json
 [提供者環境構築ガイド](doc/ProviderManual.md "提供者環境構築ガイド")
 
 ### 提供者コネクタAPI
-提供者コネクタのREST-API詳細仕様は、下記からダウンロードし参照してください。<br>
+<br>提供者コネクタのREST-API詳細仕様は、下記からダウンロードし参照してください。<br>
 [RESTAPI仕様書格納先](doc/api/) 参照
 - 提供者_カタログ検索IF.html
 - 提供者_コネクタメイン.html
