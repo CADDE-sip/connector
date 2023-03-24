@@ -134,6 +134,7 @@ sh start.sh
 2. 利用者コネクタ起動確認
 <br>
 コネクタ起動時にStateがすべてUpとなっていることを確認してください。<br>
+
 ```
 NAME                             COMMAND                  SERVICE                          STATUS              PORTS
 consumer_authentication          "python3 -m swagger_…"   consumer-authentication          running             8080/tcp
