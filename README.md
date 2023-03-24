@@ -226,7 +226,7 @@ docker-compose -p consumer down
 | catalog-search/swagger_server/configs/ckan.json              | catalog-search/swagger_server/configs/public_ckan.json       | コンフィグファイル名およびフィールド名の変更 |
 | connector-main/swagger_server/configs/connector.json         | connector-main/swagger_server/configs/connector.json         | history_management_tokenの削除<br>location_service_urlおよびtrace_log_enableの追加            |
 | connector-main/swagger_server/configs/idp.json               | －                                                           | コンフィグファイル削除                       |
-| connector-main/swagger_server/configs/location.json          | connector-main/swagger_server/configs/location.json          | provider_connector_data_exchange_urlの削除<br>provider_connector_catalog_search_urlの削除<br>contract_management_service_urlの削除<br>contract_management_service_keyの削除 |
+| connector-main/swagger_server/configs/location.json          | connector-main/swagger_server/configs/location.json          | provider_connector_urlの追加<br>provider_connector_data_exchange_urlの削除<br>provider_connector_catalog_search_urlの削除<br>contract_management_service_urlの削除<br>contract_management_service_keyの削除 |
 | connector-main/swagger_server/configs/ngsi.json              | connector-main/swagger_server/configs/ngsi.json              | authorizationの削除                          |
 | provenance-management/swagger_server/configs/provenance.json | provenance-management/swagger_server/configs/provenance.json | デフォルト値の削除                           |
 ```
