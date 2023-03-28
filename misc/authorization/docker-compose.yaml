@@ -21,7 +21,7 @@ services:
     restart: always
 
   fastapi:
-    image: fastapi:latest
+    image: authz_fastapi:4.0.0
     build: ./fastapi
     container_name: authz_fastapi
     working_dir: /app/
