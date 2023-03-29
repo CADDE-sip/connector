@@ -13,15 +13,15 @@
 ## 3. 横断検索用カタログサイト(CKAN)
  横断検索用カタログサイトには、横断検索サーバに公開可能なカタログ情報を登録します。
  各提供者の横断検索用カタログサイトのカタログ情報は、横断検索サーバに横断検索用カタログサイトアクセスURLを設定することにより、定期的に収集されます。<br>
- 
-(1) CADDE内限定データのカタログ項目<br>
+
+### (1) CADDE内限定データのカタログ項目<br>
 　提供者コネクタ経由で詳細カタログ検索、データ取得可能とするために、横断検索用カタログサイトのカタログに下記項目設定が必須です。
 - CADDEユーザID(提供者) (extras:caddec_provider_id) 事前に払い出されたCADDEユーザID(提供者)を設定。
 - 詳細検索用データセットID (extras:caddec_dataset_id_for_detail) 横断検索用カタログと対になる詳細検索用カタログのデータセットIDを設定。
 - リソース提供手段の識別子 (resources:caddec_resource_type): HTTPサーバの場合:file/http, FTPサーバの場合:file/ftp, NGSIサーバの場合:api/ngsi を設定。
 - コネクタ利用の要否 (resources:caddec_contract_required): requiredを設定
 
-(2) オープンデータのカタログ項目<br>
+### (2) オープンデータのカタログ項目<br>
 　提供者コネクタ経由で詳細カタログ検索、データ取得しないオープンデータの場合、横断カタログサイトのカタログに下記項目設定は不要です。
 - CADDEユーザID(提供者) (extras:caddec_provider_id) : カタログ項目を設定しない。
 - 詳細検索用データセットID (extras:caddec_dataset_id_for_detail) : カタログ項目を設定しない。
@@ -78,17 +78,17 @@ http.json
     ]
 ```
 
-(1) データ管理サーバ(HTTPサーバ)を提供者コネクタAPI経由で取得する場合
+### (1) データ管理サーバ(HTTPサーバ)を提供者コネクタAPI経由で取得する場合
 ```
 curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/http" -O
 ```
 
-(2) データ管理サーバ(FTPサーバ)を提供者コネクタAPI経由で取得する場合
+### (2) データ管理サーバ(FTPサーバ)を提供者コネクタAPI経由で取得する場合
 ```
 curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/ftp" -O
 ```
 
-(3) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
+### (3) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
 <br>NGSI情報取得については、[別紙参照](doc/README_NGSI.md) 
 
 <br>
