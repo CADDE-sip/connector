@@ -133,7 +133,7 @@ sh start.sh
 
 2. 利用者コネクタ起動確認
 <br>
-コネクタ起動時にStateがすべてUpとなっていることを確認してください。<br>
+コネクタ起動時にStateがすべてrunningとなっていることを確認してください。<br>
 
 ```
 NAME                             COMMAND                  SERVICE                          STATUS              PORTS
@@ -515,7 +515,7 @@ sh start.sh
 
 
 2. 提供者コネクタ起動確認
-提供者コネクタ起動時にStateがすべてUpとなっていることを確認
+提供者コネクタ起動時にStateがすべてrunningとなっていることを確認
 ```
 NAME                             COMMAND                  SERVICE                          STATUS              PORTS
 provider_authorization           "python3 -m swagger_…"   provider-authorization           running             8080/tcp
