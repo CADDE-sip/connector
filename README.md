@@ -142,8 +142,8 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
-reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
+consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-proxy           running             3128/tcp
+consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-proxy           running             0.0.0.0:80->80/tcp, :::8080->80/tcp
 ```
 
 ### プロキシを使用しない場合
@@ -180,7 +180,7 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             0.0.0.0:80->8080/tcp, :::80->8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-forward-proxy                    "/usr/sbin/squid '-N…"   squid                            running             3128/tcp
+consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-proxy           running             3128/tcp
 ```
 
 #### フォワードプロキシを使用しない場合
@@ -197,7 +197,7 @@ consumer_catalog_search          "python3 -m swagger_…"   consumer-catalog-sea
 consumer_connector_main          "python3 -m swagger_…"   consumer-connector-main          running             8080/tcp
 consumer_data_exchange           "python3 -m swagger_…"   consumer-data-exchange           running             8080/tcp
 consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-management   running             8080/tcp
-reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:80->80/tcp, :::8080->80/tcp
+consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-proxy           running             0.0.0.0:80->80/tcp, :::8080->80/tcp
 ```
 
 ### 利用者コネクタ停止手順
@@ -216,19 +216,8 @@ docker-compose -p consumer down
 ```
 
 2. コンフィグ類の退避
-<br>V3.0とV4.0で更新のあるコンフィグは以下となります。
 <br>各コンフィグを任意のディレクトリへ退避してください。
 <br>.envの設定はV4.0から固定となります。利用者側で変更する場合は編集してください。
-
-| V3.0のコンフィグファイル                                     | V4.0のコンフィグファイル                                     | 更新内容                                     |
-| :----------------------------------------------------------- | :----------------------------------------------------------- |:-------------------------------------------- |
-| .env                                                         | .env                                                         | 設定値を固定(編集不要)                       |
-| catalog-search/swagger_server/configs/ckan.json              | catalog-search/swagger_server/configs/public_ckan.json       | コンフィグファイル名およびフィールド名の変更 |
-| connector-main/swagger_server/configs/connector.json         | connector-main/swagger_server/configs/connector.json         | history_management_tokenの削除<br>location_service_urlおよびtrace_log_enableの追加            |
-| connector-main/swagger_server/configs/idp.json               | －                                                           | コンフィグファイル削除                       |
-| connector-main/swagger_server/configs/location.json          | connector-main/swagger_server/configs/location.json          | provider_connector_urlの追加<br>provider_connector_data_exchange_urlの削除<br>provider_connector_catalog_search_urlの削除<br>contract_management_service_urlの削除<br>contract_management_service_keyの削除 |
-| connector-main/swagger_server/configs/ngsi.json              | connector-main/swagger_server/configs/ngsi.json              | authorizationの削除                          |
-| provenance-management/swagger_server/configs/provenance.json | provenance-management/swagger_server/configs/provenance.json | デフォルト値の削除                           |
 ```
 cd src/consumer/
 cp .env {任意のディレクトリ}
@@ -247,22 +236,26 @@ git pull
 ```
 
 4. コンフィグ類のマージ
-<br>更新のあるファイルは退避したコンフィグを元に、[利用者コネクタ構築手順のコンフィグ設定](#利用者コネクタ構築手順) を参考に設定してください。
-<br>更新のないファイルは退避したコンフィグを上書してください。
-```
-# 更新のあるコンフィグ
-vim .env
-vim catalog-search/swagger_server/configs/public_ckan.json
-vim connector-main/swagger_server/configs/connector.json
-vim connector-main/swagger_server/configs/location.json
-vim connector-main/swagger_server/configs/ngsi.json
-vim provenance-management/swagger_server/configs/provenance.json
-```
-```
-# 更新のないコンフィグ
-cp {任意のディレクトリ}/ftp.json connector-main/swagger_server/configs/ftp.json
-cp {任意のディレクトリ}/http.json connector-main/swagger_server/configs/http.json
-```
+<br>V3.0とV4.0で更新のあるコンフィグは以下となります。
+<br>[利用者コネクタ構築手順のコンフィグ設定](#利用者コネクタ構築手順) を参考に設定してください。
+
+| V3.0のコンフィグファイル名                                   | V4.0のコンフィグファイル名                                   | コンフィグファイル内容の変更点               |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |:-------------------------------------------- |
+| .env                                                         | .env                                                         | 設定値を固定(編集不要)                       |
+| catalog-search/swagger_server/configs/ckan.json              | catalog-search/swagger_server/configs/public_ckan.json       | コンフィグファイル名およびフィールド名の変更 |
+| connector-main/swagger_server/configs/connector.json         | connector-main/swagger_server/configs/connector.json         | history_management_tokenの削除<br>location_service_urlおよびtrace_log_enableの追加            |
+| connector-main/swagger_server/configs/idp.json               | －                                                           | コンフィグファイル削除                       |
+| connector-main/swagger_server/configs/location.json          | connector-main/swagger_server/configs/location.json          | provider_connector_urlの追加<br>provider_connector_data_exchange_urlの削除<br>provider_connector_catalog_search_urlの削除<br>contract_management_service_urlの削除<br>contract_management_service_keyの削除 |
+| connector-main/swagger_server/configs/ngsi.json              | connector-main/swagger_server/configs/ngsi.json              | authorizationの削除                          |
+| provenance-management/swagger_server/configs/provenance.json | provenance-management/swagger_server/configs/provenance.json | デフォルト値の削除                           |
+
+<br>以下2つのコンフィグファイルは更新のないため、退避したコンフィグを上書きしてください。
+| 更新のないコンフィグファイル名                               |
+| :----------------------------------------------------------- |
+| connector-main/swagger_server/configs/ftp.json               |
+| connector-main/swagger_server/configs/http.json              |
+
+<br>
 
 5. 利用者コネクタ起動
 <br>[利用者コネクタ起動手順](#利用者コネクタ起動手順) 参照
@@ -403,24 +396,60 @@ sh setup.sh
   ※urlの最大文字数は255バイト
 
 (5) 認証および認可をおこなう場合
+- 認可機能構築
+<br>認可機能の構築については、[別紙参照](misc/authorization/README.md)<br>
+
 - authorization.json
   <br>connector/src/provider/authorization/swagger_server/configs/に配置<br>
   認証および認可時の接続先を記載してください。<br>
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
-  | authorization_server_url           | 認可サーバのアクセスURL                                         |
+  | authorization_server_url           | 認可機能のアクセスURL                                         |
 
 - connector.json
-  connector/src/provider/connector-main/swagger_server/configs/に配置<br>
-  認可サーバに登録した提供者コネクタのIDとシークレットを記載してください。<br>
+  <br>connector/src/provider/connector-main/swagger_server/configs/に配置<br>
+  認可機能に登録した提供者コネクタのIDとシークレットを記載してください。<br>
 
   | 設定パラメータ                     | 概要                                                            |
   | :--------------------------------- | :-------------------------------------------------------------- |
   | provider_id                        | CADDEユーザID(提供者)                                           |
-  | provider_connector_id              | 認可サーバに設定した提供者コネクタのID                          |
-  | provider_connector_secret          | 認可サーバが発行した提供者コネクタのシークレット                |
+  | provider_connector_id              | 認可機能に設定した提供者コネクタのID                          |
+  | provider_connector_secret          | 認可機能が発行した提供者コネクタのシークレット                |
   | trace_log_enable                   | コネクタの詳細ログ出力有無<br>出力無の設定でも基本的な動作ログは出力されます |
+
+- カタログ検索時の認可設定
+<br>カタログ検索(詳細検索)に対して認可を行う場合は、provider_ckan.jsonのauthorizationをtrueにします。
+```
+{
+    "release_ckan_url" : "https://example.com",
+    "detail_ckan_url" : "https://example.com",
+    "authorization" : true,
+    "packages_search_for_data_exchange" : true
+}
+```
+
+- データ取得時の認可設定
+<br>提供手段に応じて、データ管理サーバのコンフィグにあるauthorizationのurlに{リソースURL}に含まれるURLを指定し、authorizationのenableをtrueに設定します。
+```
+http.jsonおよびftp.json
+    "authorization": [
+        {
+            "url": "{リソースURLに含まれるURL文字列}",
+            "enable" : true
+        }
+    ],
+
+ngsi.json
+    "authorization": [
+        {
+            "url": "{リソースURLに含まれるURL文字列}",
+            "tenant": "{NGSIテナント}",
+            "servicepath": "{NGSIサービスパス}",
+            "enable" : true
+        }
+    ],
+```
 
 (6) 来歴管理をおこなう場合
 - provenance.json
@@ -494,7 +523,7 @@ provider_catalog_search          "python3 -m swagger_…"   provider-catalog-sea
 provider_connector_main          "python3 -m swagger_…"   provider-connector-main          running             8080/tcp
 provider_data_exchange           "python3 -m swagger_…"   provider-data-exchange           running             8080/tcp
 provider_provenance_management   "python3 -m swagger_…"   provider-provenance-management   running             8080/tcp
-reverse-proxy                    "/docker-entrypoint.…"   reverse-proxy                    running             0.0.0.0:443->443/tcp, :::443->443/tcp
+provider_reverse-proxy           "/docker-entrypoint.…"   provider-reverse-proxy           running             0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp, :::80->80/tcp, :::443->443/tcp
 ```
 <br>
 
@@ -530,17 +559,7 @@ docker-compose -p provider down
 ```
 
 2. コンフィグ類の退避
-<br>V3.0とV4.0で更新のあるコンフィグは以下となります。
 <br>各コンフィグを任意のディレクトリへ退避してください。
-
-| V3.0のコンフィグファイル                                               | V4.0のコンフィグファイル                                 | 更新内容                                                                                      |
-| :--------------------------------------------------------------------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------------------- |
-| authentication-authorization/swagger_server/configs/authorization.json | authorization/swagger_server/configs/authorization.json  | コンテナ名の変更<br>既存設定全削除<br>authorization_server_urlの追加                          |
-| connector-main/swagger_server/configs/ckan.json                        | connector-main/swagger_server/configs/provider_ckan.json | コンフィグファイル名の変更<br>authorizationの追加<br>packages_search_for_data_exchangeの追加  |
-| connector-main/swagger_server/configs/connector.json                   | connector-main/swagger_server/configs/connector.json     | contract_management_service_urlの削除<br>contract_management_service_keyの削除<br>history_management_tokenの削除<br>trace_log_enableの追加            |
-| connector-main/swagger_server/configs/ftp.json                         | connector-main/swagger_server/configs/ftp.json           | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加         |
-| connector-main/swagger_server/configs/http.json                        | connector-main/swagger_server/configs/http.json          | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加         |
-| connector-main/swagger_server/configs/ngsi.json                        | connector-main/swagger_server/configs/ngsi.json          | ngsi_authからauthorizationフィールド削除<br>authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
 ```
 cd src/provider/
 cp authentication-authorization/swagger_server/configs/authorization.json	{任意のディレクトリ}
@@ -558,17 +577,16 @@ git pull
 ```
 
 4. コンフィグ類のマージ
-<br>退避したコンフィグを元に、[提供者コネクタ構築手順のコンフィグ設定](#提供者コネクタ構築手順) を参考に設定してください。
-```
-# 更新のあるコンフィグ
-vim authorization/swagger_server/configs/authorization.json
-vim connector-main/swagger_server/configs/provider_ckan.json
-vim connector-main/swagger_server/configs/connector.json
-vim connector-main/swagger_server/configs/ftp.json
-vim connector-main/swagger_server/configs/http.json
-vim connector-main/swagger_server/configs/ngsi.json
-vim provenance-management/swagger_server/configs/provenance.json
-```
+<br>V3.0とV4.0で更新のあるコンフィグは以下となります。
+<br>[提供者コネクタ構築手順のコンフィグ設定](#提供者コネクタ構築手順) を参考に設定してください。
+| V3.0のコンフィグファイル名                                             | V4.0のコンフィグファイル名                               | コンフィグファイル内容の変更点                                                                |
+| :--------------------------------------------------------------------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------------------- |
+| authentication-authorization/swagger_server/configs/authorization.json | authorization/swagger_server/configs/authorization.json  | コンテナ名の変更<br>既存設定全削除<br>authorization_server_urlの追加                          |
+| connector-main/swagger_server/configs/ckan.json                        | connector-main/swagger_server/configs/provider_ckan.json | コンフィグファイル名の変更<br>authorizationの追加<br>packages_search_for_data_exchangeの追加  |
+| connector-main/swagger_server/configs/connector.json                   | connector-main/swagger_server/configs/connector.json     | contract_management_service_urlの削除<br>contract_management_service_keyの削除<br>history_management_tokenの削除<br>trace_log_enableの追加            |
+| connector-main/swagger_server/configs/ftp.json                         | connector-main/swagger_server/configs/ftp.json           | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加         |
+| connector-main/swagger_server/configs/http.json                        | connector-main/swagger_server/configs/http.json          | authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加         |
+| connector-main/swagger_server/configs/ngsi.json                        | connector-main/swagger_server/configs/ngsi.json          | ngsi_authからauthorizationフィールド削除<br>authorizationの追加<br>contract_management_serviceの追加<br>register_provenanceの追加            |
 
 5. 提供者コネクタ起動
 <br>[提供者コネクタ起動手順](#提供者コネクタ起動手順) 参照
@@ -577,140 +595,6 @@ vim provenance-management/swagger_server/configs/provenance.json
 <br>
 
 ## 提供者コネクタ利用ガイド
-
-### 提供者内で認証なし・認可なしでの提供者コネクタ動作確認
-
-<br>提供者コネクタの外部API経由で、データ管理サーバ(HTTP or FTP or NGSI)からデータを取得できることを確認する方法を以下に示します。<br>
-{リソースURL}には、詳細検索用CKAN登録済みで提供者コネクタからアクセス可能なデータ管理サーバのデータアクセス先を指定します<br>
-提供者コネクタのデータ管理サーバコンフィグ(http.json、ftp.json、ngsi.json)の認可設定、取引市場使用有無設定、来歴登録設定に該当のリソースURLを記載し、enableをfalseに指定してください。<br>
-- 例1: `ftp://192.168.0.1/xxx.pdf`
-```
-ftp.json
-    "authorization": [
-        {
-            "url": "ftp://192.168.0.1/",
-            "enable" : false
-        }
-    ],
-    "contract_management_service": [
-        {
-            "url": "ftp://192.168.0.1/",
-            "enable" : false
-        }
-    ],
-    "register_provenance": [
-        {
-            "url": "ftp://192.168.0.1/",
-            "enable" : false
-        }
-    ]
-```
-- 例2: `http://192.168.0.1/auth/xxx.csv`
-```
-http.json
-    "authorization": [
-        {
-            "url": "http://192.168.0.1/auth/",
-            "enable" : false
-        }
-    ],
-    "contract_management_service": [
-        {
-            "url": "http://192.168.0.1/auth/",
-            "enable" : false
-        }
-    ],
-    "register_provenance": [
-        {
-            "url": "http://192.168.0.1/auth/",
-            "enable" : false
-        }
-    ]
-```
-
-(1) データ管理サーバ(HTTPサーバ)を提供者コネクタAPI経由で取得する場合
-```
-curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/http" -O
-```
-
-(2) データ管理サーバ(FTPサーバ)を提供者コネクタAPI経由で取得する場合
-```
-curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/ftp" -O
-```
-
-(3) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
-<br>NGSI情報取得については、[別紙参照](doc/README_NGSI.md) 
-
-<br>
-
-### 認可について
-<br>認可機能を使用する場合は、認可サーバを構築して認可設定を行い、提供者コネクタ内のコンフィグを適切に設定します。
-<br>※認可機能を使用する場合、認証は必須となります。
-
-1. 認可サーバ構築
-<br>認可サーバの構築については、[別紙参照](misc/authorization/README.md)<br>
-
-2. 認可設定
-<br>構築した認可サーバ画面、または、[CLI](doc/ProviderManual.md)にて認可設定を行う。<br>
-※カタログ検索(詳細検索)に対して認可を行う場合は、{リソースURL}に指定するURLをprovider_ckan.jsonのdetail_ckan_urlに指定しているCKANのURLを設定してください。<br>
-- CLIでの認可設定コマンド
-```
-curl -v -X POST https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" \
- -d '{
-  "permission": {
-    "target": "{リソースURL}",
-    "assigner": "{CADDEユーザID(提供者)}",
-    "assignee": {
-      "user": "{CADDEユーザID(利用者) [オプション]}",
-      "org": "{組織のCADDEユーザID [オプション]}",
-      "aal": 2,
-      "extras": "{その他の属性 [オプション]}"
-    }
-  },
-  "contract": {
-    "trade_id": "",
-    "contract_url": "",
-    "contract_type": ""
-  }
-}' 
-```
-
-3. 提供者コネクタ内のコンフィグ設定
-
-(1) カタログ検索時の認可設定
-<br>カタログ検索(詳細検索)に対して認可を行う場合は、provider_ckan.jsonのauthorizationをtrueにします。
-```
-{
-    "release_ckan_url" : "https://example.com",
-    "detail_ckan_url" : "https://example.com",
-    "authorization" : true,
-    "packages_search_for_data_exchange" : true
-}
-```
-
-(2) データ取得時の認可設定
-<br>提供手段に応じて、データ管理サーバのコンフィグにあるauthorizationのurlに{リソースURL}に含まれるURLを指定し、authorizationのenableをtrueに設定します。
-```
-http.jsonおよびftp.json
-    "authorization": [
-        {
-            "url": "{リソースURLに含まれるURL文字列}",
-            "enable" : true
-        }
-    ],
-
-ngsi.json
-    "authorization": [
-        {
-            "url": "{リソースURLに含まれるURL文字列}",
-            "tenant": "{NGSIテナント}",
-            "servicepath": "{NGSIサービスパス}",
-            "enable" : true
-        }
-    ],
-```
-
-
 <br>提供者コネクタの利用方法については下記参照。<br>
 [提供者環境構築ガイド](doc/ProviderManual.md "提供者環境構築ガイド")
 

@@ -28,7 +28,73 @@
 - リソース提供手段の識別子 (resources:caddec_resource_type): カタログ項目を設定しない。
 - コネクタ利用の要否 (resources:caddec_contract_required): notRequired または requiredを設定
 
-## 4. リソース認可設定
+## 4. 提供者内で認証なし・認可なしでの提供者コネクタ動作確認
+
+<br>提供者コネクタの外部API経由で、データ管理サーバ(HTTP or FTP or NGSI)からデータを取得できることを確認する方法を以下に示します。<br>
+{リソースURL}には、詳細検索用CKAN登録済みで提供者コネクタからアクセス可能なデータ管理サーバのデータアクセス先を指定します<br>
+提供者コネクタのデータ管理サーバコンフィグ(http.json、ftp.json、ngsi.json)の認可設定、取引市場使用有無設定、来歴登録設定に該当のリソースURLを記載し、enableをfalseに指定してください。<br>
+- 例1: `ftp://192.168.0.1/xxx.pdf`
+```
+ftp.json
+    "authorization": [
+        {
+            "url": "ftp://192.168.0.1/",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url": "ftp://192.168.0.1/",
+            "enable" : false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url": "ftp://192.168.0.1/",
+            "enable" : false
+        }
+    ]
+```
+- 例2: `http://192.168.0.1/auth/xxx.csv`
+```
+http.json
+    "authorization": [
+        {
+            "url": "http://192.168.0.1/auth/",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url": "http://192.168.0.1/auth/",
+            "enable" : false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url": "http://192.168.0.1/auth/",
+            "enable" : false
+        }
+    ]
+```
+
+(1) データ管理サーバ(HTTPサーバ)を提供者コネクタAPI経由で取得する場合
+```
+curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/http" -O
+```
+
+(2) データ管理サーバ(FTPサーバ)を提供者コネクタAPI経由で取得する場合
+```
+curl {提供者コネクタIPアドレス}/cadde/api/v4/file -H "x-cadde-resource-url:{リソースURL}" -H "x-cadde-resource-api-type:file/ftp" -O
+```
+
+(3) データ管理サーバ(NGSIサーバ)を提供者コネクタ経由で公開する場合
+<br>NGSI情報取得については、[別紙参照](doc/README_NGSI.md) 
+
+<br>
+
+
+## 5. リソース認可設定
 　提供者環境内のリソースに対して、アクセス許可を与える場合は、認可サーバに対して認可設定を設定する必要があります。
 　(1)アクセストークン取得APIを使用し、トークン取得後、（2-1)認可設定APIにより、指定したリソースに対する認可設定、(2-2)認可削除APIにより、指定したリソースに対する認可削除を行えます。
  
@@ -127,5 +193,4 @@ curl -v -X GET https://{提供者コネクタのFQDN}:{ポート番号}/cadde/ap
 - [SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx](catalog/SIPデータカタログ項目仕様V2.0(2022年3月31日版).xlsx)
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pdf](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版).pdf)
 - [SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx](catalog/SIPデータカタログ項目仕様V2.0ガイドライン(2022年3月31日版)付録_横断検索解説.xlsx)
-
 

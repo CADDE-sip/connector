@@ -100,7 +100,6 @@ authz_postgres      "docker-entrypoint.s…"   postgres            running      
 WebブラウザのアドレスバーにURLを入力することでアクセスする。<br>
 URLに関しては認可機能を起動しているマシンのIPアドレス／ドメイン名とする。<br>
 ポート番号に関しては、docker-compose.yamlのservices.nginx.portsで設定したものを指定すること。<br>
-例：　http://example.jp:8001
 
 ### 認可機能操作方法
 
@@ -152,3 +151,28 @@ Web画面のトップ画面に表示されている「ログイン」ボタン�
 正常に登録された認可は「認可一覧」画面にて確認することができる。
 
 ![Alt text](doc/png/registration.png?raw=true "認可登録")
+
+
+### CLIを用いての認可設定
+<br>CLIにて認可設定を行う場合は、以下のコマンドを使用する。<br>
+```
+curl -v -X POST https://{提供者コネクタのFQDN}:{ポート番号}/cadde/api/v4/authorization -H "Content-Type: application/json" -H "Authorization:Bearer {認証トークン}" \
+ -d '{
+  "permission": {
+    "target": "{リソースURL}",
+    "assigner": "{CADDEユーザID(提供者)}",
+    "assignee": {
+      "user": "{CADDEユーザID(利用者) [オプション]}",
+      "org": "{組織のCADDEユーザID [オプション]}",
+      "aal": 2,
+      "extras": "{その他の属性 [オプション]}"
+    }
+  },
+  "contract": {
+    "trade_id": "",
+    "contract_url": "",
+    "contract_type": ""
+  }
+}' 
+```
+
