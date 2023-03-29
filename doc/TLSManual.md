@@ -94,7 +94,7 @@ docker compose -f docker-compose_initial.yml down
 利用者コネクタに対するアクセス制限を行う場合は、SSL/TLS認証を行う。<br>
 
 1. サーバー証明書、秘密鍵、クライアント認証用CA証明書準備
-サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置する。<br>
+<br>サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置する。<br>
 ```
 connector/src/consumer/nginx/volumes/ssl/
 ```
@@ -171,7 +171,7 @@ server{
 提供者コネクタに対するアクセス制限を行う場合は、SSL/TLS認証を行う。<br>
 
 1. サーバー証明書、秘密鍵、クライアント認証用CA証明書準備
-サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置する。<br>
+<br>サーバー証明書、秘密鍵、クライアント認証用CA証明書を下記ディレクトリに配置する。<br>
 ```
 connector/src/provider/nginx/volumes/ssl/
 ```
