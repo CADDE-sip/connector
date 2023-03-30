@@ -5,6 +5,6 @@
   "authz_keycloak_url": "",
   "authn_url": "",
   "authn_keycloak_url": "",
-  "authn_realm_name": "",
-  "subject_issuer": ""
+  "authn_realm_name": "authentication",
+  "subject_issuer": "authentication"
 }
