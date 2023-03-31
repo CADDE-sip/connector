@@ -2,7 +2,7 @@ version: "3"
 services:
   consumer-catalog-search:
     build: catalog-search
-    image: consumer/catalog-search:3.0.0
+    image: consumer/catalog-search:4.0.0
     hostname: consumer_catalog_search
     container_name: consumer_catalog_search
     restart: always
@@ -14,14 +14,14 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   consumer-connector-main:
     build: connector-main
-    image: consumer/connector-main:3.0.0
+    image: consumer/connector-main:4.0.0
     hostname: consumer_connector_main
     container_name: consumer_connector_main
     restart: always
@@ -30,19 +30,17 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
-    ports:
-      - "80:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   consumer-data-exchange:
     build: data-exchange
-    image: consumer/data-exchange:3.0.0
+    image: consumer/data-exchange:4.0.0
     hostname: consumer_data_exchange
     container_name: consumer_data_exchange
     restart: always
@@ -54,16 +52,16 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  authentication-authorization:
-    build: authentication-authorization
-    image: consumer/authentication-authorization:3.0.0
-    hostname: consumer_authentication_authorization
-    container_name: consumer_authentication_authorization
+  consumer-authentication:
+    build: authentication
+    image: consumer/authentication:4.0.0
+    hostname: consumer_authentication
+    container_name: consumer_authentication
     restart: always
     logging:
       driver: "json-file" # defaults if not specified
@@ -72,15 +70,15 @@ services:
         max-file: "10"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "./authentication-authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./authentication/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
-  provenance-management:
+  consumer-provenance-management:
     build: provenance-management
-    image: consumer/provenance-management:3.0.0
+    image: consumer/provenance-management:4.0.0
     hostname: consumer_provenance_management
     container_name: consumer_provenance_management
     restart: always
@@ -92,8 +90,28 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./provenance-management/swagger_server/:/usr/src/app/swagger_server/:ro"
-      - "/etc/docker/certs.d/:/etc/docker/certs.d/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
     environment:
       - LC_CTYPE=${LC_CTYPE}
       - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-forward-proxy:
+    container_name: consumer_forward-proxy
+    image: cadde-squid:4.0.0
+    hostname: forward_proxy
+    volumes:
+      - ./squid/volumes/squid.conf:/etc/squid/conf.d/default.conf
+      - ./squid/volumes/ssl:/etc/squid/ssl
+      - ./squid/volumes/ssl_db:/var/lib/squid/ssl_db
+    restart: always
+  consumer-reverse-proxy:
+    container_name: consumer_reverse-proxy
+    image: nginx:1.23.1
+    volumes:
+      - ./nginx/volumes/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/volumes/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/volumes/ssl:/etc/nginx/ssl
+    ports:
+      - 443:443
+      - 80:80
+    restart: always

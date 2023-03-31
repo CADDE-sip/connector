@@ -40,8 +40,8 @@ class ExternalInterface:
             response : get通信のレスポンス
 
         Raises:
-            CaddeException: 本処理中にExceptionが発生した場合 エラーコード: 01002E
-            CaddeException: タイムアウトが発生した場合 エラーコード: 01006E
+            CaddeException: 本処理中にExceptionが発生した場合 エラーコード: 000001001E
+            CaddeException: タイムアウトが発生した場合 エラーコード: 000001002E
 
         """
 
@@ -61,11 +61,11 @@ class ExternalInterface:
                 params=post_body)
 
         except Timeout:
-            raise CaddeException('01006E')
+            raise CaddeException('000001001E')
 
         except Exception as e:
             raise CaddeException(
-                '01002E',
+                '000001002E',
                 status_code=None,
                 replace_str_list=[e])
 
@@ -90,8 +90,8 @@ class ExternalInterface:
             response : gpost通信のレスポンス
 
         Raises:
-            CaddeException: 本処理中にExceptionが発生した場合 エラーコード: 01002E
-            CaddeException: タイムアウトが発生した場合 エラーコード: 01006E
+            CaddeException: 本処理中にExceptionが発生した場合 エラーコード: 000002001E
+            CaddeException: タイムアウトが発生した場合 エラーコード: 000002002E
 
         """
 
@@ -105,8 +105,8 @@ class ExternalInterface:
 
         req = requests
         if not verify:
-           req = requests.Session()
-           req.verify = False
+            req = requests.Session()
+            req.verify = False
 
         try:
             if 'Content-Type' in headers and headers['Content-Type'] == 'application/x-www-form-urlencoded':
@@ -130,11 +130,11 @@ class ExternalInterface:
                     json=post_body
                 )
         except Timeout:
-            raise CaddeException('01006E')
+            raise CaddeException('000002001E')
 
         except Exception as e:
             raise CaddeException(
-                '01002E',
+                '000002002E',
                 status_code=None,
                 replace_str_list=[e])
 
@@ -150,7 +150,12 @@ class ExternalInterface:
         対象URLに対してftp通信を行ってレスポンスを取得する。
 
         Args:
-            parsed_resource_url dict : 解析後リソースURL {'access_point':(接続先), 'port_no':(ポート番号), 'directory':(ディレクトリ), 'file_name':(ファイル名)}
+            parsed_resource_url dict : 解析後リソースURL {
+                'access_point':(接続先),
+                'port_no':(ポート番号),
+                'directory':(ディレクトリ),
+                'file_name':(ファイル名)
+                 }
             ftp_id : FTP接続時に利用するID
             ftp_pass : FTP接続時に利用するパスワード
 
@@ -173,8 +178,7 @@ class ExternalInterface:
             if len(parsed_resource_url['directory']) > 0:
                 ftp.cwd(parsed_resource_url['directory'])
             ftp.retrbinary(
-                'RETR ' +
-                parsed_resource_url['file_name'],
+                'RETR ' + parsed_resource_url['file_name'],
                 file_byte.write)
 
         file_byte.seek(0)

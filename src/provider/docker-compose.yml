@@ -2,7 +2,7 @@ version: "3"
 services:
   provider-catalog-search:
     build: catalog-search
-    image: provider/catalog-search:3.0.0
+    image: provider/catalog-search:4.0.0
     hostname: provider_catalog_search
     container_name: provider_catalog_search
     restart: always
@@ -11,8 +11,6 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
-    ports:
-      - "28080:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
@@ -20,7 +18,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   provider-connector-main:
     build: connector-main
-    image: provider/connector-main:3.0.0
+    image: provider/connector-main:4.0.0
     hostname: provider_connector_main
     container_name: provider_connector_main
     restart: always
@@ -36,7 +34,7 @@ services:
       - "LC_CTYPE=C.UTF-8"
   provider-data-exchange:
     build: data-exchange
-    image: provider/data-exchange:3.0.0
+    image: provider/data-exchange:4.0.0
     hostname: provider_data_exchange
     container_name: provider_data_exchange
     restart: always
@@ -45,18 +43,16 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
-    ports:
-      - "38080:8080"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
     environment:
       - "LC_CTYPE=C.UTF-8"
-  provider-authentication-authorization:
-    build: authentication-authorization
-    image: provider/authentication-authorization:3.0.0
-    hostname: provider_authentication_authorization
-    container_name: provider_authentication_authorization
+  provider-authorization:
+    build: authorization
+    image: provider/authorization:4.0.0
+    hostname: provider_authorization
+    container_name: provider_authorization
     restart: always
     logging:
       driver: "json-file" # defaults if not specified
@@ -65,12 +61,12 @@ services:
         max-file: "10"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "./authentication-authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./authorization/swagger_server/:/usr/src/app/swagger_server/:ro"
     environment:
       - "LC_CTYPE=C.UTF-8"
   provider-provenance-management:
     build: provenance-management
-    image: provider/provenance-management:3.0.0
+    image: provider/provenance-management:4.0.0
     hostname: provider_provenance_management
     container_name: provider_provenance_management
     restart: always
@@ -84,3 +80,14 @@ services:
       - "./provenance-management/swagger_server/:/usr/src/app/swagger_server/:ro"
     environment:
       - "LC_CTYPE=C.UTF-8"
+  provider-reverse-proxy:
+    container_name: provider_reverse-proxy
+    image: nginx:1.23.1
+    volumes:
+      - ./nginx/volumes/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/volumes/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/volumes/ssl:/etc/nginx/ssl
+    ports:
+      - 443:443
+      - 80:80
+    restart: always

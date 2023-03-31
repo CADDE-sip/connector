@@ -1,17 +1,17 @@
 openapi: 3.0.0
 info:
-  title: CADDE v3 Specification 利用者 コネクタメイン
-  version: "3.0"
+  title: CADDE v4 Specification 利用者 コネクタメイン
+  version: "4.0"
 servers:
 - url: /
 paths:
-  /api/3/action/package_search:
+  /cadde/api/v4/catalog:
     get:
       tags:
       - Search
       summary: API. カタログ検索
       description: |-
-        提供者カタログサイトからCKANカタログ情報を取得する。
+        カタログ情報を取得する。APIユーザが指定した条件に従いカタログ情報を取得する。
 
         Response:
         * 処理が成功した場合は200を返す。
@@ -26,6 +26,14 @@ paths:
         required: false
         style: form
         explode: true
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認証トークン
+        required: false
+        style: simple
+        explode: false
         schema:
           type: string
       - name: x-cadde-search
@@ -48,24 +56,6 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-idp-url
-        in: header
-        description: |-
-         IdPのURL
-         ユーザ認証を行うIdPのURLを設定する。
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: Authorization
-        in: header
-        description: 利用者トークン
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
       responses:
         "200":
           description: CKANから取得したカタログ情報を返す
@@ -81,46 +71,31 @@ paths:
                   results: {}
                   search_facets: {}
         "400":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: パラメータ不正：パラメータ確認時に必須パラメータが存在しない場合のエラーメッセージ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: 検索種別確認時に不正な値が設定されている場合
                   value:
-                    detail: Missing header parameter (パラメータ名)
+                    detail: 検索種別の値が不正です。リクエストパラメータの値を確認してください。
                     status: 400
-                    title: Bad Request
-                    type: about:blank
-        "401":
-          description: |-
-            認証失敗の場合のエラーメッセージ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: 利用者確認処理でエラーが発生しました。
-                    status: 401
                     title: ""
                     type: ""
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
+        "403":
+          description: 認証情報不正の場合のエラーメッセージ
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: 認証I/F 認証トークン取得処理で認証サーバへのトークンフェデレーションを行い、対象トークンが不正の場合
                   value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
+                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の認証トークンは使用できません。リクエストパラメータに設定した認証トークンを確認してください。
+                    status: 403
                     title: ""
                     type: ""
         "500":
@@ -131,28 +106,39 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: ロケーション情報から提供者カタログ検索コネクタURLが取得できなかった場合
                   value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
+                    detail: 取得したコネクタロケーションから、提供者カタログ検索コネクタURLが取得できませんでした。CADDE管理者に問い合わせてください。
                     status: 500
                     title: ""
                     type: ""
       x-openapi-router-controller: swagger_server.controllers.search_controller
-  /cadde/api/v1/file:
+  /cadde/api/v4/file:
     get:
       tags:
       - Files
-      summary: API. データ取得I/F（CADDE）
+      summary: API. データ取得（CADDE）
       description: |-
-        CADDEインタフェースを用いて、HTTPサーバ、FTPサーバからファイルを取得する。
+        リソースURLに指定されたデータを取得する。
 
         Response:
         * 処理が成功した場合は200を返す。
         * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
       operationId: files
       parameters:
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認証トークン
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
       - name: x-cadde-resource-url
         in: header
-        description: リソースURL
+        description: |-
+          リソースURL
+          （認可ありの限定データの場合、文字長は255文字以内。使用可能文字は半角英数、ハイフン、アンダーバーのみ）
         required: true
         style: simple
         explode: false
@@ -178,24 +164,6 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-idp-url
-        in: header
-        description: |-
-         IdPのURL
-         ユーザ認証を行うIdPのURLを設定する。
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: Authorization
-        in: header
-        description: 利用者トークン
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
       responses:
         "200":
           description: ダウンロードしたファイルと認証情報
@@ -206,103 +174,66 @@ paths:
               explode: false
               schema:
                 type: string
-          content:
-            application/octet-stream:
+            x-cadde-provenance-management-service-url:
+              description: 来歴管理サービスURL
+              style: simple
+              explode: false
               schema:
                 type: string
-                format: binary
-                x-content-type: application/octet-stream
+            x-cadde-contract-id:
+              description: 取引ID
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-type:
+              description: 契約形態
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-management-service-url:
+              description: 契約管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
               example: text or csv or pdf etc..
         "400":
-          description: パラメータ不正の場合のエラーメッセージ
+          description: パラメータ不正：パラメータ確認時に必須パラメータが存在しない場合のエラーメッセージ
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: リソース提供手段識別子確認時に不正な値が設定されている場合
                   value:
-                    detail: Missing header parameter (パラメータ名)
+                    detail: リソース提供手段識別子の値が不正です。リクエストパラメータの値を確認してください。
                     status: 400
-                    title: Bad Request
-                    type: about:blank
-        "401":
-          description: |-
-           * 認証失敗の場合のエラーメッセージ
-           * 契約状態確認処理での契約無しの場合のエラーメッセージ(2022年3月版では未使用)
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: 利用者確認処理でエラーが発生しました。
-                    status: 401
                     title: ""
                     type: ""
         "403":
-          description: ベーシック認証に失敗した場合のエラーメッセージ
+          description: 認証情報不正の場合のエラーメッセージ
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: 認証I/F 認証トークン取得処理で認証サーバへのトークンフェデレーションを行い、対象トークンが不正の場合
                   value:
-                    detail: 接続時に認証に失敗しました。サイト管理者に問い合わせてください。
+                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の認証トークンは使用できません。リクエストパラメータに設定した認証トークンを確認してください。
                     status: 403
-                    title: ""
-                    type: ""
-        "404":
-          description: |-
-            * FTP接続で指定したディレクトリにファイルが存在しない場合のエラーメッセージ
-            * HTTPS接続で指定したURLにファイルが存在しない場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: ファイルが見つかりませんでした。サイト管理者に問い合わせてください。
-                    status: 404
-                    title: ""
-                    type: ""
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
                     title: ""
                     type: ""
         "500":
           description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
           content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
@@ -314,7 +245,7 @@ paths:
                     title: ""
                     type: ""
       x-openapi-router-controller: swagger_server.controllers.files_controller
-  /v2/entities:
+  /cadde/api/v4/entities:
     get:
       tags:
       - Entities
@@ -327,10 +258,19 @@ paths:
         * 処理に失敗した場合は、2xxでないコードを返す。場合によりエラーを示すペイロードがつく場合もある。  Responsesセクションを参照すること。
       operationId: retrieve_entity
       parameters:
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認証トークン
+        required: false
+        style: simple
+        explode: false
+        schema:
+          type: string
       - name: x-cadde-resource-url
         in: header
         description: |-
          リソースURL
+         （認可ありの限定データの場合、文字長は255文字以内。使用可能文字は半角英数、ハイフン、アンダーバーのみ）
          指定可能なリソースURLは以下とする
          * http://{ドメイン名}/v2/entities?type={entityType}
            entityTypeで指定したtypeを持つエンティティの一覧を取得する。entityTypeを指定しない場合はエラーを返す。
@@ -361,28 +301,10 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-idp-url
-        in: header
-        description: |-
-         IdPのURL
-         ユーザ認証を行うIdPのURLを設定する。
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: Authorization
-        in: header
-        description: 利用者トークン
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
       - name: x-cadde-options
         in: header
         description: |-
-         APIごとに利用する固有のオプション
+         NGSIオプション
          本APIを利用するにあたり、リクエストヘッダが必要となる場合、ヘッダの内容を以下のように指定する。ただし、ヘッダの値に ,(カンマ)を含むものは指定できない。
           "x-cadde-options": "ヘッダ項目:ヘッダの値, ヘッダ項目:ヘッダの値, …"
         required: false
@@ -397,6 +319,30 @@ paths:
           headers:
             x-cadde-provenance:
               description: 来歴管理I/Fから受領した識別情報
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-provenance-management-service-url:
+              description: 来歴管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-id:
+              description: 取引ID
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-type:
+              description: 契約形態
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-management-service-url:
+              description: 契約管理サービスURL
               style: simple
               explode: false
               schema:
@@ -418,15 +364,19 @@ paths:
                           value: 2
                           type: Number
         "400":
-          description: パラメータ不正
+          description: パラメータ不正：パラメータ確認時に必須パラメータが存在しない場合のエラーメッセージ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: リソース提供手段識別子確認時に不正な値が設定されている場合
                   value:
-                    error-message: パラメータが不正です。
+                    detail: リソース提供手段識別子の値が不正です。リクエストパラメータの値を確認してください。
+                    status: 400
+                    title: ""
+                    type: ""
         "401":
           description: データ管理サーバ（NGSI）のAPI実行時に使用するアクセストークンが不正
           content:
@@ -447,6 +397,20 @@ paths:
                 response:
                   value:
                     error-message: 指定したリソースが見つかりませんでした。
+        "403":
+          description: 認証情報不正の場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  summary: 認証I/F 認証トークン取得処理で認証サーバへのトークンフェデレーションを行い、対象トークンが不正の場合
+                  value:
+                    detail: エラーが発生しました。エラー内容:認証トークン取得処理を行いましたが、対象の認証トークンは使用できません。リクエストパラメータに設定した認証トークンを確認してください。
+                    status: 403
+                    title: ""
+                    type: ""
         "409":
           description: |-
            リクエストが競合したことを示す。
@@ -467,199 +431,18 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: ロケーション情報から提供者データ交換コネクタURLが取得できなかった場合
                   value:
-                    error-message: エラーが発生しました。エラー:(エラー内容)
+                    detail: 取得したコネクタロケーションから、提供者データ交換コネクタURLが取得できませんでした。CADDE管理者に問い合わせてください。
+                    status: 500
+                    title: ""
+                    type: ""
       x-openapi-router-controller: swagger_server.controllers.entities_controller
-  /cadde/api/v1/history/lineage:
-    get:
-      tags:
-      - Lineage
-      summary: API. 来歴確認呼び出し
-      description: |-
-       指定された交換実績記録用リソースIDから始まる来歴情報を取得する。
-
-        Response:
-        * 処理が成功した場合は200を返す。
-        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
-      operationId: lineage
-      parameters:
-      - name: x-caddec-resource-id-for-provenance
-        in: header
-        description: 交換実績記録用リソースID
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-direction
-        in: header
-        description: |-
-         履歴取得方向
-         [BACKWARD(=default),FORWARD, BOTH]
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
-          default: BACKWARD
-      - name: x-depth
-        in: header
-        description: |-
-         検索深度
-         交換実績記録用リソースIDで指定されたイベントからの深さ。 0は、交換実績記録用リソースIDで指定されたイベントを要求します。
-         正の整数は、指定されたレコードから指定された深さ以下のである全てのイベントを要求します。 -1は、指定されたイベントから到達可能な全てのイベントを要求します。
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: integer
-          format: int32
-          default: -1
-      responses:
-        "200":
-          description: 一致するイベント
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CDLEventList'
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
-      x-openapi-router-controller: swagger_server.controllers.lineage_controller
-  /cadde/api/v1/history/searchevents:
-    post:
-      tags:
-      - Searchevents
-      summary: API. 履歴ID検索呼び出し
-      description: |-
-       ボディ部に設定した検索条件を基に履歴情報を取得する。
-       ヘッダに`content-type: application/json` を追加してください。
-
-        Response:
-        * 処理が成功した場合は200を返す。
-        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
-      operationId: searchevents
-      requestBody:
-        description: |-
-          CouchDBの構文です。 右記を参照してください。 https://docs.couchdb.org/en/stable/api/database/find.html#find-selectors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/body'
-            example:
-              selector:
-                cdltimestamp:
-                  $gte: 2020-07-19T00:00:00+09:00
-                  $lt: 2020-08-19T00:00:00+09:00
-                cdldatatags:
-                  $elemMatch:
-                    cdlsize:
-                      $gte: 1048576
-        required: true
-      responses:
-        "200":
-          description: |-
-           一致するイベントのリスト（※リスト内の順序は不定な順序）
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CDLEventList'
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
-      x-openapi-router-controller: swagger_server.controllers.searchevents_controller
 components:
   schemas:
+    File:
+      title: HTTPステータスコードが200の場合のレスポンス
+      type: string
     ErrorResponse:
       required:
       - detail

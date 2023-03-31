@@ -1,5 +1,6 @@
 {
     "consumer_connector_id" : "test_consumer_connector_id",
     "consumer_connector_secret" : "test_consumer_connector_secret",
-    "history_management_token" : "test_history_management_token"
+    "location_service_url" : "https://testexample.com",
+    "trace_log_enable" : true
 }

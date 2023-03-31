@@ -1,0 +1,121 @@
+openapi: 3.0.0
+info:
+  title: CADDE v4 Specification 利用者 認証I/F
+  version: "4.0"
+servers:
+- url: /
+paths:
+  /token_introspect:
+    get:
+      tags:
+      - TokenIntrospect
+      summary: API.認証トークン検証
+      description: |-
+        認証サーバに対して、トークンイントロスペクションを行い、CADDEユーザID（利用者）を返す。
+        
+        Response:
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
+      operationId: token_introspect
+      parameters:
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認証トークン
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-consumer-connector-id
+        in: header
+        description: 利用者コネクタID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-consumer-connector-secret
+        in: header
+        description: 利用者コネクタのシークレット
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ヘッダ情報にCADDEユーザID(利用者)を設定
+          headers:
+            x-cadde-consumer-id:
+              description: CADDEユーザID(利用者)
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content: 
+            application/json:
+              example: ""
+        "400":
+          description: パラメータ不正の場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  value:
+                    detail: Missing header parameter (パラメータ名)
+                    status: 400
+                    title: Bad Request
+                    type: about:blank
+        "403":
+          description: 認証情報不正の場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  summary: 認証I/F 認証トークン検証処理で認証サーバへのトークンイントロスペクションを行い、対象トークンが使用できなかった場合
+                  value:
+                    detail: 認証処理を行いましたが、対象のトークンは使用できません。リクエストパラメータに設定した利用者トークンを確認してください。
+                    status: 403
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  summary: コンフィグファイルに必須パラメータが設定されていなかった場合
+                  value:
+                    detail: コンフィグファイルに(取得パラメータ)が設定されていません。利用者コネクタの設定類を確認してください。
+                    status: 500
+                    title: ""
+                    type: ""
+      x-openapi-router-controller: swagger_server.controllers.token_introspect_controller
+components:
+  schemas:
+    ErrorResponse:
+      title: HTTPステータスコードが4xx、500の場合のレスポンス
+      required:
+      - detail
+      - status
+      type: object
+      properties:
+        detail:
+          type: string
+          description: エラーメッセージ
+        status:
+          type: number
+          description: HTTPステータスコード
+        title:
+          type: string
+          description: タイトル
+        type:
+          type: string
+          description: タイプ
+

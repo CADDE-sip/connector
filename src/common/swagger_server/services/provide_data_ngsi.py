@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import io
-import json
 import urllib.request
 import ssl
 from logging import getLogger
@@ -20,6 +19,7 @@ __CONFIG_KEY_NGSI_DOMAIN = 'domain'
 __CONFIG_KEY_AUTH = 'auth'
 __URL_SPLIT_CHAR = '/'
 
+
 def provide_data_ngsi(resource_url, options={}):
     """
    データ管理サーバ（NGSI）からコンテキスト情報を取得して返却する。
@@ -33,19 +33,19 @@ def provide_data_ngsi(resource_url, options={}):
         dict    : レスポンスヘッダ情報 key:ヘッダ名 value:パラメータ レスポンスヘッダがない場合は空のdictを返す
 
     Raises:
-        Cadde_excption: パラメータが正常でない場合                      エラーコード: 00001E
-        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合 エラーコード: 01005E
-        Cadde_excption: 認証情報が不正の場合                            エラーコード: 08002E
-        Cadde_excption: 指定したリソースが見つからなかった場合          エラーコード: 08003E
-        Cadde_excption: 指定したリソースが複数存在する場合              エラーコード: 08004E
-        Cadde_excption: 上記以外でエラーが発生した場合                  エラーコード: 08005E
+        Cadde_excption: パラメータが正常でない場合                      エラーコード: 000401002E
+        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合 エラーコード: 000401003E
+        Cadde_excption: 認証情報が不正の場合                            エラーコード: 000401004E
+        Cadde_excption: 指定したリソースが見つからなかった場合          エラーコード: 000401005E
+        Cadde_excption: 指定したリソースが複数存在する場合              エラーコード: 000401006E
+        Cadde_excption: 上記以外でエラーが発生した場合                  エラーコード: 000401007E
 
     """
 
     if not resource_url:
         # invalid param
-        logger.debug("関数のパラメータが不正です。")
-        raise CaddeException("00001E", status_code=400)
+        logger.debug('関数のパラメータが不正です。')
+        raise CaddeException('000401002E', status_code=400)
 
     # ngsi.jsonからアクセストークン（Authorization）を取得する
     # 対象のデータ管理サーバがアクセストークン不要のケースを考慮し、
@@ -53,16 +53,16 @@ def provide_data_ngsi(resource_url, options={}):
     # エラーさせず、HTTPリクエストのヘッダに設定しない。
     ngsi_auth = __get_accesstoken_ngsi(resource_url)
 
-    logger.debug(get_message("08001N", [resource_url]))
+    logger.debug(get_message('000401001N', [resource_url]))
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS)
 
     # リソースURLに対してHTTPリクエストをGETメソッドで実行
-    req = urllib.request.Request("{}".format(resource_url))
+    req = urllib.request.Request('{}'.format(resource_url))
 
     # リクエスト時のヘッダにアクセストークン（Authorization）を追加
     if ngsi_auth:
-        req.add_header("Authorization", ngsi_auth)
+        req.add_header('Authorization', ngsi_auth)
 
     # リクエスト時のヘッダにその他のオプションを追加
     for key, value in options.items():
@@ -76,49 +76,49 @@ def provide_data_ngsi(resource_url, options={}):
             headers = dict(res.getheaders())
             # Flaskが返却するレスポンスヘッダにContent-Lengthが追加されるため、
             # Transfer-Encoding削除
-            if "Transfer-Encoding" in headers:
-                logger.debug("Transfer-Encodingを削除しました。")
-                del headers["Transfer-Encoding"]
+            if 'Transfer-Encoding' in headers:
+                logger.debug('Transfer-Encodingを削除しました。')
+                del headers['Transfer-Encoding']
 
     # HTTPリクエストでエラーした場合
     except urllib.error.HTTPError as err:
         if err.code == 400:
             # Bad Request
-            logger.debug("リクエストにエラーがありました。")
-            raise CaddeException("00001E", status_code=err.code)
+            logger.debug('リクエストにエラーがありました。')
+            raise CaddeException('000401003E', status_code=err.code)
         elif err.code == 401:
             # Unauthorized
-            logger.debug(get_message("08002E"))
-            raise CaddeException("08002E", status_code=err.code)
+            logger.debug(get_message('000401004E'))
+            raise CaddeException('000401004E', status_code=err.code)
         elif err.code == 404:
             # Not Found
-            logger.debug(get_message("08003E"))
-            raise CaddeException("08003E", status_code=err.code)
+            logger.debug(get_message('000401005E'))
+            raise CaddeException('000401005E', status_code=err.code)
         elif err.code == 409:
             # Conflict
-            logger.debug(get_message("08004E"))
-            raise CaddeException("08004E", status_code=err.code)
+            logger.debug(get_message('000401006E'))
+            raise CaddeException('000401006E', status_code=err.code)
         else:
             # Other errors
-            logger.debug(get_message("08005E", [err.reason]))
+            logger.debug(get_message('000401007E', [err.reason]))
             raise CaddeException(
-                "08005E",
+                '000401007E',
                 status_code=500,
                 replace_str_list=[
                     err.reason])
 
     except urllib.error.URLError as err:
-        logger.debug(get_message("08005E", [err.reason]))
+        logger.debug(get_message('000401007E', [err.reason]))
         raise CaddeException(
-            "08005E",
+            '000401007E',
             status_code=500,
             replace_str_list=[
                 err.reason])
 
     except Exception as err:
-        logger.debug(get_message("08005E", [err]))
+        logger.debug(get_message('000401007E', [err]))
         raise CaddeException(
-            "08005E",
+            '000401007E',
             status_code=500,
             replace_str_list=[
                 err])
@@ -138,7 +138,7 @@ def __get_accesstoken_ngsi(resource_url):
         str      : アクセストークン
 
     Raises:
-        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合 エラーコード: 01005E
+        Cadde_excption: リソースURLからドメイン情報の取得に失敗した場合 エラーコード: 000401008E
 
     """
 
@@ -149,7 +149,7 @@ def __get_accesstoken_ngsi(resource_url):
     try:
         domain = __get_domain(resource_url)
     except Exception:
-        raise CaddeException('01005E')
+        raise CaddeException('000401008E')
 
     config_get_interface = InternalInterface()
 
@@ -169,7 +169,7 @@ def __get_accesstoken_ngsi(resource_url):
     if 0 < len(ngsi_config_domain):
 
         if __CONFIG_KEY_AUTH in ngsi_config_domain:
-            if ngsi_config_domain[__CONFIG_KEY_AUTH] != "":
+            if ngsi_config_domain[__CONFIG_KEY_AUTH] != '':
                 ngsi_auth = 'Bearer ' + ngsi_config_domain[__CONFIG_KEY_AUTH]
 
     return ngsi_auth
@@ -189,6 +189,3 @@ def __get_domain(resource_url):
     """
 
     return resource_url.split(__URL_SPLIT_CHAR)[2]
-
-
-

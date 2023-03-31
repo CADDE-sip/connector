@@ -16,7 +16,7 @@ def main():
     app.add_error_handler(Exception, handle_api_exception)
     app.add_api(
         'swagger.yaml', arguments={
-            'title': 'CADDE v1 Specification 利用者 カタログ検索I/F'})
+            'title': 'CADDE v4 Specification 利用者 カタログ検索I/F'})
     app.run(port=8080, threaded=True)
 
 

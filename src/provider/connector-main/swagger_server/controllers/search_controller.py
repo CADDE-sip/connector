@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 external_interface = ExternalInterface()
 internal_interface = InternalInterface()
 
+
 def search(q=None, Authorization=None):  # noqa: E501
     """API. カタログ検索(詳細検索)
 
@@ -40,7 +41,7 @@ def search(q=None, Authorization=None):  # noqa: E501
 
     logger.debug(
         get_message(
-            '03001N', [
+            '010001001N', [
                 query_string, log_message_none_parameter_replace(authorization)]))
 
     data = detail_search(
@@ -48,7 +49,10 @@ def search(q=None, Authorization=None):  # noqa: E501
         authorization,
         external_interface,
         internal_interface)
-    return Response(
+
+    response = Response(
         response=data,
         status=200,
-        mimetype="application/json")
+        mimetype='application/json')
+
+    return response

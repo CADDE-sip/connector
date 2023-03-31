@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 NAME = "swagger_server"
-VERSION = "1.0.0"
+VERSION = "4.0.0"
 # To install the library, run the following
 #
 # python setup.py install
@@ -16,10 +16,10 @@ REQUIRES = ["connexion"]
 setup(
     name=NAME,
     version=VERSION,
-    description="CADDE v1 Specification 利用者 カタログ検索I/F",
+    description="CADDE v4 Specification 利用者 カタログ検索I/F",
     author_email="",
     url="",
-    keywords=["Swagger", "CADDE v1 Specification 利用者 カタログ検索I/F"],
+    keywords=["Swagger", "CADDE v4 Specification 利用者 カタログ検索I/F"],
     install_requires=REQUIRES,
     packages=find_packages(),
     package_data={'': ['swagger/swagger.yaml']},

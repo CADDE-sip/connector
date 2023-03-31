@@ -2,7 +2,7 @@
 mkdir -p catalog-search/swagger_server/utilities
 mkdir -p connector-main/swagger_server/utilities
 mkdir -p data-exchange/swagger_server/utilities
-mkdir -p authentication-authorization/swagger_server/utilities
+mkdir -p authentication/swagger_server/utilities
 mkdir -p provenance-management/swagger_server/utilities
 
 array=`find ../common/swagger_server/utilities  -type f`
@@ -10,7 +10,7 @@ for e in $array; do
     ln -f ${e} catalog-search/swagger_server/utilities/`basename ${e}`
     ln -f ${e} connector-main/swagger_server/utilities/`basename ${e}`
     ln -f ${e} data-exchange/swagger_server/utilities/`basename ${e}`
-    ln -f ${e} authentication-authorization/swagger_server/utilities/`basename ${e}`
+    ln -f ${e} authentication/swagger_server/utilities/`basename ${e}`
     ln -f ${e} provenance-management/swagger_server/utilities/`basename ${e}`
 done
 

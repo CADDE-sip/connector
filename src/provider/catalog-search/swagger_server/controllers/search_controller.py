@@ -35,16 +35,29 @@ def search(q=None, Authorization=None):  # noqa: E501
 
     logger.debug(
         get_message(
-            '05001N', [
+            '010101001N', [
                 query_string, log_message_none_parameter_replace(authorization)]))
 
     data = search_catalog_ckan(query_string, authorization, external_interface)
+
     response = Response(
         response=data,
         status=200,
         mimetype="application/json")
+
+    if 'Server' in response.headers:
+        del response.headers['Server']
+
+    if 'Date' in response.headers:
+        del response.headers['Date']
+
+    if 'Transfer-Encoding' in response.headers:
+        del response.headers['Transfer-Encoding']
+
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'"
     response.headers['Referrer-Policy'] = "no-referrer always"
+    response.headers[
+        'Content-Security-Policy'] = "default-src 'self'; frame-ancestors 'self'; object-src 'none'; script-src 'none';"
+
     return response

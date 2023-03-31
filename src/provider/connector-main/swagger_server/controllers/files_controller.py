@@ -41,31 +41,39 @@ def files(x_cadde_resource_url=None, x_cadde_resource_api_type=None, Authorizati
         authorization = connexion.request.headers['Authorization']
     if 'x-cadde-options' in connexion.request.headers:
         options = connexion.request.headers['x-cadde-options']
-    logger.debug(get_message('04001N',
+    logger.debug(get_message('010002001N',
                              [resource_url,
                               resource_api_type,
-                              log_message_none_parameter_replace(authorization),
+                              log_message_none_parameter_replace(
+                                  authorization),
                               log_message_none_parameter_replace(options)]))
 
     response_bytes, headers_dict = fetch_data(
         resource_url, resource_api_type, authorization, options, external_interface, internal_interface)
 
     if resource_api_type == 'api/ngsi':
-
-        return Response(
-            status=200,
+        return_response = Response(
             response=response_bytes.read(),
+            status=200,
             headers=headers_dict,
-            mimetype="application/json")
+            mimetype='application/json')
 
+        if 'Content-Disposition' not in return_response.headers:
+            return_response.headers[
+                'Content-Disposition'] = 'attachment; filename=' + get_url_file_name(resource_url)
+
+        return return_response
     else:
         fileName = get_url_file_name(resource_url)
         send_file_response = send_file(
             response_bytes,
             as_attachment=True,
-            attachment_filename=fileName)
+            download_name=fileName)
 
-        send_file_response.headers['x-cadde-provenance'] = headers_dict['x-cadde-provenance']
-        send_file_response.headers['x-cadde-contract-id'] = headers_dict['x-cadde-contract-id']
+        send_file_response.headers = headers_dict
+
+        if 'Content-Disposition' not in send_file_response.headers:
+            send_file_response.headers[
+                'Content-Disposition'] = 'attachment; filename=' + get_url_file_name(resource_url)
 
         return send_file_response, 200

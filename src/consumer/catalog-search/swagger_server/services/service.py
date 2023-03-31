@@ -5,8 +5,9 @@ from swagger_server.utilities.cadde_exception import CaddeException
 from swagger_server.utilities.external_interface import ExternalInterface
 from swagger_server.utilities.internal_interface import InternalInterface
 
-__CONFIG_CKAN_URL_FILE_PATH = '/usr/src/app/swagger_server/configs/ckan.json'
-__CONFIG_CKAN_URL = 'ckan_url'
+__CONFIG_CKAN_URL_FILE_PATH = '/usr/src/app/swagger_server/configs/public_ckan.json'
+__CONFIG_CKAN_URL = 'public_ckan_url'
+__SET_SEARCH_CATALOG_URL = '/cadde/api/v4/catalog'
 
 
 def search_catalog_meta(
@@ -14,7 +15,7 @@ def search_catalog_meta(
         internal_interface: InternalInterface,
         external_interface: ExternalInterface) -> Response:
     """
-    横断検索要求を行い、横断検索サイトからカタログ情報を取得する
+    横断検索を行い、横断検索サイトからカタログ情報を取得する
 
     Args:
         q str : 検索条件のクエリストリング
@@ -25,22 +26,23 @@ def search_catalog_meta(
         Response : 取得した情報
 
     Raises:
-        Cadde_excption : コンフィグファイルからCKANURLを取得できない場合、エラーコード : 00002E
-        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 16002E
+        Cadde_excption : コンフィグファイルからCKANURLを取得できない場合、エラーコード : 020101004E
+        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 020101005E
+
     """
+
     try:
         config = internal_interface.config_read(__CONFIG_CKAN_URL_FILE_PATH)
         ckan_url = config[__CONFIG_CKAN_URL]
     except Exception:
         raise CaddeException(
-            message_id='00002E',
-            status_code=500,
+            message_id='020101004E',
             replace_str_list=[__CONFIG_CKAN_URL])
 
     response = external_interface.http_get(ckan_url + q)
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            message_id='16002E',
+            message_id='020101005E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])
@@ -53,7 +55,7 @@ def search_catalog_detail(
         authorization: str,
         external_interface: ExternalInterface) -> Response:
     """
-    詳細検索要求を行い、提供者カタログサイトからカタログ情報を取得する
+    詳細検索を行い、提供者カタログサイトからカタログ情報を取得する
 
     Args:
         q str : 検索条件のクエリストリング:
@@ -65,15 +67,18 @@ def search_catalog_detail(
         str : 取得した情報
 
     Raises:
-        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 17002E
+        Cadde_excption : ステータスコード2xxでない場合 エラーコード : 020101006E
+
     """
     headers_dict = {'Authorization': authorization}
 
+    search_catalog_url = provider_connector_url + __SET_SEARCH_CATALOG_URL
+
     response = external_interface.http_get(
-        provider_connector_url + q, headers_dict)
+        search_catalog_url + q, headers_dict)
     if response.status_code < 200 or 300 <= response.status_code:
         raise CaddeException(
-            message_id='17002E',
+            message_id='020101006E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])

@@ -1,10 +1,39 @@
 {
     "basic_auth": [
         {
-            "domain" : "HTTP_SERVER_URL:8080",
+            "domain" : "example.com:8080",
             "basic_id" : "anonymous",
-            "basic_pass" : "anonymous",
-            "authorization" : "disable"
+            "basic_pass" : "anonymous"
+        }
+    ],
+    "authorization": [
+        {
+            "url" : "https://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/open",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url" : "https://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/open",
+            "enable" : false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url" : "https://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "https://example.com:8080/open",
+            "enable" : false
         }
     ]
 }

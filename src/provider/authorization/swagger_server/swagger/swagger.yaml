@@ -1,0 +1,217 @@
+openapi: 3.0.0
+info:
+  title: CADDE v4 Specification 提供者 認可I/F
+  version: "4.0"
+servers:
+- url: /
+paths:
+  /token_federation:
+    get:
+      tags:
+      - TokenFederation
+      summary: API. 認可トークン取得
+      description: |-
+        認可サーバに対して、トークンフェデレーションリクエストを行い、認可トークンを返す。
+
+        Response:
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
+      operationId: token_federation
+      parameters:
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認証トークン
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider
+        in: header
+        description: CADDEユーザID（提供者）
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider-connector-id
+        in: header
+        description: 提供者コネクタID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider-connector-secret
+        in: header
+        description: 提供者コネクタのシークレット
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ヘッダ情報に認可トークンとCADDEユーザID(利用者)を設定
+          headers:
+            x-cadde-auth-token:
+              description: 認可トークン
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-consumer-id:
+              description: CADDEユーザID(利用者)
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              example: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  summary: コンフィグファイルに必須パラメータが設定されていなかった場合
+                  value:
+                    detail: コンフィグファイルに(取得パラメータ)が設定されていません。CADDE管理者に問い合わせください。
+                    status: 500
+                    title: ""
+                    type: ""
+      x-openapi-router-controller: swagger_server.controllers.token_federation_controller
+  /token_contract:
+    get:
+      tags:
+      - TokenContract
+      summary: API. 認可確認
+      description: |-
+        認可サーバに対して、認可確認をリクエストし、レスポンスを取得する。
+
+        Response:
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
+      operationId: token_contract
+      parameters:
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認可トークン
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider
+        in: header
+        description: CADDEユーザID（提供者）
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider-connector-id
+        in: header
+        description: 提供者コネクタID
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provider-connector-secret
+        in: header
+        description: 提供者コネクタのシークレット
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-resource-url
+        in: header
+        description: |-
+          リソースURL
+          （認可ありの限定データの場合、文字長は255文字以内。使用可能文字は半角英数、ハイフン、アンダーバーのみ）
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ヘッダ情報に取引ID、契約形態、契約管理サービスURLを設定
+          headers:
+            x-cadde-contract-id:
+              description: 取引ID
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-type:
+              description: 契約形態
+              style: simple
+              explode: false
+              schema:
+                type: string
+            x-cadde-contract-management-service-url:
+              description: 契約管理サービスURL
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              example: ""
+        "403":
+          description: 認証情報不正の場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  summary: 認可I/F 契約確認処理で契約確認結果が不正だった場合
+                  value:
+                    detail: 認可確認に失敗しました。対象のトークンが使用できないか、リソースURLに認可がありません。CADDE管理者に問い合わせてください。
+                    status: 403
+                    title: ""
+                    type: ""
+        "500":
+          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                response:
+                  summary: コンフィグファイルに必須パラメータが設定されていなかった場合
+                  value:
+                    detail: コンフィグファイルに(取得パラメータ)が設定されていません。CADDE管理者に問い合わせください。
+                    status: 500
+                    title: ""
+                    type: ""
+      x-openapi-router-controller: swagger_server.controllers.token_contract_controller
+components:
+  schemas:
+    ErrorResponse:
+      title: HTTPステータスコードが4xx、500の場合のレスポンス
+      required:
+      - detail
+      - status
+      type: object
+      properties:
+        detail:
+          type: string
+          description: エラーメッセージ
+        status:
+          type: number
+          description: HTTPステータスコード
+        title:
+          type: string
+          description: タイトル
+        type:
+          type: string
+          description: タイプ
+

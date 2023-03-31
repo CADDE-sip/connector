@@ -8,7 +8,7 @@ from swagger_server.utilities.cadde_exception import CaddeException
 __HTTP_STATUS_CODE_SUCCESS_LOWER_LIMIT = 200
 __HTTP_STATUS_CODE_SUCCESS_UPPER_LIMIT = 299
 
-__ACCESS_POINT_URL = 'http://provider_connector_main:8080/cadde/api/v1/file'
+__ACCESS_POINT_URL = 'http://provider_connector_main:8080/cadde/api/v4/file'
 
 
 def data_exchange(
@@ -31,8 +31,7 @@ def data_exchange(
         Response :レスポンス
 
     Raises:
-        Cadde_excption: リクエストに失敗した場合 エラーコード: 01002E
-        Cadde_excption: リスエストのステータスコードが2xxでない場合 エラーコード: 06002E
+        Cadde_excption: リクエストに失敗した場合 エラーコード: 010201002E
 
     """
 
@@ -43,9 +42,10 @@ def data_exchange(
         'x-cadde-options': options}
 
     response = external_interface.http_get(__ACCESS_POINT_URL, headers_dict)
-    if response.status_code < __HTTP_STATUS_CODE_SUCCESS_LOWER_LIMIT or __HTTP_STATUS_CODE_SUCCESS_UPPER_LIMIT < response.status_code:
+    if (response.status_code < __HTTP_STATUS_CODE_SUCCESS_LOWER_LIMIT
+            or __HTTP_STATUS_CODE_SUCCESS_UPPER_LIMIT < response.status_code):
         raise CaddeException(
-            '06002E',
+            '010201002E',
             status_code=response.status_code,
             replace_str_list=[
                 response.text])

@@ -1,10 +1,39 @@
 {
     "ftp_auth": [
         {
-            "domain" : "FTP_SERVER_URL:443",
-            "ftp_id" : "anonymous",
-            "ftp_pass" : "anonymous",
-            "authorization" : "disable"
+        "domain" : "example.com:443",
+        "ftp_id" : "anonymous",
+        "ftp_pass" : "anonymous"
+        }
+    ],
+    "authorization": [
+        {
+            "url" : "ftp://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "ftp://example.com:8080/open",
+            "enable" : false
+        }
+    ],
+    "contract_management_service": [
+        {
+            "url" : "ftp://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "ftp://example.com:8080/open",
+            "enable" : false
+        }
+    ],
+    "register_provenance": [
+        {
+            "url" : "ftp://example.com:8080/auth/",
+            "enable" : true
+        }, 
+        {
+            "url": "ftp://example.com:8080/open",
+            "enable" : false
         }
     ]
 }

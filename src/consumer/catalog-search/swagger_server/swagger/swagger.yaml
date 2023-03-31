@@ -1,18 +1,17 @@
 openapi: 3.0.0
 info:
-  title: CADDE v3 Specification 利用者 カタログ検索I/F
-  version: "3.0"
+  title: CADDE v4 Specification 利用者 カタログ検索I/F
+  version: "4.0"
 servers:
 - url: /
 paths:
-  /api/3/action/package_search:
+  /cadde/api/v4/catalog:
     get:
       tags:
       - Search
       summary: API. カタログ検索
       description: |-
-        横断検索、詳細検索を判定し、
-        横断検索サイトまたは提供者カタログサイトからカタログ情報を取得する。
+        ユーザが指定した検索種別に応じて横断検索サーバまたは提供者サーバにカタログ検索を行う。ユーザが指定した検索条件クエリに従ってカタログ情報を取得する。
         
         Response:
         * 処理が成功した場合は200を返す。
@@ -42,8 +41,8 @@ paths:
       - name: x-cadde-provider-connector-url
         in: header
         description: |-
-         カタログサイト（詳細検索）アクセスURL
-         x-cadde-searchがmetaの場合は不要、detailの場合は必須
+         提供者コネクタのアクセスURL
+         cadde-searchがmetaの場合は不要、detailの場合は必須
         required: false
         style: simple
         explode: false
@@ -51,7 +50,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 認証トークン
+        description: 認証方式：Bearer。認証トークン
         required: false
         style: simple
         explode: false
@@ -72,43 +71,18 @@ paths:
                   results: {}
                   search_facets: {}
         "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "401":
-          description: "認証認可処理での認証失敗の場合のエラーメッセージ"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: 利用者確認処理でエラーが発生しました。
-                    status: 401
-                    title: ""
-                    type: ""
-        "408":
           description: |-
-            リクエストタイムアウト
+           パラメータ不正の場合のエラーメッセージ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: 各機能でパラメータ確認時に必須パラメータが設定されていなかった場合
                   value:
-                    detail: リクエストタイムアウトによるエラーが発生しました。
-                    status: 408
+                    detail: パラメータが不正です。リクエストパラメータの値を確認してください。
+                    status: 400
                     title: ""
                     type: ""
         "500":
@@ -119,8 +93,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 response:
+                  summary: コンフィグファイルに必須パラメータが設定されていなかった場合
                   value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
+                    detail: コンフィグファイルに(取得パラメータ)が設定されていません。利用者コネクタの設定類を確認してください。
                     status: 500
                     title: ""
                     type: ""

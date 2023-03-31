@@ -1,315 +1,17 @@
 openapi: 3.0.0
 info:
-  title: CADDE v3 Specification 利用者 来歴管理I/F
-  version: "3.0"
+  title: CADDE v4 Specification 利用者 来歴管理I/F
+  version: "4.0"
 servers:
 - url: /
 paths:
-  /eventwithhash/received:
-    post:
-      tags:
-      - Received
-      summary: API. 受信履歴登録要求
-      description: |-
-        受信履歴登録要求を行い、識別情報を取得する。
-
-        Response:
-        * 処理が成功した場合は200を返す。
-        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
-      operationId: received
-      parameters:
-      - name: x-cadde-provider
-        in: header
-        description: CADDEユーザID（提供者）
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-cadde-consumer
-        in: header
-        description: CADDEユーザID（利用者）
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-caddec-resource-id-for-provenance
-        in: header
-        description: |-
-         識別情報
-         識別情報交換実績記録用リソースIDを指す。
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-token
-        in: header
-        description: 来歴管理者用トークン
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      responses:
-        "200":
-          description: ヘッダ情報に識別情報を設定
-          headers:
-            x-cadde-provenance:
-              description: 来歴管理I/Fから受領した識別情報 
-              style: simple
-              explode: false
-              schema:
-                type: string
-          content:
-            application/octet-stream:
-              example: ""
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
-      x-openapi-router-controller: swagger_server.controllers.received_controller
-  /cadde/api/v1/history/lineage/{caddec-resource-id-for-provenance}:
-    get:
-      tags:
-      - Lineage
-      summary: API. 来歴確認呼び出し
-      description: |-
-        指定された交換実績記録用リソースIDから始まる来歴情報を取得する。
-
-        Response:
-        * 処理が成功した場合は200を返す。
-        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
-      operationId: lineage
-      parameters:
-      - name: caddec-resource-id-for-provenance
-        in: path
-        description: 交換実績記録用リソースID
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: x-direction
-        in: header
-        description: |-
-         履歴取得方向
-         [BACKWARD(=default),FORWARD, BOTH]
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: string
-          default: BACKWARD
-      - name: x-depth
-        in: header
-        description: |-
-         検索深度
-         交換実績記録用リソースIDで指定されたイベントからの深さ。 0は、交換実績記録用リソースIDで指定されたイベントを要求します。
-         正の整数は、指定されたレコードから指定された深さ以下のである全てのイベントを要求します。 -1は、指定されたイベントから到達可能な全てのイベントを要求します。
-        required: false
-        style: simple
-        explode: false
-        schema:
-          type: integer
-          format: int32
-          default: -1
-      responses:
-        "200":
-          description: 一致するイベント
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CDLEventList'
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
-      x-openapi-router-controller: swagger_server.controllers.lineage_controller
-  /cadde/api/v1/history/searchevents:
-    post:
-      tags:
-      - Searchevents
-      summary: API. 履歴ID検索呼び出し
-      description: |-
-       ボディ部に設定した検索条件を基に履歴情報を取得する。
-       ヘッダに`content-type: application/json` を追加してください。
-
-        Response:
-        * 処理が成功した場合は200を返す。
-        * 処理に失敗した場合は、2xx以外のコードを返す。 Responsesセクションを参照。
-      operationId: searchevents
-      requestBody:
-        description: |-
-         CouchDBの構文です。 右記を参照してください。
-         https://docs.couchdb.org/en/stable/api/database/find.html#find-selectors
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/body'
-            example:
-              selector:
-                cdltimestamp:
-                  $gte: 2020-07-19T00:00:00+09:00
-                  $lt: 2020-08-19T00:00:00+09:00
-                cdldatatags:
-                  $elemMatch:
-                    cdlsize:
-                      $gte: 1048576
-        required: true
-      responses:
-        "200":
-          description: |-
-            一致するイベントのリスト（※リスト内の順序は不定な順序）
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CDLEventList'
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
-      x-openapi-router-controller: swagger_server.controllers.searchevents_controller
   /voucher/received:
     post:
       tags:
       - VoucherReceived
-      summary: API. データ証憑通知（受信）要求
+      summary: API. データ証憑通知（受信）
       description: |-
-        データ証憑通知（受信）を行う。
+        来歴管理にデータ証憑通知（受信）を依頼する。
 
         Response:
         * 処理が成功した場合は200を返す。
@@ -340,7 +42,7 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-hash-get-data
+      - name: x-cadde-hash-get-data
         in: header
         description: |-
          ハッシュ値
@@ -350,7 +52,7 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-cadde-contract-management-url
+      - name: x-cadde-contract-management-service-url
         in: header
         description: 契約管理サービスURL
         required: true
@@ -358,9 +60,9 @@ paths:
         explode: false
         schema:
           type: string
-      - name: x-cadde-contract-management-key
+      - name: Authorization
         in: header
-        description: 契約管理サービスキー
+        description: 認証方式：Bearer。認証トークン
         required: true
         style: simple
         explode: false
@@ -370,57 +72,78 @@ paths:
         "200":
           description: 処理完了のレスポンスを返す
           content:
-            application/octet-stream:
+            application/json:
               example: ""
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: Missing header parameter (パラメータ名)
-                    status: 400
-                    title: Bad Request
-                    type: about:blank
-        "408":
-          description: タイムアウトが発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: エラーが発生しました。エラー:(エラー内容)
-                    status: 500
-                    title: ""
-                    type: ""
       x-openapi-router-controller: swagger_server.controllers.voucher_received_controller
+  /eventwithhash/received:
+    post:
+      tags:
+      - Received
+      summary: API. 受信履歴登録
+      description: |-
+        来歴管理に受信履歴登録を行い、識別情報を取得する。
+
+        Response:
+        * 処理が成功した場合は200を返す。
+        * 処理に失敗した場合は、2xx以外を返す。Responsesセクション参照。
+      operationId: received
+      parameters:
+      - name: x-cadde-provider
+        in: header
+        description: CADDEユーザID（提供者）
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-consumer
+        in: header
+        description: CADDEユーザID（利用者）
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-resource-id-for-provenance
+        in: header
+        description: |-
+         識別情報
+         識別情報交換実績記録用リソースIDを指す。
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: x-cadde-provenance-management-service-url
+        in: header
+        description: 来歴管理サービスURL
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        description: 認証方式：Bearer。認証トークン
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: ヘッダ情報に識別情報を設定
+          headers:
+            x-cadde-provenance:
+              description: 来歴管理I/Fから受領した識別情報 
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              example: ""
+      x-openapi-router-controller: swagger_server.controllers.received_controller
 components:
   schemas:
     ErrorResponse:

@@ -1,17 +1,17 @@
 openapi: 3.0.0
 info:
-  title: CADDE v3 Specification 提供者 カタログ検索IF
-  version: "3.0"
+  title: CADDE v4 Specification 提供者 カタログ検索IF
+  version: "4.0"
 servers:
 - url: /
 paths:
-  /api/3/action/package_search:
+  /cadde/api/v4/catalog:
     get:
       tags:
       - Search
       summary: API. カタログ検索(詳細検索)
       description: |-
-        提供者カタログサイトからCKANカタログ情報を取得する。
+        詳細検索リクエストを受け付け、メイン制御に処理を依頼する。
         
         Response:
         * 処理が成功した場合は200を返す。
@@ -30,7 +30,7 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: 認証トークン
+        description: 認証方式：Bearer。認証トークン
         required: false
         style: simple
         explode: false
@@ -50,56 +50,6 @@ paths:
                   facets: {}
                   results: {}
                   search_facets: {}
-        "400":
-          description: パラメータ不正の場合のエラーメッセージ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    error-message: パラメータが不正です。
-        "401":
-          description: "認証認可処理での認証失敗の場合のエラーメッセージ"
-          content:
-            application/octet-stream:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: 利用者確認処理でエラーが発生しました。
-                    status: 401
-                    title: ""
-                    type: ""
-        "408":
-          description: |-
-            リクエストタイムアウト
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    detail: リクエストタイムアウトによるエラーが発生しました。
-                    status: 408
-                    title: ""
-                    type: ""
-        "500":
-          description: サーバーの内部処理で異常が発生した場合のエラーメッセージ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                response:
-                  value:
-                    error-message: エラーが発生しました。エラー:(エラー内容)
       x-openapi-router-controller: swagger_server.controllers.search_controller
 components:
   schemas:

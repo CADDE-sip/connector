@@ -1,0 +1,108 @@
+version: "3"
+services:
+  consumer-catalog-search:
+    build: catalog-search
+    image: consumer/catalog-search:4.0.0
+    hostname: consumer_catalog_search
+    container_name: consumer_catalog_search
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./catalog-search/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-connector-main:
+    build: connector-main
+    image: consumer/connector-main:4.0.0
+    hostname: consumer_connector_main
+    container_name: consumer_connector_main
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./connector-main/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
+    ports:
+      - 80:8080
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-data-exchange:
+    build: data-exchange
+    image: consumer/data-exchange:4.0.0
+    hostname: consumer_data_exchange
+    container_name: consumer_data_exchange
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./data-exchange/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-authentication:
+    build: authentication
+    image: consumer/authentication:4.0.0
+    hostname: consumer_authentication
+    container_name: consumer_authentication
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./authentication/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-provenance-management:
+    build: provenance-management
+    image: consumer/provenance-management:4.0.0
+    hostname: consumer_provenance_management
+    container_name: consumer_provenance_management
+    restart: always
+    logging:
+      driver: "json-file" # defaults if not specified
+      options:
+        max-size: "10m"
+        max-file: "10"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "./provenance-management/swagger_server/:/usr/src/app/swagger_server/:ro"
+      - "./squid/volumes/ssl/:/etc/docker/certs.d/:ro"
+    environment:
+      - LC_CTYPE=${LC_CTYPE}
+      - REQUESTS_CA_BUNDLE=${REQUESTS_CA_BUNDLE}
+      - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
+  consumer-forward-proxy:
+    container_name: consumer_forward-proxy
+    image: cadde-squid:4.0.0
+    hostname: forward_proxy
+    volumes:
+      - ./squid/volumes/squid.conf:/etc/squid/conf.d/default.conf
+      - ./squid/volumes/ssl:/etc/squid/ssl
+      - ./squid/volumes/ssl_db:/var/lib/squid/ssl_db
+    restart: always
