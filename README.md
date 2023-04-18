@@ -616,7 +616,7 @@ git pull
 
 ## 問い合わせ先
 お問い合わせ時には、下記必要項目を記載の上、問い合わせ窓口宛にご連絡ください。<br>
-問い合わせ窓口：sip2cadde_support＠nii.ac.jp <br><br>
+問い合わせ窓口：ml_bunyakan_dl@ml.itg.hitachi.co.jp <br><br>
 *********<br>
 ①分類：選択[資材関連(GitHubからのダウンロード等)/構築関連(コネクタ構築中)/各種仕様確認/その他] <br>
 ②連絡先 <br>
