@@ -1,0 +1,1 @@
+import{e as a,u as t}from"./index.537da17a.js";import{a as o}from"./index.2cf0d985.js";t();const r=o.create();r.interceptors.request.use(e=>(e.headers={"Content-Type":"application/json"},e));var p=a(({app:e})=>{e.config.globalProperties.$axios=o,e.config.globalProperties.$api=r});export{r as api,p as default};
