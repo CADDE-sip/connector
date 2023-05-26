@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  dev-vue:
+    image: dev-vue:2022
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: authz_ui
+    tty: true
+    ports:
+      - "9009:9000"
+    volumes:
+      - "./:/node"
+      - "/etc/localtime:/etc/localtime:ro"
