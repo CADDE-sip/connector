@@ -18,4 +18,4 @@ EOS
 
 echo $json > ./settings_provider_setup.json
 
-sudo docker compose exec fastapi python3 provider_setup.pyc
+sudo docker compose exec fastapi python3 provider_setup.py
