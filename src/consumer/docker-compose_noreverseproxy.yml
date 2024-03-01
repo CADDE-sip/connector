@@ -99,7 +99,7 @@ services:
       - HTTPS_PROXY=${HTTPS_PROXY_CADDE}
   consumer-forward-proxy:
     container_name: consumer_forward-proxy
-    image: cadde-squid:4.0.0
+    image: ubuntu/squid
     hostname: forward_proxy
     volumes:
       - ./squid/volumes/squid.conf:/etc/squid/conf.d/default.conf
