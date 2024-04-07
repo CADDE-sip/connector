@@ -56,7 +56,7 @@ cd connector
 setup.sh実行
 ```
 cd src/consumer/
-sh setup.sh
+bash setup.sh
 ```
 
 3. コンフィグファイルの設定
@@ -124,7 +124,7 @@ sh setup.sh
 
 ```
 cd connector/src/consumer
-sh start.sh
+bash start.sh
 ```
 
 起動した利用者コネクタの構成は以下となります。<br>
@@ -151,7 +151,7 @@ consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-pro
 #### リバースプロキシ、フォワードプロキシを使用しない場合
 <br>リバースプロキシおよびフォワードプロキシを使用しない場合、以下のコマンドで利用者コネクタを起動してください。<br>
 ```
-sh start.sh noproxy
+bash start.sh noproxy
 ```
 
 <br>起動した際に、リバースプロキシおよびフォワードプロキシが起動していないことを確認してください。<br>
@@ -168,7 +168,7 @@ consumer_provenance_management   "python3 -m swagger_…"   consumer-provenance-
 #### リバースプロキシを使用しない場合
 <br>リバースプロキシのみ使用しない場合、以下のコマンドで利用者コネクタを起動してください。<br>
 ```
-sh start.sh noreverseproxy
+bash start.sh noreverseproxy
 ```
 <br>起動した際に、リバースプロキシが起動していないことを確認してください。<br>
 リバースプロキシを起動しない場合、コネクタメインが80番ポートで起動します。<br>
@@ -185,7 +185,7 @@ consumer_forward-proxy           "/usr/sbin/squid '-N…"   consumer-forward-pro
 #### フォワードプロキシを使用しない場合
 <br>フォワードプロキシのみ使用しない場合、以下のコマンドで利用者コネクタを起動してください。
 ```
-sh start.sh noforwardproxy
+bash start.sh noforwardproxy
 ```
 
 <br>起動した際に、フォワードプロキシが起動していないことを確認してください。<br>
@@ -201,7 +201,7 @@ consumer_reverse-proxy           "/docker-entrypoint.…"   consumer-reverse-pro
 
 ### 利用者コネクタ停止手順
 ```
-sh stop.sh
+bash stop.sh
 ```
 
 ### V3.0からV4.0へのアップデート方法
@@ -296,7 +296,7 @@ cd connector
 2. setup.sh実行
 ```
 cd src/provider/
-sh setup.sh
+bash setup.sh
 ```
 
 3. コンフィグファイルの設定<br>
@@ -506,7 +506,7 @@ ngsi.json
 1. 提供者コネクタ起動
 ```
 cd connector/src/provider/
-sh start.sh
+bash start.sh
 ```
 
 起動した提供者コネクタの構成は以下となります。<br>
@@ -529,7 +529,7 @@ provider_reverse-proxy           "/docker-entrypoint.…"   provider-reverse-pro
 ### プロキシを使用しない場合
 <br>リバースプロキシのみ使用しない場合、以下のコマンドで提供者コネクタを起動してください。<br>
 ```
-sh start.sh noproxy
+bash start.sh noproxy
 ```
 <br>起動した際に、リバースプロキシが起動していないことを確認してください。<br>
 リバースプロキシを起動しない場合、カタログ検索IFが28080番ポート、データ交換IFが38080番ポートで起動します。<br>
@@ -544,7 +544,7 @@ provider_provenance_management   "python3 -m swagger_…"   provider-provenance-
 
 ### 提供者コネクタ停止手順 
 ```
-sh stop.sh
+bash stop.sh
 ```
 
 ### V3.0からV4.0へのアップデート方法
